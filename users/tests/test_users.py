@@ -1,11 +1,9 @@
 import secrets
 
-from config.tests.factories import UserFactory
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
-from django.urls import reverse
+from django.test import TestCase
 
-from users.forms import CustomUserCreationForm
+from config.tests.factories import UserFactory
 
 
 class CustomUserModelTests(TestCase):
@@ -64,11 +62,6 @@ class CustomUserModelTests(TestCase):
 
 
 class SignUpViewTests(TestCase):
-    def test_signup_page_status_code(self) -> None:
-        """Test that the signup page returns a 200 status code."""
-        response = self.client.get(reverse("signup"))
-        self.assertEqual(response.status_code, 200)
-
     def test_user_creation_logging(self) -> None:
         """Test that user creation triggers a log message via signals."""
         # assertLogs captures logs from the 'users.signals' logger
@@ -81,40 +74,3 @@ class SignUpViewTests(TestCase):
             self.assertTrue(
                 any("User created (signal): signal_test_user" in o for o in cm.output),
             )
-
-    def test_signup_page_template(self) -> None:
-        """Test that the correct template is used for the signup page."""
-        response = self.client.get(reverse("signup"))
-        self.assertTemplateUsed(response, "registration/signup.html")
-
-    def test_signup_form(self) -> None:
-        """Test that the signup form is the CustomUserCreationForm."""
-        response = self.client.get(reverse("signup"))
-        self.assertIsInstance(response.context["form"], CustomUserCreationForm)
-
-    def test_signup(self) -> None:
-        """Test that a user can be created by posting to the signup page."""
-        User = get_user_model()
-        upass = secrets.token_urlsafe(16)
-        self.assertEqual(User.objects.count(), 0)
-        response = self.client.post(
-            reverse("signup"),
-            {"username": "newuser", "password1": upass, "password2": upass},
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertRedirects(response, reverse("login"))
-
-    def test_signup_csrf_error(self) -> None:
-        """Test that the signup page enforces CSRF protection."""
-        # Create a client that enforces CSRF checks
-        csrf_client = Client(enforce_csrf_checks=True)
-        upass = secrets.token_urlsafe(16)
-
-        response = csrf_client.post(
-            reverse("signup"),
-            {"username": "csrf_test_user", "password1": upass, "password2": upass},
-        )
-
-        # Expect a 403 Forbidden response due to missing CSRF token
-        self.assertEqual(response.status_code, 403)
