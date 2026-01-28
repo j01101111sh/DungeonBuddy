@@ -31,13 +31,13 @@ COPY . .
 # Install the project itself
 RUN uv sync --frozen --no-dev --group prod
 
+# Expose the port
+EXPOSE 8000
+
 # Collect static files
 # We use a dummy secret key here because the build step shouldn't need the real one,
 # but Django throws an error if it's missing.
 RUN SECRET_KEY=dummy-key-for-build uv run python manage.py collectstatic --noinput
-
-# Expose the port
-EXPOSE 8000
 
 # Run with Gunicorn
 CMD ["uv", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
