@@ -1,10 +1,10 @@
 import secrets
 
-from config.tests.factories import UserFactory
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
+from config.tests.factories import UserFactory
 from users.forms import CustomUserCreationForm
 
 
