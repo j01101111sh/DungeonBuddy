@@ -1,0 +1,57 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description"
+              content="{% block meta_description %}Dungeon Buddy - Your tabletop adventure companion.{% endblock meta_description %}" />
+        <meta name="keywords"
+              content="{% block meta_keywords %}tabletop, pathfinder, social{% endblock meta_keywords %}" />
+        <title>
+            {% block title %}
+                Dungeon Buddy
+            {% endblock title %}
+        </title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+              rel="stylesheet"
+              integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+              crossorigin="anonymous" />
+        <link href="{% static 'css/site.css' %}" rel="stylesheet" />
+        {% block extra_css %}
+        {% endblock extra_css %}
+    </head>
+    <body class="d-flex flex-column min-vh-100 {% block body_class %}{% endblock body_class %}">
+        {% include "includes/navbar.html" %}
+
+        <main class="flex-grow-1">
+            {% if messages %}
+                <div class="container mt-3">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show"
+                             role="alert">
+                            {{ message }}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}
+            {% endblock content %}
+        </main>
+        <footer class="py-3 mt-4 text-center text-body-secondary bg-light border-top">
+            <div class="container">
+                <span class="text-muted">©2026 Dungeon Buddy</span>
+            </div>
+        </footer>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+                crossorigin="anonymous"></script>
+        {% block extra_js %}
+        {% endblock extra_js %}
+    </body>
+</html>

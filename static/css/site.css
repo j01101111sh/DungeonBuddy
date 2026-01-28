@@ -1,0 +1,23 @@
+/* Splash Page Styles */
+.splash-body {
+    /* Optional: Only needed if you want the whole page background dark */
+    background-color: #212529;
+    color: #f8f9fa;
+}
+
+.splash-container {
+    /* Centers content vertically and horizontally within the main area */
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+}
+
+.btn-cta {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.25rem;
+    min-width: 160px;
+}
