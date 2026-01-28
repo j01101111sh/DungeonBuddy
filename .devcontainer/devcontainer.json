@@ -1,0 +1,35 @@
+{
+  "name": "Dungeon Buddy (Django 6)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "editor.formatOnSave": true,
+        "geminicodeassist.agentYoloMode": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": [
+          "."
+        ]
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "batisteo.vscode-django",
+        "charliermarsh.ruff",
+        "esbenp.prettier-vscode",
+        "google.geminicodeassist",
+        "ms-python.isort",
+        "ms-python.debugpy",
+        "ms-python.vscode-python-envs"
+      ]
+    }
+  },
+  "remoteUser": "root",
+  "postCreateCommand": "bash dev_setup.sh"
+}

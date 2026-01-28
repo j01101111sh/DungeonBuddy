@@ -1,0 +1,98 @@
+default_install_hook_types: [pre-commit, post-checkout, post-merge, pre-push]
+default_stages: [pre-commit, post-checkout, post-merge]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # file type specific checks
+      - id: check-yaml # verifies syntax of yaml files
+      - id: check-json # verifies syntax of json files
+      - id: pretty-format-json # fixes indentation of json files
+        args: ["--autofix", "--no-sort-keys"]
+      - id: check-toml # verifies syntax of toml files
+      - id: check-executables-have-shebangs # verifies non-binary executables have shebang
+        files: \.sh$
+
+      # general files
+      - id: end-of-file-fixer # makes sure files end in a newline and only a newline.
+      - id: trailing-whitespace # trims trailing whitespace.
+      - id: check-case-conflict # check for files that would conflict on a case-insensitive filesystem
+      - id: detect-private-key # checks for the existence of private keys
+      - id: check-added-large-files # prevent giant files from being committed
+        args: ["--maxkb=2048"]
+      # python checks
+      - id: check-docstring-first # checks for code before the docstring
+      - id: debug-statements # check for debugger imports and breakpoint calls in python source
+      # git checks
+      - id: no-commit-to-branch # protect specific branches from direct checkins
+        args: ["--branch", "main"]
+        stages: [pre-commit]
+
+  - repo: https://github.com/adamchainz/django-upgrade
+    rev: "1.29.1"
+    hooks:
+      - id: django-upgrade
+        args: ["--target-version", "6.0"]
+
+  - repo: https://github.com/Riverside-Healthcare/djLint
+    rev: v1.36.4
+    hooks:
+      - id: djlint-reformat-django
+      - id: djlint-django
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      # python checks
+      - id: python-no-eval # check for the eval() built-in function
+      - id: python-no-log-warn # check for the deprecated .warn() method of python loggers
+      # rst checks
+      - id: rst-backticks # detect use of single backticks when writing rst
+      - id: rst-directive-colons # detect rst directive formatting
+      - id: rst-inline-touching-normal # detect inline code touching normal text in rst
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.47.0
+    hooks:
+      - id: markdownlint-fix
+        args: ["--disable", "MD033"]
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: uv run ruff check --force-exclude
+        language: system
+        types: [python]
+        args: [--fix]
+      - id: ruff-format
+        name: ruff-format
+        entry: uv run ruff format --force-exclude
+        language: system
+        types: [python]
+      - id: bandit
+        name: bandit
+        entry: uv run bandit
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy
+        entry: uv run mypy --strict
+        language: system
+        types: [python]
+      - id: uv
+        name: uv
+        entry: uv sync
+        language: system
+        always_run: true
+        stages:
+          - post-checkout
+          - post-merge
+      - id: check-migrations
+        name: Check for missing migrations
+        entry: uv run python manage.py makemigrations --check
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]

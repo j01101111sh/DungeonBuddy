@@ -1,0 +1,10 @@
+# Devcontainer Aliases
+alias dj='uv run python manage.py'
+alias pcr='uv run pre-commit run'
+alias ll='ls -al'
+alias djr='dj runserver'
+alias djt='dj test'
+alias djc='dj collectstatic --noinput'
+alias djmm='dj makemigrations'
+alias djm='dj migrate'
+alias ds='./dev_setup.sh'
