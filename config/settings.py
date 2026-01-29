@@ -162,6 +162,7 @@ STORAGES = {
 AUTH_USER_MODEL = "users.CustomUser"
 
 # Login and Logout Redirect URLs
+LOGIN_URL = "login"  # Points to the named URL pattern 'login'
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
