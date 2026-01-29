@@ -1,6 +1,7 @@
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
 
@@ -89,7 +90,8 @@ class CampaignModelTests(TestCase):
 
 class CampaignCreateViewTests(TestCase):
     def setUp(self) -> None:
-        self.user, _ = UserFactory.create(username="testuser")
+        self.dm, _ = UserFactory.create(username="dm_user")
+        self.player, _ = UserFactory.create(username="player_user")
         self.url = reverse("campaign_create")
         self.system = TabletopSystem.objects.create(name="Pathfinder 2e")
 
@@ -104,7 +106,7 @@ class CampaignCreateViewTests(TestCase):
         """
         Test that authenticated users can access the create page.
         """
-        self.client.force_login(self.user)
+        self.client.force_login(self.player)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "campaign/campaign_form.html")
@@ -113,7 +115,7 @@ class CampaignCreateViewTests(TestCase):
         """
         Test that a campaign is created successfully with all fields.
         """
-        self.client.force_login(self.user)
+        self.client.force_login(self.dm)
         data = {
             "name": "New Adventure",
             "description": "A grand journey.",
@@ -128,7 +130,7 @@ class CampaignCreateViewTests(TestCase):
 
         # Check database
         campaign = Campaign.objects.get(name="New Adventure")
-        self.assertEqual(campaign.dungeon_master, self.user)
+        self.assertEqual(campaign.dungeon_master, self.dm)
         self.assertEqual(campaign.system, self.system)
         self.assertEqual(campaign.vtt_link, "https://roll20.net/join/123")
         self.assertEqual(campaign.video_link, "https://discord.gg/abc")
@@ -137,7 +139,7 @@ class CampaignCreateViewTests(TestCase):
         """
         Test that the view logs the creation event.
         """
-        self.client.force_login(self.user)
+        self.client.force_login(self.player)
         data = {"name": "View Logged Campaign", "description": "Test"}
 
         with self.assertLogs("dunbud.views", level="INFO") as cm:
@@ -148,6 +150,48 @@ class CampaignCreateViewTests(TestCase):
                     for m in cm.output
                 ),
             )
+
+    def test_delete_player_user(self) -> None:
+        """
+        Test that deleting a user who is a player in a campaign removes them
+        from the campaign but does not delete the campaign.
+        """
+        campaign = Campaign.objects.create(
+            name="Player Deletion Test",
+            dungeon_master=self.dm,
+        )
+        campaign.players.add(self.player)
+
+        # Confirm setup
+        self.assertIn(self.player, campaign.players.all())
+
+        # Delete the player user
+        self.player.delete()
+
+        # Refresh campaign to check state
+        campaign.refresh_from_db()
+
+        # Campaign should still exist
+        self.assertTrue(Campaign.objects.filter(pk=campaign.pk).exists())
+        # Player should be removed
+        self.assertEqual(campaign.players.count(), 0)
+
+    def test_delete_dm_user(self) -> None:
+        """
+        Test that deleting a user who is the dungeon master of a campaign
+        deletes the campaign (cascade delete).
+        """
+        campaign = Campaign.objects.create(
+            name="DM Deletion Test",
+            dungeon_master=self.dm,
+        )
+
+        # Confirm setup
+        self.assertTrue(Campaign.objects.filter(pk=campaign.pk).exists())
+
+        # Deleting the DM user should raise an error
+        with self.assertRaises(ProtectedError):
+            self.dm.delete()
 
 
 class CampaignListViewTests(TestCase):
