@@ -1,43 +1,60 @@
-# Use the official uv image with Python 3.14
-FROM ghcr.io/astral-sh/uv:python3.14-bookworm
+ARG PYTHON_VERSION=3.14-slim-bookworm
+FROM python:${PYTHON_VERSION}
 
-# Install system dependencies (if any are needed for your specific packages)
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Create a virtual environment
+RUN python -m venv /opt/venv
+
+# Set the virtual environment as the current location
+ENV PATH=/opt/venv/bin:$PATH
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Set Python-related environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Install os dependencies for our mini vm
+RUN apt-get update && apt-get install -y \
+    # for postgres
     libpq-dev \
+    # other
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure env
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    PORT=8000
+# Create the mini vm's code directory
+RUN mkdir -p /code
 
-WORKDIR /app
+# Set the working directory to that same code directory
+WORKDIR /code
 
-# Copy dependency files first for caching
-COPY pyproject.toml uv.lock ./
+# Copy the requirements file into the container
+COPY requirements.txt /tmp/requirements.txt
 
-# Sync dependencies (creates .venv)
-# --frozen: requires uv.lock to be up to date
-# --no-install-project: only installs dependencies, not the app itself yet
-# --no-dev: excludes dev dependencies like pytest/ruff
-RUN uv sync --frozen --no-install-project --no-dev --group prod
+# copy the project code into the container's working directory
+COPY . /code
 
-# Copy the rest of the application code
-COPY . .
+# Install the Python project requirements
+RUN pip install -r /tmp/requirements.txt
 
-# Install the project itself
-RUN uv sync --frozen --no-dev --group prod
+# create a bash script to run the Django project
+# this script will execute at runtime when
+# the container starts and the database is available
+RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
+    printf "RUN_PORT=\"\${PORT:-8000}\"\n\n" >> ./paracord_runner.sh && \
+    printf "python manage.py migrate --no-input\n" >> ./paracord_runner.sh && \
+    printf "python manage.py collectstatic --noinput\n" >> ./paracord_runner.sh && \
+    printf "gunicorn config.wsgi:application --bind \"[::]:\$RUN_PORT\"\n" >> ./paracord_runner.sh
 
-# Collect static files
-# We use a dummy secret key here because the build step shouldn't need the real one,
-# but Django throws an error if it's missing.
-RUN SECRET_KEY=dummy-key-for-build uv run python manage.py collectstatic --noinput
+# make the bash script executable
+RUN chmod +x paracord_runner.sh
 
-# Expose the port
-EXPOSE 8000
+# Clean up apt cache to reduce image size
+RUN apt-get remove --purge -y \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Run with Gunicorn
-CMD ["uv", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Run the Django project via the runtime script
+# when the container starts
+CMD ./paracord_runner.sh

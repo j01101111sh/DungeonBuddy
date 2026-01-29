@@ -94,6 +94,15 @@ if os.getenv("DATABASE_URL"):
         conn_max_age=600,
         conn_health_checks=True,
     )
+elif os.getenv("PGDATABASE"):
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ["PGDATABASE"],
+        "USER": os.environ["PGUSER"],
+        "PASSWORD": os.environ["PGPASSWORD"],
+        "HOST": os.environ["PGHOST"],
+        "PORT": os.environ["PGPORT"],
+    }
 else:
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
