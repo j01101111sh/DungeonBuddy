@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <polygon points="50,5 89,27.5 89,72.5 50,95 11,72.5 11,27.5"
+             fill="#dc3545"
+             stroke="#212529"
+             stroke-width="3"
+             stroke-linejoin="round"/>
+
+    <path d="M11,27.5 L50,50 L89,27.5" fill="none" stroke="#212529" stroke-width="2" opacity="0.5"/>
+    <path d="M50,50 L50,95" fill="none" stroke="#212529" stroke-width="2" opacity="0.5"/>
+    <path d="M11,72.5 L50,95 L89,72.5" fill="none" stroke="none"/> <text x="50" y="50"
+          font-family="sans-serif"
+          font-size="35"
+          font-weight="bold"
+          fill="white"
+          text-anchor="middle"
+          dominant-baseline="central"
+          dy="2">20</text>
+</svg>
