@@ -113,7 +113,8 @@ class CampaignCreateViewTests(TestCase):
 
     def test_create_campaign_success(self) -> None:
         """
-        Test that a campaign is created successfully with all fields.
+        Test that a campaign is created successfully with all fields
+        and redirects to the campaign detail page.
         """
         self.client.force_login(self.dm)
         data = {
@@ -125,11 +126,16 @@ class CampaignCreateViewTests(TestCase):
         }
         response = self.client.post(self.url, data)
 
-        # Check redirection to success_url (splash)
-        self.assertRedirects(response, reverse("splash"))
+        # Get the created campaign
+        campaign = Campaign.objects.get(name="New Adventure")
+
+        # Check redirection to campaign detail page
+        self.assertRedirects(
+            response,
+            reverse("campaign_detail", kwargs={"pk": campaign.pk}),
+        )
 
         # Check database
-        campaign = Campaign.objects.get(name="New Adventure")
         self.assertEqual(campaign.dungeon_master, self.dm)
         self.assertEqual(campaign.system, self.system)
         self.assertEqual(campaign.vtt_link, "https://roll20.net/join/123")

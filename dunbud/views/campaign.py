@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q, QuerySet
 from django.forms.models import BaseModelForm
 from django.http import HttpResponse
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.views.generic import CreateView, DetailView, ListView
 
 from dunbud.models import Campaign
@@ -27,7 +27,14 @@ class CampaignCreateView(LoginRequiredMixin, CreateView):
         "video_link",
     ]
     template_name = "campaign/campaign_form.html"
-    success_url = reverse_lazy("splash")
+
+    def get_success_url(self) -> str:
+        """
+        Redirects to the detail page of the created campaign.
+        """
+        if self.object:
+            return reverse("campaign_detail", kwargs={"pk": self.object.pk})
+        return reverse("splash")
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         """
