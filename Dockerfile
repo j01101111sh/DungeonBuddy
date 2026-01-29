@@ -20,10 +20,6 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && apt-get install -y \
     # for postgres
     libpq-dev \
-    # for Pillow
-    libjpeg-dev \
-    # for CairoSVG
-    libcairo2 \
     # other
     gcc \
     && rm -rf /var/lib/apt/lists/*
@@ -42,11 +38,6 @@ COPY . /code
 
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
-
-# database isn't available during build
-# run any other commands that do not need the database
-# such as:
-# RUN python manage.py collectstatic --noinput
 
 # create a bash script to run the Django project
 # this script will execute at runtime when
