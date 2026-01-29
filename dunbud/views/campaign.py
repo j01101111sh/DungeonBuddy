@@ -5,7 +5,7 @@ from django.db.models import QuerySet
 from django.forms.models import BaseModelForm
 from django.http import Http404, HttpResponse
 from django.urls import reverse
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from dunbud.models import Campaign
 
@@ -138,3 +138,32 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             user,
         )
         return False
+
+
+class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    View to edit an existing campaign.
+    Restricted to the Dungeon Master.
+    """
+
+    model = Campaign
+    fields = [
+        "name",
+        "description",
+        "system",
+        "vtt_link",
+        "video_link",
+        "players",  # Allow editing players to trigger player feed items
+    ]
+    template_name = "campaign/campaign_form.html"
+    context_object_name = "campaign"
+
+    def test_func(self) -> bool:
+        """
+        Only the Dungeon Master can edit the campaign.
+        """
+        campaign = self.get_object()
+        return bool(campaign.dungeon_master == self.request.user)
+
+    def get_success_url(self) -> str:
+        return reverse("campaign_detail", kwargs={"pk": self.object.pk})

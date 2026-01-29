@@ -11,6 +11,8 @@
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                         <h1 class="h3 mb-0">{{ campaign.name }}</h1>
                         {% if campaign.system %}<span class="badge bg-light text-primary">{{ campaign.system.name }}</span>{% endif %}
+                        <a href="{% url 'campaign_edit' campaign.pk %}"
+                           class="btn btn-sm btn-light text-primary">Edit</a>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title text-muted mb-3">Dungeon Master: {{ campaign.dungeon_master.username }}</h5>
@@ -53,6 +55,23 @@
                     <a href="{% if campaign.dungeon_master == request.user %}{% url 'campaign_managed' %}{% else %}{% url 'campaign_joined' %}{% endif %}"
                        class="btn btn-link">Back to My Campaigns</a>
                 </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h2 class="h5 mb-0">Party Feed</h2>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for item in campaign.feed_items.all %}
+                        <li class="list-group-item">
+                            <small class="text-muted d-block">{{ item.created_at|date:"M d, Y H:i" }}</small>
+                            {{ item.message }}
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted fst-italic">No recent activity.</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
