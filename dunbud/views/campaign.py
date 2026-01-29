@@ -99,6 +99,17 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     template_name = "campaign/campaign_detail.html"
     context_object_name = "campaign"
 
+    def get_queryset(self) -> QuerySet[Campaign]:
+        """
+        Optimize database queries by pre-fetching related objects.
+        """
+        return (
+            super()
+            .get_queryset()
+            .select_related("dungeon_master", "system")
+            .prefetch_related("players")
+        )
+
     def test_func(self) -> bool:
         """
         Checks if the current user is a member of the campaign (DM or Player).
