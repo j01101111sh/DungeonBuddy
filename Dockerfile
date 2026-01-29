@@ -46,10 +46,7 @@ RUN pip install -r /tmp/requirements.txt
 # database isn't available during build
 # run any other commands that do not need the database
 # such as:
-# RUN python manage.py collectstatic --noinput
-
-# set the Django default project name
-ARG PROJ_NAME="config"
+RUN python manage.py collectstatic --noinput
 
 # create a bash script to run the Django project
 # this script will execute at runtime when
@@ -57,7 +54,7 @@ ARG PROJ_NAME="config"
 RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
     printf "RUN_PORT=\"\${PORT:-8000}\"\n\n" >> ./paracord_runner.sh && \
     printf "python manage.py migrate --no-input\n" >> ./paracord_runner.sh && \
-    printf "gunicorn ${PROJ_NAME}.wsgi:application --bind \"[::]:\$RUN_PORT\"\n" >> ./paracord_runner.sh
+    printf "gunicorn config.wsgi:application --bind \"[::]:\$RUN_PORT\"\n" >> ./paracord_runner.sh
 
 # make the bash script executable
 RUN chmod +x paracord_runner.sh
