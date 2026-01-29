@@ -98,7 +98,7 @@ repos:
         stages: [pre-push]
       - id: check-dependencies
         name: Check for updated dependencies
-        entry: uv export --format requirements.txt --no-dev --group prod --output-file requirements.txt --no-hashes
+        entry: uv export --format requirements.txt --no-dev --group prod --output-file requirements.txt --no-hashes --freeze
         language: system
         pass_filenames: false
         stages: [pre-push]
