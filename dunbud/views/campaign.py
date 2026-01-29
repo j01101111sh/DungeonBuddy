@@ -1,11 +1,11 @@
 import logging
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import QuerySet
 from django.forms.models import BaseModelForm
 from django.http import HttpResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView
+from django.views.generic import CreateView, DetailView, ListView
 
 from dunbud.models import Campaign
 
@@ -87,3 +87,34 @@ class JoinedCampaignListView(LoginRequiredMixin, ListView):
             return Campaign.objects.none()
 
         return Campaign.objects.filter(players=self.request.user)
+
+
+class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """
+    View to display the details of a specific campaign.
+    Restricted to the Dungeon Master and joined players.
+    """
+
+    model = Campaign
+    template_name = "campaign/campaign_detail.html"
+    context_object_name = "campaign"
+
+    def test_func(self) -> bool:
+        """
+        Checks if the current user is a member of the campaign (DM or Player).
+        """
+        campaign = self.get_object()
+        user = self.request.user  # type: ignore[misc]
+
+        is_dm = campaign.dungeon_master == user
+        is_player = campaign.players.filter(pk=user.pk).exists()
+
+        if is_dm or is_player:
+            return True
+
+        logger.warning(
+            "Unauthorized access attempt to campaign %s by user %s",
+            campaign.pk,
+            user,
+        )
+        return False

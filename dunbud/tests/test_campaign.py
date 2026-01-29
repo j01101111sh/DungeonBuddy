@@ -247,3 +247,72 @@ class CampaignListViewTests(TestCase):
         """
         response = self.client.get(self.joined_url)
         self.assertRedirects(response, f"/users/login/?next={self.joined_url}")
+
+
+class CampaignDetailViewTests(TestCase):
+    def setUp(self) -> None:
+        self.dm, _ = UserFactory.create(username="dm_user")
+        self.player, _ = UserFactory.create(username="player_user")
+        self.outsider, _ = UserFactory.create(username="outsider_user")
+        self.system = TabletopSystem.objects.create(name="D&D 5e")
+
+        self.campaign = Campaign.objects.create(
+            name="Epic Quest",
+            dungeon_master=self.dm,
+            description="A journey to the mountain.",
+            system=self.system,
+            vtt_link="https://foundry.example.com",
+        )
+        self.campaign.players.add(self.player)
+        self.url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
+
+    def test_access_anonymous(self) -> None:
+        """
+        Test that anonymous users are redirected to login.
+        """
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"/users/login/?next={self.url}")
+
+    def test_access_dm(self) -> None:
+        """
+        Test that the Dungeon Master can view the campaign details.
+        """
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/campaign_detail.html")
+        self.assertContains(response, "Epic Quest")
+        self.assertContains(response, "https://foundry.example.com")
+
+    def test_access_player(self) -> None:
+        """
+        Test that a joined player can view the campaign details.
+        """
+        self.client.force_login(self.player)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/campaign_detail.html")
+        self.assertContains(response, "Epic Quest")
+
+    def test_access_outsider_denied(self) -> None:
+        """
+        Test that a user who is neither DM nor player receives a 403 Forbidden.
+        """
+        self.client.force_login(self.outsider)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_unauthorized_access_logging(self) -> None:
+        """
+        Test that unauthorized access attempts are logged.
+        """
+        self.client.force_login(self.outsider)
+        with self.assertLogs("dunbud.views", level="WARNING") as cm:
+            self.client.get(self.url)
+            self.assertTrue(
+                any(
+                    f"Unauthorized access attempt to campaign {self.campaign.pk} by user outsider_user"
+                    in m
+                    for m in cm.output
+                ),
+            )

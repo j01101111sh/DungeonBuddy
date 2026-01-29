@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     CampaignCreateView,
+    CampaignDetailView,
     JoinedCampaignListView,
     ManagedCampaignListView,
     SplashView,
@@ -10,6 +11,11 @@ from .views import (
 urlpatterns = [
     path("", SplashView.as_view(), name="splash"),
     path("campaign/new/", CampaignCreateView.as_view(), name="campaign_create"),
+    path(
+        "campaign/<uuid:pk>/",
+        CampaignDetailView.as_view(),
+        name="campaign_detail",
+    ),
     path(
         "campaigns/managed/",
         ManagedCampaignListView.as_view(),
