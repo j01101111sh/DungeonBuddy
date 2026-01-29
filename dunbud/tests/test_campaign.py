@@ -179,7 +179,7 @@ class CampaignCreateViewTests(TestCase):
     def test_delete_dm_user(self) -> None:
         """
         Test that deleting a user who is the dungeon master of a campaign
-        deletes the campaign (cascade delete).
+        is prevented and raises a ProtectedError.
         """
         campaign = Campaign.objects.create(
             name="DM Deletion Test",
