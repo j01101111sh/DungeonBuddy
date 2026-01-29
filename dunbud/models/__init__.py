@@ -1,3 +1,3 @@
-from .campaign import Campaign
+from .campaign import Campaign, TabletopSystem
 
-__all__ = ["Campaign"]
+__all__ = ["Campaign", "TabletopSystem"]

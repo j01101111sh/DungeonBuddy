@@ -1,5 +1,3 @@
-# dunbud/views/campaign.py
-
 import logging
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -21,7 +19,13 @@ class CampaignCreateView(LoginRequiredMixin, CreateView):
     """
 
     model = Campaign
-    fields = ["name", "description"]
+    fields = [
+        "name",
+        "description",
+        "system",
+        "vtt_link",
+        "video_link",
+    ]
     template_name = "campaign/campaign_form.html"
     success_url = reverse_lazy("splash")
 
@@ -60,7 +64,6 @@ class ManagedCampaignListView(LoginRequiredMixin, ListView):
         """
         Returns the campaigns where the current user is the Dungeon Master.
         """
-        # Type narrowing: LoginRequiredMixin ensures user is authenticated
         if not self.request.user.is_authenticated:
             return Campaign.objects.none()
 
@@ -80,7 +83,6 @@ class JoinedCampaignListView(LoginRequiredMixin, ListView):
         """
         Returns the campaigns where the current user is a player.
         """
-        # Type narrowing: LoginRequiredMixin ensures user is authenticated
         if not self.request.user.is_authenticated:
             return Campaign.objects.none()
 
