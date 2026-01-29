@@ -96,3 +96,9 @@ repos:
         types: [python]
         pass_filenames: false
         stages: [pre-push]
+      - id: check-dependencies
+        name: Check for updated dependencies
+        entry: uv export --format requirements.txt --no-dev --group prod --output-file requirements.txt --no-hashes
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
