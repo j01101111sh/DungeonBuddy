@@ -9,6 +9,39 @@ from django.utils.translation import gettext_lazy as _
 logger = logging.getLogger(__name__)
 
 
+class TabletopSystem(models.Model):
+    """
+    Model representing a tabletop roleplaying game system (e.g., D&D 5e, Pathfinder).
+    """
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text=_("The unique identifier for the system."),
+    )
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text=_("The name of the tabletop system."),
+    )
+    description = models.TextField(
+        blank=True,
+        help_text=_("A description of the system."),
+    )
+
+    class Meta:
+        verbose_name = _("Tabletop System")
+        verbose_name_plural = _("Tabletop Systems")
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        """
+        Returns the string representation of the system (its name).
+        """
+        return self.name
+
+
 class Campaign(models.Model):
     """
     Model representing a tabletop roleplaying campaign.
@@ -27,6 +60,14 @@ class Campaign(models.Model):
     description = models.TextField(
         blank=True,
         help_text=_("A description of the campaign and its adventures."),
+    )
+    system = models.ForeignKey(
+        TabletopSystem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="campaigns",
+        help_text=_("The tabletop system used for this campaign."),
     )
     dungeon_master = models.ForeignKey(
         settings.AUTH_USER_MODEL,
