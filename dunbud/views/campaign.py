@@ -1,11 +1,11 @@
 import logging
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import QuerySet
 from django.forms.models import BaseModelForm
-from django.http import HttpResponse
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView
+from django.http import Http404, HttpResponse
+from django.urls import reverse
+from django.views.generic import CreateView, DetailView, ListView
 
 from dunbud.models import Campaign
 
@@ -27,7 +27,14 @@ class CampaignCreateView(LoginRequiredMixin, CreateView):
         "video_link",
     ]
     template_name = "campaign/campaign_form.html"
-    success_url = reverse_lazy("splash")
+
+    def get_success_url(self) -> str:
+        """
+        Redirects to the detail page of the created campaign.
+        """
+        if self.object:
+            return reverse("campaign_detail", kwargs={"pk": self.object.pk})
+        return reverse("splash")
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         """
@@ -87,3 +94,47 @@ class JoinedCampaignListView(LoginRequiredMixin, ListView):
             return Campaign.objects.none()
 
         return Campaign.objects.filter(players=self.request.user)
+
+
+class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """
+    View to display the details of a specific campaign.
+    Restricted to the Dungeon Master and joined players.
+    """
+
+    model = Campaign
+    template_name = "campaign/campaign_detail.html"
+    context_object_name = "campaign"
+
+    def get_queryset(self) -> QuerySet[Campaign]:
+        """
+        Optimize database queries by pre-fetching related objects.
+        """
+        return (
+            super()
+            .get_queryset()
+            .select_related("dungeon_master", "system")
+            .prefetch_related("players")
+        )
+
+    def test_func(self) -> bool:
+        """
+        Checks if the current user is a member of the campaign (DM or Player).
+        """
+        try:
+            campaign = self.get_object()
+        except Http404:
+            return True
+
+        user = self.request.user  # type: ignore[misc]
+
+        if campaign.dungeon_master == user or user in campaign.players.all():
+            return True
+
+        # Log unauthorized access attempts to existing campaigns.
+        logger.warning(
+            "Unauthorized access attempt to campaign %s by user %s",
+            campaign.pk,
+            user,
+        )
+        return False

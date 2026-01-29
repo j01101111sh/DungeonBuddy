@@ -113,7 +113,8 @@ class CampaignCreateViewTests(TestCase):
 
     def test_create_campaign_success(self) -> None:
         """
-        Test that a campaign is created successfully with all fields.
+        Test that a campaign is created successfully with all fields
+        and redirects to the campaign detail page.
         """
         self.client.force_login(self.dm)
         data = {
@@ -125,11 +126,16 @@ class CampaignCreateViewTests(TestCase):
         }
         response = self.client.post(self.url, data)
 
-        # Check redirection to success_url (splash)
-        self.assertRedirects(response, reverse("splash"))
+        # Get the created campaign
+        campaign = Campaign.objects.get(name="New Adventure")
+
+        # Check redirection to campaign detail page
+        self.assertRedirects(
+            response,
+            reverse("campaign_detail", kwargs={"pk": campaign.pk}),
+        )
 
         # Check database
-        campaign = Campaign.objects.get(name="New Adventure")
         self.assertEqual(campaign.dungeon_master, self.dm)
         self.assertEqual(campaign.system, self.system)
         self.assertEqual(campaign.vtt_link, "https://roll20.net/join/123")
@@ -247,3 +253,99 @@ class CampaignListViewTests(TestCase):
         """
         response = self.client.get(self.joined_url)
         self.assertRedirects(response, f"/users/login/?next={self.joined_url}")
+
+
+class CampaignDetailViewTests(TestCase):
+    def setUp(self) -> None:
+        self.dm, _ = UserFactory.create(username="dm_user_detail")
+        self.player, _ = UserFactory.create(username="player_user_detail")
+        self.outsider, _ = UserFactory.create(username="outsider_user_detail")
+        self.system = TabletopSystem.objects.create(name="D&D 5e")
+
+        self.campaign = Campaign.objects.create(
+            name="Epic Quest",
+            dungeon_master=self.dm,
+            description="A journey to the mountain.",
+            system=self.system,
+            vtt_link="https://foundry.example.com",
+            video_link="https://zoom.us/j/123456",
+        )
+        self.campaign.players.add(self.player)
+        self.url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
+
+    def test_access_anonymous(self) -> None:
+        """
+        Test that anonymous users are redirected to login.
+        """
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"/users/login/?next={self.url}")
+
+    def test_access_dm(self) -> None:
+        """
+        Test that the Dungeon Master can view the campaign details.
+        """
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/campaign_detail.html")
+        self.assertContains(response, "Epic Quest")
+
+    def test_access_player(self) -> None:
+        """
+        Test that a joined player can view the campaign details.
+        """
+        self.client.force_login(self.player)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/campaign_detail.html")
+        self.assertContains(response, "Epic Quest")
+
+    def test_access_outsider_denied(self) -> None:
+        """
+        Test that a user who is neither DM nor player receives a 403 Forbidden.
+        """
+        self.client.force_login(self.outsider)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_links_display(self) -> None:
+        """
+        Test that VTT and video links are displayed when present.
+        """
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+
+        self.assertContains(response, "https://foundry.example.com")
+        self.assertContains(response, "https://zoom.us/j/123456")
+        self.assertContains(response, "Virtual Tabletop")
+        self.assertContains(response, "Video Conference")
+
+    def test_links_hidden_when_empty(self) -> None:
+        """
+        Test that VTT and video links are not displayed when empty.
+        """
+        # Clear the links
+        self.campaign.vtt_link = ""
+        self.campaign.video_link = ""
+        self.campaign.save()
+
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+
+        self.assertNotContains(response, "Virtual Tabletop")
+        self.assertNotContains(response, "Video Conference")
+
+    def test_unauthorized_access_logging(self) -> None:
+        """
+        Test that unauthorized access attempts are logged.
+        """
+        self.client.force_login(self.outsider)
+        with self.assertLogs("dunbud.views", level="WARNING") as cm:
+            self.client.get(self.url)
+            self.assertTrue(
+                any(
+                    f"Unauthorized access attempt to campaign {self.campaign.pk} by user outsider_user"
+                    in m
+                    for m in cm.output
+                ),
+            )

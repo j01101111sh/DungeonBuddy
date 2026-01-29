@@ -9,7 +9,8 @@
         {% if campaigns %}
             <div class="list-group">
                 {% for campaign in campaigns %}
-                    <a href="#" class="list-group-item list-group-item-action">
+                    <a href="{% url 'campaign_detail' campaign.pk %}"
+                       class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1">{{ campaign.name }}</h5>
                             <small class="text-muted">{{ campaign.updated_at|date:"M d, Y" }}</small>
