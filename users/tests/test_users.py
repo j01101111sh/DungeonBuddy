@@ -2,6 +2,7 @@ import secrets
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 
 from config.tests.factories import UserFactory
 
@@ -64,13 +65,84 @@ class CustomUserModelTests(TestCase):
 class SignUpViewTests(TestCase):
     def test_user_creation_logging(self) -> None:
         """Test that user creation triggers a log message via signals."""
-        # assertLogs captures logs from the 'users.signals' logger
         with self.assertLogs("users.signals", level="INFO") as cm:
             _ = UserFactory.create(
                 username="signal_test_user",
             )
-
-            # Verify the log message was captured
             self.assertTrue(
                 any("User created (signal): signal_test_user" in o for o in cm.output),
             )
+
+    def test_signup_page_renders(self) -> None:
+        """Test that the signup page renders correctly."""
+        response = self.client.get(reverse("signup"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/signup.html")
+        self.assertContains(response, "Sign Up")
+
+    def test_signup_successful(self) -> None:
+        """Test that a user can sign up successfully."""
+        url = reverse("signup")
+        data = {
+            "username": "new_signup_user",
+            "email": "new@example.com",
+            # Django's UserCreationForm requires two password fields
+            "password1": "ComplexPass123!",
+            "password2": "ComplexPass123!",
+            "bio": "New adventurer",
+            "location": "The Shire",
+            "website": "http://shire.com",
+        }
+        response = self.client.post(url, data)
+
+        # Should redirect to login page upon success
+        self.assertRedirects(response, reverse("login"))
+
+        # Verify user was created
+        User = get_user_model()
+        self.assertTrue(User.objects.filter(username="new_signup_user").exists())
+
+
+class LoginViewTests(TestCase):
+    def test_login_page_renders(self) -> None:
+        """Test that the login page renders correctly."""
+        response = self.client.get(reverse("login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/login.html")
+        self.assertContains(response, "Log In")
+
+    def test_login_successful(self) -> None:
+        """Test that a user can log in with valid credentials."""
+        # Create a user using the factory
+        user, password = UserFactory.create(username="login_user")
+
+        url = reverse("login")
+        data = {
+            "username": user.username,
+            "password": password,
+        }
+        response = self.client.post(url, data)
+
+        # Should redirect to LOGIN_REDIRECT_URL (default "/")
+        self.assertRedirects(response, "/")
+
+        # Check that the user is authenticated in the session
+        self.assertTrue(int(self.client.session["_auth_user_id"]) == user.pk)
+
+    def test_login_failure(self) -> None:
+        """Test that login fails with invalid credentials."""
+        user, _ = UserFactory.create(username="fail_user")
+
+        url = reverse("login")
+        data = {
+            "username": user.username,
+            "password": secrets.token_urlsafe(16),
+        }
+        response = self.client.post(url, data)
+
+        # Should return 200 (re-render form) instead of redirect
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/login.html")
+
+        # Ensure user is NOT logged in
+        self.assertNotIn("_auth_user_id", self.client.session)
