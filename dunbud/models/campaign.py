@@ -71,7 +71,7 @@ class Campaign(models.Model):
     )
     dungeon_master = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="managed_campaigns",
         help_text=_("The Game Master/Dungeon Master of the campaign."),
     )
