@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.forms.models import BaseModelForm
 from django.http import HttpResponse
 from django.urls import reverse_lazy
@@ -114,18 +114,25 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         """
         Checks if the current user is a member of the campaign (DM or Player).
         """
-        campaign = self.get_object()
         user = self.request.user  # type: ignore[misc]
+        pk = self.kwargs.get("pk")
 
-        is_dm = campaign.dungeon_master == user
-        is_player = campaign.players.filter(pk=user.pk).exists()
+        has_access = (
+            Campaign.objects.filter(pk=pk)
+            .filter(
+                Q(dungeon_master=user) | Q(players=user),
+            )
+            .exists()
+        )
 
-        if is_dm or is_player:
+        if has_access:
             return True
 
-        logger.warning(
-            "Unauthorized access attempt to campaign %s by user %s",
-            campaign.pk,
-            user,
-        )
+        # If access is denied, log it, but only if the campaign actually exists.
+        if Campaign.objects.filter(pk=pk).exists():
+            logger.warning(
+                "Unauthorized access attempt to campaign %s by user %s",
+                pk,
+                user,
+            )
         return False
