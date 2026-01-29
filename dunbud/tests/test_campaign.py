@@ -1,3 +1,5 @@
+# dunbud/tests/test_campaign.py
+
 import uuid
 
 from django.contrib.auth import get_user_model
@@ -11,6 +13,7 @@ User = get_user_model()
 
 
 class CampaignModelTests(TestCase):
+    # ... existing tests ...
     def setUp(self) -> None:
         self.dm, _ = UserFactory.create(username="dm_user")
         self.player, _ = UserFactory.create(username="player_user")
@@ -66,6 +69,7 @@ class CampaignModelTests(TestCase):
 
 
 class CampaignCreateViewTests(TestCase):
+    # ... existing tests ...
     def setUp(self) -> None:
         self.user, _ = UserFactory.create(username="testuser")
         self.url = reverse("campaign_create")
@@ -121,3 +125,58 @@ class CampaignCreateViewTests(TestCase):
                     for m in cm.output
                 ),
             )
+
+
+class CampaignListViewTests(TestCase):
+    def setUp(self) -> None:
+        self.user_dm, _ = UserFactory.create(username="dm")
+        self.user_player, _ = UserFactory.create(username="player")
+        self.managed_url = reverse("campaign_managed")
+        self.joined_url = reverse("campaign_joined")
+
+        # Create campaigns
+        self.campaign1 = Campaign.objects.create(
+            name="DM Campaign",
+            dungeon_master=self.user_dm,
+        )
+        self.campaign2 = Campaign.objects.create(
+            name="Player Campaign",
+            dungeon_master=self.user_player,
+        )
+        self.campaign2.players.add(self.user_dm)
+
+    def test_managed_list_view(self) -> None:
+        """
+        Test that the managed list view returns only campaigns the user DMs.
+        """
+        self.client.force_login(self.user_dm)
+        response = self.client.get(self.managed_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/managed_campaign_list.html")
+        self.assertContains(response, "DM Campaign")
+        self.assertNotContains(response, "Player Campaign")
+
+    def test_joined_list_view(self) -> None:
+        """
+        Test that the joined list view returns only campaigns the user is a player in.
+        """
+        self.client.force_login(self.user_dm)
+        response = self.client.get(self.joined_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/joined_campaign_list.html")
+        self.assertContains(response, "Player Campaign")
+        self.assertNotContains(response, "DM Campaign")
+
+    def test_managed_list_anonymous(self) -> None:
+        """
+        Test that anonymous users are redirected from managed list.
+        """
+        response = self.client.get(self.managed_url)
+        self.assertRedirects(response, f"/users/login/?next={self.managed_url}")
+
+    def test_joined_list_anonymous(self) -> None:
+        """
+        Test that anonymous users are redirected from joined list.
+        """
+        response = self.client.get(self.joined_url)
+        self.assertRedirects(response, f"/users/login/?next={self.joined_url}")

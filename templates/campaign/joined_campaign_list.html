@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Joined Campaigns - Dungeon Buddy
+{% endblock title %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Joined Campaigns</h2>
+        {% if campaigns %}
+            <div class="list-group">
+                {% for campaign in campaigns %}
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ campaign.name }}</h5>
+                            <small class="text-muted">DM: {{ campaign.dungeon_master.username }}</small>
+                        </div>
+                        <p class="mb-1">{{ campaign.description|truncatewords:20 }}</p>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">You have not joined any campaigns yet.</p>
+        {% endif %}
+    </div>
+{% endblock content %}
