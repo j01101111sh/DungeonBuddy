@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Railway setup
 ARG SECRET_KEY
+ARG PROJ_NAME="config"
 
 # Configure env
 ENV PYTHONUNBUFFERED=1 \
@@ -39,9 +40,26 @@ RUN uv sync --frozen --no-dev --group prod
 EXPOSE 8000
 
 # Collect static files
-# We use a dummy secret key here because the build step shouldn't need the real one,
-# but Django throws an error if it's missing.
 RUN uv run python manage.py collectstatic --noinput
 
+# create a bash script to run the Django project
+# this script will execute at runtime when
+# the container starts and the database is available
+RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
+    printf "RUN_PORT=\"\${PORT:-8000}\"\n\n" >> ./paracord_runner.sh && \
+    printf "uv run python manage.py migrate --no-input\n" >> ./paracord_runner.sh && \
+    printf "uv run gunicorn ${PROJ_NAME}.wsgi:application --bind \"[::]:\$RUN_PORT\"\n" >> ./paracord_runner.sh
+
+# make the bash script executable
+RUN chmod +x paracord_runner.sh
+
+# Clean up apt cache to reduce image size
+RUN apt-get remove --purge -y \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Run with Gunicorn
-CMD ["uv", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Run the Django project via the runtime script
+# when the container starts
+CMD ./paracord_runner.sh
