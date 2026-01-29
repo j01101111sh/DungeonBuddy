@@ -1,4 +1,4 @@
-ARG PYTHON_VERSION=3.14-slim-bullseye
+ARG PYTHON_VERSION=3.14-slim-bookworm
 FROM python:${PYTHON_VERSION}
 
 # Create a virtual environment
