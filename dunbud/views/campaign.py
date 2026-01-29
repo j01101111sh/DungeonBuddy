@@ -1,9 +1,9 @@
 import logging
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 from django.forms.models import BaseModelForm
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, ListView
 
@@ -121,25 +121,20 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         """
         Checks if the current user is a member of the campaign (DM or Player).
         """
-        user = self.request.user  # type: ignore[misc]
-        pk = self.kwargs.get("pk")
-
-        has_access = (
-            Campaign.objects.filter(pk=pk)
-            .filter(
-                Q(dungeon_master=user) | Q(players=user),
-            )
-            .exists()
-        )
-
-        if has_access:
+        try:
+            campaign = self.get_object()
+        except Http404:
             return True
 
-        # If access is denied, log it, but only if the campaign actually exists.
-        if Campaign.objects.filter(pk=pk).exists():
-            logger.warning(
-                "Unauthorized access attempt to campaign %s by user %s",
-                pk,
-                user,
-            )
+        user = self.request.user  # type: ignore[misc]
+
+        if campaign.dungeon_master == user or user in campaign.players.all():
+            return True
+
+        # Log unauthorized access attempts to existing campaigns.
+        logger.warning(
+            "Unauthorized access attempt to campaign %s by user %s",
+            campaign.pk,
+            user,
+        )
         return False
