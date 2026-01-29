@@ -81,6 +81,14 @@ class Campaign(models.Model):
         blank=True,
         help_text=_("The players who are members of this campaign."),
     )
+    vtt_link = models.URLField(
+        blank=True,
+        help_text=_("Link to the Virtual Tabletop (e.g., Foundry, Roll20)."),
+    )
+    video_link = models.URLField(
+        blank=True,
+        help_text=_("Link to the video conference (e.g., Zoom, Discord)."),
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text=_("The date and time when the campaign was created."),
