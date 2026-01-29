@@ -257,9 +257,9 @@ class CampaignListViewTests(TestCase):
 
 class CampaignDetailViewTests(TestCase):
     def setUp(self) -> None:
-        self.dm, _ = UserFactory.create(username="dm_user")
-        self.player, _ = UserFactory.create(username="player_user")
-        self.outsider, _ = UserFactory.create(username="outsider_user")
+        self.dm, _ = UserFactory.create(username="dm_user_detail")
+        self.player, _ = UserFactory.create(username="player_user_detail")
+        self.outsider, _ = UserFactory.create(username="outsider_user_detail")
         self.system = TabletopSystem.objects.create(name="D&D 5e")
 
         self.campaign = Campaign.objects.create(
@@ -268,6 +268,7 @@ class CampaignDetailViewTests(TestCase):
             description="A journey to the mountain.",
             system=self.system,
             vtt_link="https://foundry.example.com",
+            video_link="https://zoom.us/j/123456",
         )
         self.campaign.players.add(self.player)
         self.url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
@@ -288,7 +289,6 @@ class CampaignDetailViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "campaign/campaign_detail.html")
         self.assertContains(response, "Epic Quest")
-        self.assertContains(response, "https://foundry.example.com")
 
     def test_access_player(self) -> None:
         """
@@ -307,6 +307,33 @@ class CampaignDetailViewTests(TestCase):
         self.client.force_login(self.outsider)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 403)
+
+    def test_links_display(self) -> None:
+        """
+        Test that VTT and video links are displayed when present.
+        """
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+
+        self.assertContains(response, "https://foundry.example.com")
+        self.assertContains(response, "https://zoom.us/j/123456")
+        self.assertContains(response, "Virtual Tabletop")
+        self.assertContains(response, "Video Conference")
+
+    def test_links_hidden_when_empty(self) -> None:
+        """
+        Test that VTT and video links are not displayed when empty.
+        """
+        # Clear the links
+        self.campaign.vtt_link = ""
+        self.campaign.video_link = ""
+        self.campaign.save()
+
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+
+        self.assertNotContains(response, "Virtual Tabletop")
+        self.assertNotContains(response, "Video Conference")
 
     def test_unauthorized_access_logging(self) -> None:
         """
