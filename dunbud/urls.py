@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     CampaignCreateView,
     CampaignDetailView,
+    CampaignUpdateView,
     JoinedCampaignListView,
     ManagedCampaignListView,
     SplashView,
@@ -15,6 +16,11 @@ urlpatterns = [
         "campaign/<uuid:pk>/",
         CampaignDetailView.as_view(),
         name="campaign_detail",
+    ),
+    path(
+        "campaign/<uuid:pk>/edit/",
+        CampaignUpdateView.as_view(),
+        name="campaign_edit",
     ),
     path(
         "campaigns/managed/",

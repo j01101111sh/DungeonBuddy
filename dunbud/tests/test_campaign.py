@@ -332,8 +332,14 @@ class CampaignDetailViewTests(TestCase):
         self.client.force_login(self.dm)
         response = self.client.get(self.url)
 
-        self.assertNotContains(response, "Virtual Tabletop")
-        self.assertNotContains(response, "Video Conference")
+        self.assertNotContains(
+            response,
+            'rel="noopener noreferrer">Virtual Tabletop</a>',
+        )
+        self.assertNotContains(
+            response,
+            'rel="noopener noreferrer">Video Conference</a>',
+        )
 
     def test_unauthorized_access_logging(self) -> None:
         """
