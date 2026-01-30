@@ -18,8 +18,13 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     """
     Management command to populate the database with development data.
-    Creates 20 users and 20 campaigns.
-    Every user is a DM for 1 campaign and a player in 3 other campaigns.
+
+    Generates:
+    - 20 Users (test users).
+    - 20 Campaigns (1 per test user as DM).
+    - Associations:
+        - Each test user joins 3 other campaigns as a player.
+        - The 'dev' user joins ALL 20 campaigns as a player.
     """
 
     help = "Generates development data: 20 users, 20 campaigns, and party associations."
@@ -39,8 +44,9 @@ class Command(BaseCommand):
             with transaction.atomic():
                 self._generate_data()
         except Exception as e:
-            logger.error("Failed to generate data: %s", e)
+            logger.exception("Failed to generate data")
             self.stdout.write(self.style.ERROR(f"Error generating data: {e}"))
+            # Re-raise to ensure non-zero exit code if run in CI/CD or scripts
             raise e
 
         self.stdout.write(
@@ -52,6 +58,20 @@ class Command(BaseCommand):
         """
         Internal method to handle the creation logic to ensure atomicity.
         """
+        # 0. Retrieve or Create the 'dev' user
+        # We assume dev_setup.sh created it, but we get_or_create to be safe.
+        dev_user, _ = User.objects.get_or_create(
+            username="dev",
+            defaults={
+                "email": "dev@dev.com",
+                "is_staff": True,
+                "is_superuser": False,
+            },
+        )
+        if not dev_user.has_usable_password():
+            dev_user.set_password("dev")
+            dev_user.save()
+
         # 1. Ensure a TabletopSystem exists
         system, _ = TabletopSystem.objects.get_or_create(
             name="Dungeons & Dragons 5e",
@@ -59,15 +79,14 @@ class Command(BaseCommand):
         )
 
         users = []
-        campaigns = []
+        campaigns: list[Campaign] = []
         secure_random = secrets.SystemRandom()
 
-        # 2. Create 20 Users
+        # 2. Create 20 Test Users
         for i in range(1, 21):
             username = f"user_{i}"
             email = f"user_{i}@example.com"
-            # In a real scenario, use a secure password. For dev data, a known pattern is often useful.
-            # Using secrets to generate a random component for the password to satisfy requirements.
+            # Secure random suffix for password, though strictly not necessary for dev data, it's good practice.
             password_suffix = secrets.token_hex(4)
             password = f"password_{i}_{password_suffix}"
 
@@ -85,8 +104,8 @@ class Command(BaseCommand):
                 logger.debug("Created user: %s", username)
             users.append(user)
 
-        # 3. Create 20 Campaigns (1 per user as DM)
-        for _, user in enumerate(users):
+        # 3. Create 20 Campaigns (1 per test user as DM)
+        for _i, user in enumerate(users):
             campaign_name = f"Campaign of {user.username}"
             campaign, created = Campaign.objects.get_or_create(
                 name=campaign_name,
@@ -106,19 +125,29 @@ class Command(BaseCommand):
                 )
             campaigns.append(campaign)
 
-        # 4. Assign Players (Each user joins 3 campaigns they do not DM)
+        # 4. Assign Players
         for i, user in enumerate(users):
-            # The user DMs the campaign at index i.
+            # A. Each test user joins 3 campaigns they do not DM.
             # We need to pick 3 indices from 0..19 excluding i.
             available_indices = [x for x in range(len(campaigns)) if x != i]
 
-            # Use secrets.SystemRandom for secure choice (prefer secrets over random)
+            # Use secrets.SystemRandom for secure choice
             selected_indices = secure_random.sample(available_indices, 3)
 
             for idx in selected_indices:
-                campaign = campaigns[idx]
-                campaign.players.add(user)
-                logger.debug("User %s joined campaign %s", user.username, campaign.name)
+                target_campaign = campaigns[idx]
+                target_campaign.players.add(user)
+                logger.debug(
+                    "User %s joined campaign %s",
+                    user.username,
+                    target_campaign.name,
+                )
+
+        # 5. Add Dev User to ALL Campaigns
+        for campaign in campaigns:
+            campaign.players.add(dev_user)
+
+        logger.info("Dev user 'dev' added to all %d campaigns.", len(campaigns))
 
         logger.info(
             "Generated %d users and %d campaigns with associations.",
