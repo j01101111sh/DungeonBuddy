@@ -5,8 +5,8 @@ from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
 
-from config.tests.factories import UserFactory
-from dunbud.models import Campaign, TabletopSystem
+from config.tests.factories import TabletopSystemFactory, UserFactory
+from dunbud.models import Campaign
 
 User = get_user_model()
 
@@ -15,11 +15,7 @@ class CampaignModelTests(TestCase):
     def setUp(self) -> None:
         self.dm, _ = UserFactory.create(username="dm_user")
         self.player, _ = UserFactory.create(username="player_user")
-        self.system = TabletopSystem.objects.create(
-            name="Test System 123",
-            description="A system for testing",
-            short_name="Test System 123",
-        )
+        self.system = TabletopSystemFactory.create()
 
     def test_create_campaign(self) -> None:
         """
@@ -94,10 +90,7 @@ class CampaignCreateViewTests(TestCase):
         self.dm, _ = UserFactory.create(username="dm_user")
         self.player, _ = UserFactory.create(username="player_user")
         self.url = reverse("campaign_create")
-        self.system = TabletopSystem.objects.create(
-            name="Test System 123",
-            short_name="Test System 123",
-        )
+        self.system = TabletopSystemFactory.create()
 
     def test_create_campaign_view_access_anonymous(self) -> None:
         """
@@ -264,10 +257,7 @@ class CampaignDetailViewTests(TestCase):
         self.dm, _ = UserFactory.create(username="dm_user_detail")
         self.player, _ = UserFactory.create(username="player_user_detail")
         self.outsider, _ = UserFactory.create(username="outsider_user_detail")
-        self.system = TabletopSystem.objects.create(
-            name="Test System 123",
-            short_name="Test System 123",
-        )
+        self.system = TabletopSystemFactory.create()
 
         self.campaign = Campaign.objects.create(
             name="Epic Quest",
