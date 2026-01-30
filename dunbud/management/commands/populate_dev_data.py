@@ -109,7 +109,7 @@ class Command(BaseCommand):
             users.append(user)
 
         # 3. Create Campaigns (1 per test user as DM)
-        for _i, user in enumerate(users):
+        for user in users:
             campaign_name = f"Campaign of {user.username}"
             campaign, created = Campaign.objects.get_or_create(
                 name=campaign_name,
