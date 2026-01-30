@@ -3,7 +3,12 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-    Create New Campaign - Dungeon Buddy
+    {% if object %}
+        Update {{ object.name }}
+    {% else %}
+        Create New
+    {% endif %}
+    Campaign - Dungeon Buddy
 {% endblock title %}
 {% block content %}
     <div class="container mt-4">
@@ -11,15 +16,32 @@
             <div class="col-md-8 col-lg-6">
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
-                        <h2 class="h4 mb-0">Create a New Campaign</h2>
+                        <h2 class="h4 mb-0">
+                            {% if object %}
+                                Edit Campaign: {{ object.name }}
+                            {% else %}
+                                Create a New Campaign
+                            {% endif %}
+                        </h2>
                     </div>
                     <div class="card-body p-4">
                         <form method="post">
                             {% csrf_token %}
                             {{ form|crispy }}
                             <div class="d-grid gap-2 mt-4">
-                                <button type="submit" class="btn btn-primary">Create Campaign</button>
-                                <a href="{% url 'splash' %}" class="btn btn-outline-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">
+                                    {% if object %}
+                                        Update Campaign
+                                    {% else %}
+                                        Create Campaign
+                                    {% endif %}
+                                </button>
+                                {% if object %}
+                                    <a href="{% url 'campaign_detail' pk=object.pk %}"
+                                       class="btn btn-outline-secondary">Cancel</a>
+                                {% else %}
+                                    <a href="{% url 'splash' %}" class="btn btn-outline-secondary">Cancel</a>
+                                {% endif %}
                             </div>
                         </form>
                     </div>
