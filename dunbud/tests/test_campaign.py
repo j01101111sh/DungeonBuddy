@@ -264,7 +264,10 @@ class CampaignDetailViewTests(TestCase):
         self.dm, _ = UserFactory.create(username="dm_user_detail")
         self.player, _ = UserFactory.create(username="player_user_detail")
         self.outsider, _ = UserFactory.create(username="outsider_user_detail")
-        self.system = TabletopSystem.objects.create(name="D&D 5e", short_name="D&D")
+        self.system = TabletopSystem.objects.create(
+            name="Test System 123",
+            short_name="Test System 123",
+        )
 
         self.campaign = Campaign.objects.create(
             name="Epic Quest",
