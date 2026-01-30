@@ -76,6 +76,9 @@ class Command(BaseCommand):
         if not dev_user.has_usable_password():
             dev_user.set_password("dev")
             dev_user.save()
+        if not dev_user.is_staff:
+            dev_user.is_staff = True
+            dev_user.save()
 
         # 1. Ensure a TabletopSystem exists
         system, _ = TabletopSystem.objects.get_or_create(
