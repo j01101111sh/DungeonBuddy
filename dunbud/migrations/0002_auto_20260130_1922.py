@@ -7,14 +7,13 @@ from django.db import migrations
 
 def load_systems_from_file(apps, schema_editor):
     TabletopSystem = apps.get_model('dunbud', 'TabletopSystem')
+    app_config = apps.get_app_config('dunbud')
 
-    # 1. Construct the path to the JSON file
-    # __file__ is the path to *this* python file
-    # We go up one level (..) to the app dir, then into 'data'
-    file_path = os.path.join(os.path.dirname(__file__), '../data/TabletopSystems.json')
+    # 1. Construct the path to the JSON file robustly
+    file_path = os.path.join(app_config.path, 'data', 'TabletopSystems.json')
 
     # 2. Open and read the JSON
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     # 3. Create objects
@@ -23,7 +22,6 @@ def load_systems_from_file(apps, schema_editor):
 
     # 4. Load into database
     TabletopSystem.objects.bulk_create(systems_to_create, ignore_conflicts=True)
-
 class Migration(migrations.Migration):
 
     dependencies = [
