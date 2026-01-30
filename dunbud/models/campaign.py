@@ -29,6 +29,11 @@ class TabletopSystem(models.Model):
         blank=True,
         help_text=_("A description of the system."),
     )
+    short_name = models.CharField(
+        max_length=30,
+        unique=True,
+        help_text=_("Shortened name of the tabletop system."),
+    )
 
     class Meta:
         verbose_name = _("Tabletop System")
