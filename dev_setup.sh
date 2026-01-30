@@ -80,7 +80,11 @@ else:
 echo -e "${CYAN}Creating cache table...${NC}"
 uv run python manage.py createcachetable
 
-# 7. Verify Setup
+# 7. Populate Development Data
+echo -e "${CYAN}Populating development data...${NC}"
+uv run python manage.py populate_dev_data
+
+# 8. Verify Setup
 echo -e "${CYAN}Verifying setup...${NC}"
 uv run python manage.py check
 
