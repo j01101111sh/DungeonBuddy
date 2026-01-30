@@ -16,6 +16,10 @@ django-crispy-forms==2.5
     # via
     #   crispy-bootstrap5
     #   dungeonbuddy
+factory-boy==3.3.3
+    # via dungeonbuddy
+faker==40.1.2
+    # via factory-boy
 gunicorn==24.1.1
 packaging==26.0
     # via gunicorn
@@ -29,6 +33,7 @@ sqlparse==0.5.5
 tzdata==2025.3 ; sys_platform == 'win32'
     # via
     #   django
+    #   faker
     #   psycopg
 whitenoise==6.11.0
     # via dungeonbuddy
