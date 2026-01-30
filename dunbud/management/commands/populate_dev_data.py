@@ -14,20 +14,26 @@ User = get_user_model()
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# Constants for script config
+NUM_DEV_CAMPAIGN_MEMBERS = 4
+NUM_DEV_CAMPAIGNS = 5
+NUM_JOINED_USER_CAMPAIGNS = 3
+NUM_TEST_USERS = 20
+
 
 class Command(BaseCommand):
     """
     Management command to populate the database with development data.
 
     Generates:
-    - 20 Test Users.
-    - 20 Campaigns (1 per test user as DM).
-    - 5 Dev Campaigns (Dev user as DM).
+    - NUM_TEST_USERS Test Users.
+    - NUM_TEST_USERS Campaigns (1 per test user as DM).
+    - NUM_DEV_CAMPAIGNS Dev Campaigns (Dev user as DM).
 
     Associations:
-    - Each test user joins 3 other test-user campaigns as a player.
-    - The 'dev' user joins ALL 20 test-user campaigns as a player.
-    - Each 'Dev Campaign' has 4 random test users as players.
+    - Each test user joins NUM_JOINED_USER_CAMPAIGNS other test-user campaigns as a player.
+    - The 'dev' user joins ALL NUM_TEST_USERS test-user campaigns as a player.
+    - Each 'Dev Campaign' has NUM_DEV_CAMPAIGN_MEMBERS random test users as players.
     """
 
     help = (
@@ -74,7 +80,7 @@ class Command(BaseCommand):
         # 1. Ensure a TabletopSystem exists
         system, _ = TabletopSystem.objects.get_or_create(
             name="Dungeons & Dragons 5e",
-            defaults={"description": "The world's greatest roleplaying game."},
+            defaults={"description": "One of the roleplaying games of all time."},
         )
 
         users = []
@@ -82,7 +88,7 @@ class Command(BaseCommand):
         secure_random = secrets.SystemRandom()
 
         # 2. Create 20 Test Users
-        for i in range(1, 21):
+        for i in range(1, NUM_TEST_USERS + 1):
             username = f"user_{i}"
             email = f"user_{i}@example.com"
             password_suffix = secrets.token_hex(4)
@@ -102,7 +108,7 @@ class Command(BaseCommand):
                 logger.debug("Created user: %s", username)
             users.append(user)
 
-        # 3. Create 20 Campaigns (1 per test user as DM)
+        # 3. Create Campaigns (1 per test user as DM)
         for _i, user in enumerate(users):
             campaign_name = f"Campaign of {user.username}"
             campaign, created = Campaign.objects.get_or_create(
@@ -119,9 +125,12 @@ class Command(BaseCommand):
 
         # 4. Assign Players to User Campaigns
         for i, user in enumerate(users):
-            # A. Each test user joins 3 campaigns they do not DM.
+            # A. Each test user joins some campaigns they do not DM.
             available_indices = [x for x in range(len(user_campaigns)) if x != i]
-            selected_indices = secure_random.sample(available_indices, 3)
+            selected_indices = secure_random.sample(
+                available_indices,
+                NUM_JOINED_USER_CAMPAIGNS,
+            )
 
             for idx in selected_indices:
                 target_campaign = user_campaigns[idx]
@@ -136,9 +145,9 @@ class Command(BaseCommand):
             len(user_campaigns),
         )
 
-        # 6. Create 5 Campaigns with Dev User as DM
+        # 6. Create Campaigns with Dev User as DM
         dev_campaigns = []
-        for i in range(1, 6):
+        for i in range(1, NUM_DEV_CAMPAIGNS + 1):
             campaign_name = f"Dev Adventure {i}"
             campaign, created = Campaign.objects.get_or_create(
                 name=campaign_name,
@@ -152,8 +161,8 @@ class Command(BaseCommand):
             )
             dev_campaigns.append(campaign)
 
-            # Assign 4 random users as players
-            selected_players = secure_random.sample(users, 4)
+            # Assign random users as players
+            selected_players = secure_random.sample(users, NUM_DEV_CAMPAIGN_MEMBERS)
             campaign.players.add(*selected_players)
             logger.debug(
                 "Created Dev campaign '%s' with %d players.",

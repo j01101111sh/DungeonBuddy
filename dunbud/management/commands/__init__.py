@@ -1,0 +1,13 @@
+from .populate_dev_data import (
+    NUM_DEV_CAMPAIGN_MEMBERS,
+    NUM_DEV_CAMPAIGNS,
+    NUM_JOINED_USER_CAMPAIGNS,
+    NUM_TEST_USERS,
+)
+
+__all__ = [
+    "NUM_DEV_CAMPAIGN_MEMBERS",
+    "NUM_DEV_CAMPAIGNS",
+    "NUM_JOINED_USER_CAMPAIGNS",
+    "NUM_TEST_USERS",
+]
