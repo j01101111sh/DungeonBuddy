@@ -1,5 +1,6 @@
 import logging
 import secrets
+from pathlib import Path
 from typing import Any
 
 from django.contrib.auth import get_user_model
@@ -66,22 +67,19 @@ class Command(BaseCommand):
         """
         Internal method to handle the creation logic to ensure atomicity.
         """
-        # 0. Retrieve or Create the 'dev' user.
-        # Not using factory because this user may already exist
-        dev_user, _ = User.objects.get_or_create(
-            username="dev",
-            defaults={
-                "email": "dev@dev.com",
-                "is_staff": True,
-                "is_superuser": False,
-            },
-        )
-        if not dev_user.has_usable_password():
-            dev_user.set_password("dev")
-            dev_user.save()
-        if not dev_user.is_staff:
-            dev_user.is_staff = True
-            dev_user.save()
+        # 0. Create the 'dev' user.
+        if not User.objects.filter(username="dev").exists():
+            dev_user, dev_pass = UserFactory.create(
+                username="dev",
+                is_staff=True,
+                is_superuser=False,
+            )
+
+            file_path = Path(".devpass")
+            with file_path.open("w") as f:
+                f.write(dev_pass)
+        elif existing_dev_user := User.objects.filter(username="dev").first():
+            dev_user = existing_dev_user
 
         # 1. Initialize common variables
         systems = list(TabletopSystem.objects.all())
