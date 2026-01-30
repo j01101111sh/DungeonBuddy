@@ -18,6 +18,7 @@ class CampaignModelTests(TestCase):
         self.system = TabletopSystem.objects.create(
             name="D&D 5e",
             description="Fifth edition of Dungeons & Dragons",
+            short_name="D&D 5e",
         )
 
     def test_create_campaign(self) -> None:
@@ -93,7 +94,10 @@ class CampaignCreateViewTests(TestCase):
         self.dm, _ = UserFactory.create(username="dm_user")
         self.player, _ = UserFactory.create(username="player_user")
         self.url = reverse("campaign_create")
-        self.system = TabletopSystem.objects.create(name="Pathfinder 2e")
+        self.system = TabletopSystem.objects.create(
+            name="Pathfinder 2e",
+            short_name="PF2e",
+        )
 
     def test_create_campaign_view_access_anonymous(self) -> None:
         """
@@ -260,7 +264,7 @@ class CampaignDetailViewTests(TestCase):
         self.dm, _ = UserFactory.create(username="dm_user_detail")
         self.player, _ = UserFactory.create(username="player_user_detail")
         self.outsider, _ = UserFactory.create(username="outsider_user_detail")
-        self.system = TabletopSystem.objects.create(name="D&D 5e")
+        self.system = TabletopSystem.objects.create(name="D&D 5e", short_name="D&D")
 
         self.campaign = Campaign.objects.create(
             name="Epic Quest",
