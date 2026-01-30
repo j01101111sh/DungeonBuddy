@@ -16,9 +16,9 @@ class CampaignModelTests(TestCase):
         self.dm, _ = UserFactory.create(username="dm_user")
         self.player, _ = UserFactory.create(username="player_user")
         self.system = TabletopSystem.objects.create(
-            name="D&D 5e",
-            description="Fifth edition of Dungeons & Dragons",
-            short_name="D&D 5e",
+            name="Test System 123",
+            description="A system for testing",
+            short_name="Test System 123",
         )
 
     def test_create_campaign(self) -> None:
@@ -95,8 +95,8 @@ class CampaignCreateViewTests(TestCase):
         self.player, _ = UserFactory.create(username="player_user")
         self.url = reverse("campaign_create")
         self.system = TabletopSystem.objects.create(
-            name="Pathfinder 2e",
-            short_name="PF2e",
+            name="Test System 123",
+            short_name="Test System 123",
         )
 
     def test_create_campaign_view_access_anonymous(self) -> None:
@@ -359,3 +359,37 @@ class CampaignDetailViewTests(TestCase):
                     for m in cm.output
                 ),
             )
+
+    def test_system_name_display(self) -> None:
+        """
+        Test that the tabletop system name is correctly displayed on the detail page.
+
+        This verifies that the template correctly renders the system name badge
+        when a system is associated with the campaign.
+        """
+        # Log in as the DM to gain access to the detail view
+        self.client.force_login(self.dm)
+
+        response = self.client.get(self.url)
+
+        # Verify the response is successful
+        self.assertEqual(response.status_code, 200)
+
+        # Verify the system name is present in the rendered HTML
+        self.assertContains(response, self.system.short_name)
+        # Specifically check for the badge formatting used in the template
+        self.assertContains(response, 'class="badge bg-light text-primary"')
+
+    def test_system_name_hidden_when_null(self) -> None:
+        """
+        Test that no system badge is displayed if the campaign has no system.
+        """
+        # Remove the system from the campaign
+        self.campaign.system = None
+        self.campaign.save()
+
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+
+        # The system name should no longer be in the response
+        self.assertNotContains(response, 'class="badge bg-light text-primary"')
