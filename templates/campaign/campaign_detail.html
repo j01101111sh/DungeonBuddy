@@ -9,12 +9,16 @@
             <div class="col-lg-8">
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h1 class="h3 mb-0">{{ campaign.name }}</h1>
-                        {% if campaign.system %}<span class="badge bg-light text-primary">{{ campaign.system.short_name }}</span>{% endif %}
-                        {% if campaign.dungeon_master == request.user %}
-                            <a href="{% url 'campaign_edit' campaign.pk %}"
-                               class="btn btn-sm btn-light text-primary">Edit</a>
-                        {% endif %}
+                        <div class="d-flex align-items-center gap-3">
+                            <h1 class="h3 mb-0">{{ campaign.name }}</h1>
+                            {% if campaign.system %}<span class="badge bg-light text-primary">{{ campaign.system.short_name }}</span>{% endif %}
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if campaign.dungeon_master == request.user %}
+                                <a href="{% url 'campaign_edit' campaign.pk %}"
+                                   class="btn btn-sm btn-light text-primary">Edit</a>
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title text-muted mb-3">Dungeon Master: {{ campaign.dungeon_master.username }}</h5>
