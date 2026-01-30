@@ -61,9 +61,9 @@ class TabletopSystemFactory:
             TabletopSystem.
         """
         defaults = {
-            "name": kwargs.get("name", f"System {secrets.token_hex(12)}"),
-            "description": kwargs.get("description", f"System {secrets.token_hex(20)}"),
-            "short_name": kwargs.get("short_name", f"Sys {secrets.token_hex(6)}"),
+            "name": f"System {secrets.token_hex(12)}",
+            "description": f"System {secrets.token_hex(20)}",
+            "short_name": f"Sys {secrets.token_hex(6)}",
         }
 
         defaults.update(kwargs)
