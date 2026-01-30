@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from config.tests.factories import TabletopSystemFactory
+from config.tests.factories import TabletopSystemFactory, UserFactory
 from dunbud.models import Campaign, TabletopSystem
 
 # Get the custom user model
@@ -66,7 +66,8 @@ class Command(BaseCommand):
         """
         Internal method to handle the creation logic to ensure atomicity.
         """
-        # 0. Retrieve or Create the 'dev' user
+        # 0. Retrieve or Create the 'dev' user.
+        # Not using factory because this user may already exist
         dev_user, _ = User.objects.get_or_create(
             username="dev",
             defaults={
@@ -98,24 +99,8 @@ class Command(BaseCommand):
         secure_random = secrets.SystemRandom()
 
         # 2. Create 20 Test Users
-        for i in range(1, NUM_TEST_USERS + 1):
-            username = f"user_{i}"
-            email = f"user_{i}@example.com"
-            password_suffix = secrets.token_hex(4)
-            password = f"password_{i}_{password_suffix}"
-
-            user, created = User.objects.get_or_create(
-                username=username,
-                defaults={
-                    "email": email,
-                    "bio": f"Bio for {username}. I love TTRPGs!",
-                    "location": "Internet",
-                },
-            )
-            if created:
-                user.set_password(password)
-                user.save()
-                logger.debug("Created user: %s", username)
+        for _i in range(1, NUM_TEST_USERS + 1):
+            user, _ = UserFactory.create()
             users.append(user)
 
         # 3. Create Campaigns (1 per test user as DM)
