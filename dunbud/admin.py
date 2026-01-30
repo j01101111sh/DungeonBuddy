@@ -18,5 +18,5 @@ class TabletopSystemAdmin(admin.ModelAdmin):
     Admin configuration for the TabletopSystem model.
     """
 
-    list_display = ("name", "description")
+    list_display = ("name", "short_name", "description")
     search_fields = ("name",)

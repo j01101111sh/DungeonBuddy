@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from config.tests.factories import TabletopSystemFactory, UserFactory
 from dunbud.models import Campaign, TabletopSystem
 
 # Get the custom user model
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 NUM_DEV_CAMPAIGN_MEMBERS = 4
 NUM_DEV_CAMPAIGNS = 5
 NUM_JOINED_USER_CAMPAIGNS = 3
+NUM_SYSTEMS_CREATED = 5
 NUM_TEST_USERS = 20
 
 
@@ -64,7 +66,8 @@ class Command(BaseCommand):
         """
         Internal method to handle the creation logic to ensure atomicity.
         """
-        # 0. Retrieve or Create the 'dev' user
+        # 0. Retrieve or Create the 'dev' user.
+        # Not using factory because this user may already exist
         dev_user, _ = User.objects.get_or_create(
             username="dev",
             defaults={
@@ -80,35 +83,24 @@ class Command(BaseCommand):
             dev_user.is_staff = True
             dev_user.save()
 
-        # 1. Ensure a TabletopSystem exists
-        system, _ = TabletopSystem.objects.get_or_create(
-            name="Dungeons & Dragons 5e",
-            defaults={"description": "One of the roleplaying games of all time."},
-        )
+        # 1. Initialize common variables
+        systems = list(TabletopSystem.objects.all())
+
+        if not systems:
+            for i in range(NUM_SYSTEMS_CREATED):
+                system_created = TabletopSystemFactory.create(
+                    name=f"System {i}",
+                    short_name=f"S#{i}",
+                )
+                systems.append(system_created)
 
         users = []
         user_campaigns: list[Campaign] = []
         secure_random = secrets.SystemRandom()
 
         # 2. Create 20 Test Users
-        for i in range(1, NUM_TEST_USERS + 1):
-            username = f"user_{i}"
-            email = f"user_{i}@example.com"
-            password_suffix = secrets.token_hex(4)
-            password = f"password_{i}_{password_suffix}"
-
-            user, created = User.objects.get_or_create(
-                username=username,
-                defaults={
-                    "email": email,
-                    "bio": f"Bio for {username}. I love TTRPGs!",
-                    "location": "Internet",
-                },
-            )
-            if created:
-                user.set_password(password)
-                user.save()
-                logger.debug("Created user: %s", username)
+        for _i in range(1, NUM_TEST_USERS + 1):
+            user, _ = UserFactory.create()
             users.append(user)
 
         # 3. Create Campaigns (1 per test user as DM)
@@ -118,7 +110,7 @@ class Command(BaseCommand):
                 name=campaign_name,
                 defaults={
                     "dungeon_master": user,
-                    "system": system,
+                    "system": secure_random.choice(systems),
                     "description": f"An epic adventure led by {user.username}.",
                     "vtt_link": "https://foundryvtt.com/demo",
                     "video_link": "https://zoom.us/demo",
@@ -156,7 +148,7 @@ class Command(BaseCommand):
                 name=campaign_name,
                 defaults={
                     "dungeon_master": dev_user,
-                    "system": system,
+                    "system": secure_random.choice(systems),
                     "description": "A canonical adventure run by the Developer.",
                     "vtt_link": "https://foundryvtt.com/demo",
                     "video_link": "https://zoom.us/demo",
