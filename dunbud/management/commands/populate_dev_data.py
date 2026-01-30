@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from config.tests.factories import TabletopSystemFactory
 from dunbud.models import Campaign, TabletopSystem
 
 # Get the custom user model
@@ -86,7 +87,7 @@ class Command(BaseCommand):
 
         if not systems:
             for i in range(NUM_SYSTEMS_CREATED):
-                system_created, _ = TabletopSystem.objects.get_or_create(
+                system_created = TabletopSystemFactory.create(
                     name=f"System {i}",
                     short_name=f"S#{i}",
                 )
