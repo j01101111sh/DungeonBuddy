@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
 
-from dunbud.management import (
+from dunbud.management.commands.populate_dev_data import (
     NUM_DEV_CAMPAIGN_MEMBERS,
     NUM_DEV_CAMPAIGNS,
     NUM_JOINED_USER_CAMPAIGNS,
