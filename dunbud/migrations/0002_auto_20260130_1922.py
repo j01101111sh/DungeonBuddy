@@ -19,10 +19,10 @@ def load_systems_from_file(apps, schema_editor):
 
     # 3. Create objects
     # Note: We use ignore_conflicts=True so re-running doesn't crash on duplicates
-    genres_to_create = [TabletopSystem(**item) for item in data]
+    systems_to_create = [TabletopSystem(**item) for item in data]
 
     # 4. Load into database
-    TabletopSystem.objects.bulk_create(genres_to_create, ignore_conflicts=True)
+    TabletopSystem.objects.bulk_create(systems_to_create, ignore_conflicts=True)
 
 class Migration(migrations.Migration):
 
