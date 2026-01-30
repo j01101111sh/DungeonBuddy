@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 NUM_DEV_CAMPAIGN_MEMBERS = 4
 NUM_DEV_CAMPAIGNS = 5
 NUM_JOINED_USER_CAMPAIGNS = 3
+NUM_SYSTEMS_CREATED = 5
 NUM_TEST_USERS = 20
 
 
@@ -82,6 +83,14 @@ class Command(BaseCommand):
 
         # 1. Initialize common variables
         systems = list(TabletopSystem.objects.all())
+
+        if not systems:
+            for i in range(NUM_SYSTEMS_CREATED):
+                system_created, _ = TabletopSystem.objects.get_or_create(
+                    name=f"System {i}",
+                    short_name=f"S#{i}",
+                )
+                systems.append(system_created)
 
         users = []
         user_campaigns: list[Campaign] = []
