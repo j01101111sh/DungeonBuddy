@@ -153,7 +153,6 @@ class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         "system",
         "vtt_link",
         "video_link",
-        "players",  # Allow editing players to trigger player feed items
     ]
     template_name = "campaign/campaign_form.html"
     context_object_name = "campaign"
