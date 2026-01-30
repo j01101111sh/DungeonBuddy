@@ -80,11 +80,8 @@ class Command(BaseCommand):
             dev_user.is_staff = True
             dev_user.save()
 
-        # 1. Ensure a TabletopSystem exists
-        system, _ = TabletopSystem.objects.get_or_create(
-            name="Dungeons & Dragons 5e",
-            defaults={"description": "One of the roleplaying games of all time."},
-        )
+        # 1. Initialize common variables
+        systems = list(TabletopSystem.objects.all())
 
         users = []
         user_campaigns: list[Campaign] = []
@@ -118,7 +115,7 @@ class Command(BaseCommand):
                 name=campaign_name,
                 defaults={
                     "dungeon_master": user,
-                    "system": system,
+                    "system": secure_random.choice(systems),
                     "description": f"An epic adventure led by {user.username}.",
                     "vtt_link": "https://foundryvtt.com/demo",
                     "video_link": "https://zoom.us/demo",
@@ -156,7 +153,7 @@ class Command(BaseCommand):
                 name=campaign_name,
                 defaults={
                     "dungeon_master": dev_user,
-                    "system": system,
+                    "system": secure_random.choice(systems),
                     "description": "A canonical adventure run by the Developer.",
                     "vtt_link": "https://foundryvtt.com/demo",
                     "video_link": "https://zoom.us/demo",
