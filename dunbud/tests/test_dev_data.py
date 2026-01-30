@@ -20,6 +20,15 @@ class PopulateDevDataTests(TestCase):
     Tests for the populate_dev_data management command.
     """
 
+    @classmethod
+    def setUpTestData(cls) -> None:
+        """
+        Run the command ONCE for the entire class.
+        This significantly speeds up tests by avoiding repeated data generation.
+        """
+        # We suppress stdout here to keep the test runner clean
+        call_command("populate_dev_data", stdout=StringIO())
+
     def test_command_output(self) -> None:
         """
         Test that the command runs successfully and produces the expected output.
@@ -32,8 +41,6 @@ class PopulateDevDataTests(TestCase):
         """
         Test that the correct number of users and campaigns are created.
         """
-        call_command("populate_dev_data")
-
         # Verify NUM_TEST_USERS generated users were created
         user_count = User.objects.filter(username__startswith="user_").count()
         self.assertEqual(user_count, NUM_TEST_USERS)
@@ -46,8 +53,6 @@ class PopulateDevDataTests(TestCase):
         """
         Test that every generated user is a DM for exactly 1 campaign.
         """
-        call_command("populate_dev_data")
-
         users = User.objects.filter(username__startswith="user_")
 
         for user in users:
@@ -75,8 +80,6 @@ class PopulateDevDataTests(TestCase):
         1. Is a player in all user-generated campaigns.
         2. Is the DM for specific campaigns.
         """
-        call_command("populate_dev_data")
-
         dev_user = User.objects.get(username="dev")
 
         # 1. Check Dev is DM for campaigns
