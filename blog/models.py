@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -57,6 +58,14 @@ class Post(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Save the post, ensuring the author is a staff member.
+        """
+        if not self.author.is_staff:
+            raise ValidationError(_("Only staff members can create posts."))
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self) -> str:
         """
