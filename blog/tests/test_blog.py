@@ -2,6 +2,7 @@ from typing import Any, cast
 
 from django.contrib.admin.sites import AdminSite
 from django.db import models
+from django.forms import ValidationError
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
@@ -12,7 +13,8 @@ from config.tests.factories import UserFactory
 
 class BlogModelTests(TestCase):
     def setUp(self) -> None:
-        self.user, _ = UserFactory.create()
+        # Create a staff user for authoring posts
+        self.user, _ = UserFactory.create(is_staff=True)
 
     def test_create_post(self) -> None:
         """
@@ -29,6 +31,19 @@ class BlogModelTests(TestCase):
         self.assertEqual(post.get_absolute_url(), "/blog/test-post/")
         self.assertTrue(post.is_published)
 
+    def test_create_post_by_non_staff_fails(self) -> None:
+        """
+        Test that creating a post with a non-staff user raises a ValidationError.
+        """
+        non_staff_user, _ = UserFactory.create(is_staff=False)
+        with self.assertRaises(ValidationError):
+            Post.objects.create(
+                title="Fail Post",
+                slug="fail-post",
+                content="Content",
+                author=non_staff_user,
+            )
+
 
 class BlogViewTests(TestCase):
     def setUp(self) -> None:
@@ -38,14 +53,14 @@ class BlogViewTests(TestCase):
             title="Published Post",
             slug="published-post",
             content="Visible content",
-            author=self.user,
+            author=self.staff_user,
             is_published=True,
         )
         self.draft_post = Post.objects.create(
             title="Draft Post",
             slug="draft-post",
             content="Hidden content",
-            author=self.user,
+            author=self.staff_user,
             is_published=False,
         )
 
@@ -114,7 +129,7 @@ class BlogViewTests(TestCase):
             title="Markdown Post",
             slug="markdown-post",
             content=markdown_content,
-            author=self.user,
+            author=self.staff_user,
             is_published=True,
         )
         url = reverse("blog:post_detail", kwargs={"slug": post.slug})
@@ -134,7 +149,7 @@ class BlogViewTests(TestCase):
             title="Malicious Post",
             slug="malicious-post",
             content=malicious_content,
-            author=self.user,
+            author=self.staff_user,
             is_published=True,
         )
         url = reverse("blog:post_detail", kwargs={"slug": post.slug})
