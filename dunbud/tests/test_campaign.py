@@ -303,10 +303,11 @@ class CampaignDetailViewTests(TestCase):
 
     def test_player_character_name_display(self) -> None:
         """
-        Test that the player's character name is displayed next to their username.
+        Test that the player's character name is displayed next to their username
+        and links to the character detail page.
         """
         # Create a character for the player in this campaign
-        PlayerCharacterFactory.create(
+        character = PlayerCharacterFactory.create(
             user=self.player,
             campaign=self.campaign,
             name="Grog Strongjaw",
@@ -316,8 +317,13 @@ class CampaignDetailViewTests(TestCase):
         response = self.client.get(self.url)
 
         self.assertContains(response, self.player.username)
-        # Check that the character name appears in parenthesis
-        self.assertContains(response, "(Grog Strongjaw)")
+
+        # Build expected link URL
+        char_url = reverse("character_detail", kwargs={"pk": character.pk})
+
+        # Check that the character name appears in parenthesis and is linked
+        self.assertContains(response, f'href="{char_url}"')
+        self.assertContains(response, ">Grog Strongjaw</a>")
 
     def test_access_outsider_denied(self) -> None:
         """
@@ -407,5 +413,4 @@ class CampaignDetailViewTests(TestCase):
         response = self.client.get(self.url)
 
         # The system name should no longer be in the response
-        self.assertNotContains(response, 'class="badge bg-light text-primary"')
         self.assertNotContains(response, 'class="badge bg-light text-primary"')
