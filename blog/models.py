@@ -31,7 +31,7 @@ class Post(models.Model):
     )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="blog_posts",
         help_text=_("The admin who created the post."),
     )
