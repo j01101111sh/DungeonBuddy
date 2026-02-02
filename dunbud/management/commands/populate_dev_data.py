@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from blog.models import Post
 from config.tests.factories import (
     PlayerCharacterFactory,
     TabletopSystemFactory,
@@ -36,6 +37,7 @@ class Command(BaseCommand):
     - NUM_TEST_USERS Test Users.
     - NUM_TEST_USERS Campaigns (1 per test user as DM).
     - NUM_DEV_CAMPAIGNS Dev Campaigns (Dev user as DM).
+    - 3 Blog Posts (2 published, 1 draft).
 
     Associations:
     - Each test user joins NUM_JOINED_USER_CAMPAIGNS other test-user campaigns as a player.
@@ -86,6 +88,8 @@ class Command(BaseCommand):
             with file_path.open("w") as f:
                 f.write(dev_pass)
         elif existing_dev_user := User.objects.filter(username="dev").first():
+            existing_dev_user.is_staff = True
+            existing_dev_user.save()
             dev_user = existing_dev_user
 
         # 1. Initialize common variables
@@ -193,9 +197,44 @@ class Command(BaseCommand):
                 len(selected_players),
             )
 
+        # 7. Create Blog Posts
+        # Note: Author must be staff (dev_user is staff)
+        blog_posts_data = [
+            {
+                "title": "Welcome to Dungeon Buddy!",
+                "slug": "welcome-dungeon-buddy",
+                "content": "We're excited to launch the **beta** version of Dungeon Buddy! Manage your campaigns and characters with ease.",
+                "is_published": True,
+            },
+            {
+                "title": "New Feature: Dice Roller",
+                "slug": "new-feature-dice-roller",
+                "content": "You can now roll dice directly in your campaign chat. Try `/roll 2d20`!",
+                "is_published": True,
+            },
+            {
+                "title": "Draft: Future Roadmap",
+                "slug": "draft-future-roadmap",
+                "content": "This is a sneak peek at what we are building next. *Not for public release yet.*",
+                "is_published": False,
+            },
+        ]
+
+        for post_data in blog_posts_data:
+            Post.objects.get_or_create(
+                slug=post_data["slug"],
+                defaults={
+                    "title": post_data["title"],
+                    "content": post_data["content"],
+                    "author": dev_user,
+                    "is_published": post_data["is_published"],
+                },
+            )
+
         logger.info(
-            "Generated %d users, %d user campaigns, and %d dev campaigns.",
+            "Generated %d users, %d user campaigns, %d dev campaigns, and %d blog posts.",
             len(users),
             len(user_campaigns),
             len(dev_campaigns),
+            len(blog_posts_data),
         )
