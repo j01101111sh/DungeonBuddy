@@ -40,17 +40,17 @@ urlpatterns = [
     # Character URLs
     path("characters/", PlayerCharacterListView.as_view(), name="character_list"),
     path(
-        "character/new/",
+        "characters/new/",
         PlayerCharacterCreateView.as_view(),
         name="character_create",
     ),
     path(
-        "character/<uuid:pk>/",
+        "characters/<uuid:pk>/",
         PlayerCharacterDetailView.as_view(),
         name="character_detail",
     ),
     path(
-        "character/<uuid:pk>/edit/",
+        "characters/<uuid:pk>/edit/",
         PlayerCharacterUpdateView.as_view(),
         name="character_edit",
     ),
