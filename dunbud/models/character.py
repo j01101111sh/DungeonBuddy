@@ -33,7 +33,7 @@ class PlayerCharacter(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="characters",
+        related_name="player_characters",
         help_text=_("The campaign this character belongs to."),
     )
     name = models.CharField(
