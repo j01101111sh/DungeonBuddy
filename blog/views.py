@@ -22,8 +22,10 @@ class PostListView(ListView):
 
     def get_queryset(self) -> QuerySet[Post]:
         """
-        Return only published posts.
+        Return only published posts, unless the user is staff.
         """
+        if self.request.user.is_staff:
+            return Post.objects.all()
         return Post.objects.filter(is_published=True)
 
 
@@ -38,8 +40,11 @@ class PostDetailView(DetailView):
 
     def get_queryset(self) -> QuerySet[Post]:
         """
-        Ensure only published posts can be viewed via detail URL.
+        Ensure only published posts can be viewed via detail URL,
+        unless the user is staff.
         """
+        if self.request.user.is_staff:
+            return Post.objects.all()
         return Post.objects.filter(is_published=True)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:

@@ -33,6 +33,7 @@ class BlogModelTests(TestCase):
 class BlogViewTests(TestCase):
     def setUp(self) -> None:
         self.user, _ = UserFactory.create()
+        self.staff_user, _ = UserFactory.create(is_staff=True)
         self.published_post = Post.objects.create(
             title="Published Post",
             slug="published-post",
@@ -50,13 +51,23 @@ class BlogViewTests(TestCase):
 
     def test_post_list_view(self) -> None:
         """
-        Test that the list view shows published posts and hides drafts.
+        Test that the list view shows published posts and hides drafts for regular users.
         """
         response = self.client.get(reverse("blog:post_list"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Published Post")
         self.assertNotContains(response, "Draft Post")
         self.assertTemplateUsed(response, "blog/post_list.html")
+
+    def test_post_list_view_staff(self) -> None:
+        """
+        Test that the list view shows drafts for staff users.
+        """
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("blog:post_list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Published Post")
+        self.assertContains(response, "Draft Post")
 
     def test_post_detail_view_published(self) -> None:
         """
@@ -78,11 +89,21 @@ class BlogViewTests(TestCase):
 
     def test_post_detail_view_draft(self) -> None:
         """
-        Test that a draft post returns a 404.
+        Test that a draft post returns a 404 for regular users.
         """
         url = reverse("blog:post_detail", kwargs={"slug": self.draft_post.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
+
+    def test_post_detail_view_draft_staff(self) -> None:
+        """
+        Test that a draft post is visible to staff users.
+        """
+        self.client.force_login(self.staff_user)
+        url = reverse("blog:post_detail", kwargs={"slug": self.draft_post.slug})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Draft Post")
 
     def test_post_detail_view_renders_markdown(self) -> None:
         """
