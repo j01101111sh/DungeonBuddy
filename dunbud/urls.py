@@ -15,15 +15,14 @@ from .views import (
 
 urlpatterns = [
     path("", SplashView.as_view(), name="splash"),
-    # Campaign URLs
-    path("campaign/new/", CampaignCreateView.as_view(), name="campaign_create"),
+    path("campaigns/new/", CampaignCreateView.as_view(), name="campaign_create"),
     path(
-        "campaign/<uuid:pk>/",
+        "campaigns/<uuid:pk>/",
         CampaignDetailView.as_view(),
         name="campaign_detail",
     ),
     path(
-        "campaign/<uuid:pk>/edit/",
+        "campaigns/<uuid:pk>/edit/",
         CampaignUpdateView.as_view(),
         name="campaign_edit",
     ),
