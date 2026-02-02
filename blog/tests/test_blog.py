@@ -64,6 +64,31 @@ class BlogViewTests(TestCase):
             is_published=False,
         )
 
+    def test_post_detail_view_staff_edit_link(self) -> None:
+        """
+        Test that staff users see an edit link to the admin change page.
+        """
+        # self.user is staff (from setUp)
+        self.client.force_login(self.user)
+        url = reverse("blog:post_detail", kwargs={"slug": self.published_post.slug})
+        response = self.client.get(url)
+
+        expected_url = reverse("admin:blog_post_change", args=[self.published_post.pk])
+        self.assertContains(response, f'href="{expected_url}"')
+        self.assertContains(response, "Edit")
+
+    def test_post_detail_view_regular_user_no_edit_link(self) -> None:
+        """
+        Test that regular users do not see the edit link.
+        """
+        regular_user, _ = UserFactory.create(is_staff=False)
+        self.client.force_login(regular_user)
+        url = reverse("blog:post_detail", kwargs={"slug": self.published_post.slug})
+        response = self.client.get(url)
+
+        expected_url = reverse("admin:blog_post_change", args=[self.published_post.pk])
+        self.assertNotContains(response, f'href="{expected_url}"')
+
     def test_post_list_view(self) -> None:
         """
         Test that the list view shows published posts and hides drafts for regular users.

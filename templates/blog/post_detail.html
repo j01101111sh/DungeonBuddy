@@ -21,6 +21,9 @@
                     <h1 class="display-5 mb-3">{{ post.title }}</h1>
                     <p class="blog-post-meta text-muted border-bottom pb-3 mb-4">
                         Posted on {{ post.created_at|date:"F j, Y" }} by <strong>{{ post.author.username }}</strong>
+                        {% if user.is_staff %}
+                            | <a href="{% url 'admin:blog_post_change' post.pk %}">Edit</a>
+                        {% endif %}
                     </p>
                     <div class="blog-content fs-5">{{ post.content|markdown_format }}</div>
                 </article>
