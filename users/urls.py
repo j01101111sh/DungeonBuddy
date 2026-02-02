@@ -6,6 +6,6 @@ from users.views.profiles import UserUpdateView
 
 urlpatterns = [
     path("signup/", SignUpView.as_view(), name="signup"),
-    path("profiles/edit/", UserUpdateView.as_view(), name="profile_edit"),
+    path("profile/edit/", UserUpdateView.as_view(), name="profile_edit"),
     path("", include(auth_urls)),
 ]
