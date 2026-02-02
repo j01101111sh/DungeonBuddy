@@ -1,6 +1,11 @@
-from django.test import TestCase
+from typing import Any, cast
+
+from django.contrib.admin.sites import AdminSite
+from django.db import models
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
+from blog.admin import PostAdmin
 from blog.models import Post
 from config.tests.factories import UserFactory
 
@@ -78,3 +83,47 @@ class BlogViewTests(TestCase):
         url = reverse("blog:post_detail", kwargs={"slug": self.draft_post.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
+
+
+class BlogAdminTests(TestCase):
+    def setUp(self) -> None:
+        self.site = AdminSite()
+        self.staff_user, _ = UserFactory.create(is_staff=True, username="staff_user")
+        self.regular_user, _ = UserFactory.create(
+            is_staff=False,
+            username="regular_user",
+        )
+
+    def test_author_field_limits_to_staff(self) -> None:
+        """
+        Test that the author field in the admin only shows staff members.
+        """
+        model_admin = PostAdmin(Post, self.site)
+        request = RequestFactory().get("/admin/blog/post/add/")
+
+        # Get the field from the model
+        db_field = Post._meta.get_field("author")
+
+        # Ensure we are working with a ForeignKey for type safety in tests
+        if not isinstance(db_field, models.ForeignKey):
+            self.fail("Author field is not a ForeignKey")
+
+        # Capture the kwargs that would be passed to the form field
+        kwargs: dict[str, Any] = {}
+
+        # Mypy fix: Cast the specific ForeignKey type to a generic ForeignKey
+        # to satisfy the method signature expecting ForeignKey[Any].
+        db_field_generic = cast(models.ForeignKey[Any], db_field)
+
+        model_admin.formfield_for_foreignkey(db_field_generic, request, **kwargs)
+
+        # Verify the queryset in kwargs
+        queryset = kwargs.get("queryset")
+
+        # Mypy fix: Explicit check for None to narrow the type from Any | None to Any
+        if queryset is None:
+            self.fail("Queryset should be set in formfield_for_foreignkey")
+
+        # Check that staff user is present and regular user is not
+        self.assertIn(self.staff_user, queryset)
+        self.assertNotIn(self.regular_user, queryset)
