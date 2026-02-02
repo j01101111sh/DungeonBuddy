@@ -68,8 +68,7 @@ class BlogViewTests(TestCase):
         """
         Test that staff users see an edit link to the admin change page.
         """
-        # self.user is staff (from setUp)
-        self.client.force_login(self.user)
+        self.client.force_login(self.staff_user)
         url = reverse("blog:post_detail", kwargs={"slug": self.published_post.slug})
         response = self.client.get(url)
 
@@ -81,8 +80,7 @@ class BlogViewTests(TestCase):
         """
         Test that regular users do not see the edit link.
         """
-        regular_user, _ = UserFactory.create(is_staff=False)
-        self.client.force_login(regular_user)
+        self.client.force_login(self.user)
         url = reverse("blog:post_detail", kwargs={"slug": self.published_post.slug})
         response = self.client.get(url)
 
