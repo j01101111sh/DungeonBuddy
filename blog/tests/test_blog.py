@@ -108,21 +108,22 @@ class BlogAdminTests(TestCase):
         if not isinstance(db_field, models.ForeignKey):
             self.fail("Author field is not a ForeignKey")
 
-        # Capture the kwargs that would be passed to the form field
-        kwargs: dict[str, Any] = {}
-
         # Mypy fix: Cast the specific ForeignKey type to a generic ForeignKey
         # to satisfy the method signature expecting ForeignKey[Any].
         db_field_generic = cast(models.ForeignKey[Any], db_field)
 
-        model_admin.formfield_for_foreignkey(db_field_generic, request, **kwargs)
+        # Call the method and capture the returned form field.
+        # We cannot check kwargs side-effects because unpacking (**kwargs) passes values,
+        # not the reference to the dict itself.
+        form_field = model_admin.formfield_for_foreignkey(db_field_generic, request)
 
-        # Verify the queryset in kwargs
-        queryset = kwargs.get("queryset")
+        # Ensure a field was returned
+        self.assertIsNotNone(form_field)
 
-        # Mypy fix: Explicit check for None to narrow the type from Any | None to Any
-        if queryset is None:
-            self.fail("Queryset should be set in formfield_for_foreignkey")
+        # Verify the queryset on the returned field
+        # The returned field should be a ModelChoiceField which has a queryset attribute.
+        self.assertTrue(hasattr(form_field, "queryset"))
+        queryset = form_field.queryset
 
         # Check that staff user is present and regular user is not
         self.assertIn(self.staff_user, queryset)
