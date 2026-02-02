@@ -19,6 +19,11 @@
                         <p>
                             <strong>Player:</strong> {{ character.user.username }}
                         </p>
+                        {% if character.character_sheet_link %}
+                            <p>
+                                <a href="{{ character.character_sheet_link }}" target="_blank"><strong>Character sheet link</strong></a>
+                            </p>
+                        {% endif %}
                         <p>
                             <strong>Race:</strong> {{ character.race }}
                         </p>
