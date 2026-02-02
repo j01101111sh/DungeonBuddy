@@ -84,6 +84,49 @@ class BlogViewTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
+    def test_post_detail_view_renders_markdown(self) -> None:
+        """
+        Test that the detail view renders markdown content as HTML.
+        """
+        markdown_content = "**Bold Text** and *Italic Text*"
+        post = Post.objects.create(
+            title="Markdown Post",
+            slug="markdown-post",
+            content=markdown_content,
+            author=self.user,
+            is_published=True,
+        )
+        url = reverse("blog:post_detail", kwargs={"slug": post.slug})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<strong>Bold Text</strong>")
+        self.assertContains(response, "<em>Italic Text</em>")
+
+    def test_post_detail_view_sanitizes_html(self) -> None:
+        """
+        Test that the markdown renderer strips dangerous HTML tags (XSS protection).
+        """
+        # Input contains a script tag that should be removed
+        malicious_content = "Safe Text <script>alert('XSS')</script>"
+        post = Post.objects.create(
+            title="Malicious Post",
+            slug="malicious-post",
+            content=malicious_content,
+            author=self.user,
+            is_published=True,
+        )
+        url = reverse("blog:post_detail", kwargs={"slug": post.slug})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        # The script tag should be gone, but the text might remain (depending on sanitizer behavior)
+        # nh3 strips the tag, leaving the text content or removing it.
+        # By default nh3 strips the tag but may leave content.
+        # However, verifying <script> is NOT present is the key.
+        self.assertNotContains(response, "<script>")
+        self.assertContains(response, "Safe Text")
+
 
 class BlogAdminTests(TestCase):
     def setUp(self) -> None:

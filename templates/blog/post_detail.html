@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load markdown_extras %}
+
 {% block title %}
     {{ post.title }} | Dungeon Buddy
 {% endblock title %}
@@ -20,7 +22,7 @@
                     <p class="blog-post-meta text-muted border-bottom pb-3 mb-4">
                         Posted on {{ post.created_at|date:"F j, Y" }} by <strong>{{ post.author.username }}</strong>
                     </p>
-                    <div class="blog-content fs-5">{{ post.content|linebreaks }}</div>
+                    <div class="blog-content fs-5">{{ post.content|markdown_format }}</div>
                 </article>
                 <div class="mt-5">
                     <a href="{% url 'blog:post_list' %}" class="btn btn-secondary">← Back to Announcements</a>
