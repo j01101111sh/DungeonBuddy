@@ -5,6 +5,12 @@ from .campaign import (
     JoinedCampaignListView,
     ManagedCampaignListView,
 )
+from .character import (
+    PlayerCharacterCreateView,
+    PlayerCharacterDetailView,
+    PlayerCharacterListView,
+    PlayerCharacterUpdateView,
+)
 from .splash import SplashView
 
 __all__ = [
@@ -13,5 +19,9 @@ __all__ = [
     "CampaignUpdateView",
     "JoinedCampaignListView",
     "ManagedCampaignListView",
+    "PlayerCharacterCreateView",
+    "PlayerCharacterDetailView",
+    "PlayerCharacterListView",
+    "PlayerCharacterUpdateView",
     "SplashView",
 ]

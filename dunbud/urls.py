@@ -6,6 +6,10 @@ from .views import (
     CampaignUpdateView,
     JoinedCampaignListView,
     ManagedCampaignListView,
+    PlayerCharacterCreateView,
+    PlayerCharacterDetailView,
+    PlayerCharacterListView,
+    PlayerCharacterUpdateView,
     SplashView,
 )
 
@@ -31,5 +35,22 @@ urlpatterns = [
         "campaigns/joined/",
         JoinedCampaignListView.as_view(),
         name="campaign_joined",
+    ),
+    # Character URLs
+    path("characters/", PlayerCharacterListView.as_view(), name="character_list"),
+    path(
+        "characters/new/",
+        PlayerCharacterCreateView.as_view(),
+        name="character_create",
+    ),
+    path(
+        "characters/<uuid:pk>/",
+        PlayerCharacterDetailView.as_view(),
+        name="character_detail",
+    ),
+    path(
+        "characters/<uuid:pk>/edit/",
+        PlayerCharacterUpdateView.as_view(),
+        name="character_edit",
     ),
 ]

@@ -5,7 +5,11 @@ from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
 
-from config.tests.factories import TabletopSystemFactory, UserFactory
+from config.tests.factories import (
+    PlayerCharacterFactory,
+    TabletopSystemFactory,
+    UserFactory,
+)
 from dunbud.models import Campaign
 
 User = get_user_model()
@@ -296,6 +300,30 @@ class CampaignDetailViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "campaign/campaign_detail.html")
         self.assertContains(response, "Epic Quest")
+
+    def test_player_character_name_display(self) -> None:
+        """
+        Test that the player's character name is displayed next to their username
+        and links to the character detail page.
+        """
+        # Create a character for the player in this campaign
+        character = PlayerCharacterFactory.create(
+            user=self.player,
+            campaign=self.campaign,
+            name="Grog Strongjaw",
+        )
+
+        self.client.force_login(self.player)
+        response = self.client.get(self.url)
+
+        self.assertContains(response, self.player.username)
+
+        # Build expected link URL
+        char_url = reverse("character_detail", kwargs={"pk": character.pk})
+
+        # Check that the character name appears in parenthesis and is linked
+        self.assertContains(response, f'href="{char_url}"')
+        self.assertContains(response, ">Grog Strongjaw</a>")
 
     def test_access_outsider_denied(self) -> None:
         """

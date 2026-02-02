@@ -7,7 +7,11 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from config.tests.factories import TabletopSystemFactory, UserFactory
+from config.tests.factories import (
+    PlayerCharacterFactory,
+    TabletopSystemFactory,
+    UserFactory,
+)
 from dunbud.models import Campaign, TabletopSystem
 
 # Get the custom user model
@@ -37,6 +41,9 @@ class Command(BaseCommand):
     - Each test user joins NUM_JOINED_USER_CAMPAIGNS other test-user campaigns as a player.
     - The 'dev' user joins ALL NUM_TEST_USERS test-user campaigns as a player.
     - Each 'Dev Campaign' has NUM_DEV_CAMPAIGN_MEMBERS random test users as players.
+
+    Characters:
+    - A PlayerCharacter is created for every player joining a campaign.
     """
 
     help = (
@@ -129,9 +136,23 @@ class Command(BaseCommand):
                 target_campaign = user_campaigns[idx]
                 target_campaign.players.add(user)
 
+                # Create character
+                PlayerCharacterFactory.create(
+                    user=user,
+                    campaign=target_campaign,
+                    name=f"{user.username}'s Character",
+                )
+
         # 5. Add Dev User to ALL User Campaigns
         for campaign in user_campaigns:
             campaign.players.add(dev_user)
+
+            # Create character
+            PlayerCharacterFactory.create(
+                user=dev_user,
+                campaign=campaign,
+                name="Dev's Hero",
+            )
 
         logger.info(
             "Dev user 'dev' added to all %d user campaigns.",
@@ -157,6 +178,15 @@ class Command(BaseCommand):
             # Assign random users as players
             selected_players = secure_random.sample(users, NUM_DEV_CAMPAIGN_MEMBERS)
             campaign.players.add(*selected_players)
+
+            # Create characters for these players
+            for player in selected_players:
+                PlayerCharacterFactory.create(
+                    user=player,
+                    campaign=campaign,
+                    name=f"{player.username}'s Dev Adventure Char",
+                )
+
             logger.debug(
                 "Created Dev campaign '%s' with %d players.",
                 campaign_name,

@@ -48,9 +48,17 @@
                         <h2 class="h5 mb-0">Players</h2>
                     </div>
                     <ul class="list-group list-group-flush">
-                        {% for player in campaign.players.all %}
+                        {% for player in players_with_data %}
                             <li class="list-group-item d-flex align-items-center">
-                                <div class="fw-bold">{{ player.username }}</div>
+                                <div class="fw-bold">
+                                    {{ player.username }}
+                                    {% if player.campaign_character %}
+                                        <span class="fw-normal text-muted">
+                                            (<a href="{% url 'character_detail' player.campaign_character.pk %}"
+   class="text-decoration-none">{{ player.campaign_character.name }}</a>)
+                                        </span>
+                                    {% endif %}
+                                </div>
                             </li>
                         {% empty %}
                             <li class="list-group-item text-muted fst-italic">No players joined yet.</li>

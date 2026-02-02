@@ -1,10 +1,13 @@
 import logging
 import uuid
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+if TYPE_CHECKING:
+    from dunbud.models.character import PlayerCharacter
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +105,14 @@ class Campaign(models.Model):
         auto_now=True,
         help_text=_("The date and time when the campaign was last updated."),
     )
+
+    if TYPE_CHECKING:
+        # Reverse relation for PlayerCharacter.campaign
+        player_characters: models.Manager[PlayerCharacter]
+        # Reverse relation for PartyFeedItem.campaign
+        feed_items: models.Manager[
+            Any
+        ]  # Typed as Any to avoid circular dependency with Feed
 
     class Meta:
         verbose_name = _("Campaign")
