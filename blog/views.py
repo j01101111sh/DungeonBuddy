@@ -53,7 +53,7 @@ class PostDetailView(DetailView):
         """
         context = super().get_context_data(**kwargs)
         if self.object:
-            logger.info(
+            logger.debug(
                 "Announcement viewed: %s (ID: %s)",
                 self.object.title,
                 self.object.pk,
