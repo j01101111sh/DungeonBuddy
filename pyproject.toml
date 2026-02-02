@@ -118,10 +118,29 @@ indent_size = 2
 indent_size = 2
 
 [tool.pytest.ini_options]
-addopts = "--ds=config.settings --reuse-db"
+addopts = "--ds=config.settings --reuse-db --cov=. --cov-report=term-missing --cov-fail-under=80"
 python_files = [
     "test_*.py",
 ]
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/__init__.py",
+    "manage.py",
+    "config/wsgi.py",
+    "config/asgi.py",
+    "env/*",
+    "venv/*",
+]
+plugins = ["django_coverage_plugin"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 80
 
 [tool.mypy]
 python_version = "3.14"
