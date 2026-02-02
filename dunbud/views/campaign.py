@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import QuerySet
@@ -114,8 +115,29 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             super()
             .get_queryset()
             .select_related("dungeon_master", "system")
-            .prefetch_related("players")
+            .prefetch_related("players", "player_characters")
         )
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        """
+        Add list of players with their active character for this campaign.
+        """
+        context = super().get_context_data(**kwargs)
+        campaign = self.object  # type: ignore[attr-defined]
+
+        # Map user_id to their character in this campaign
+        character_map = {
+            char.user_id: char for char in campaign.player_characters.all()
+        }
+
+        # Annotate players with their character for this campaign
+        players_with_data = []
+        for player in campaign.players.all():
+            player.campaign_character = character_map.get(player.pk)
+            players_with_data.append(player)
+
+        context["players_with_data"] = players_with_data
+        return context
 
     def test_func(self) -> bool:
         """

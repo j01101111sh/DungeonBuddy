@@ -5,7 +5,11 @@ from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
 
-from config.tests.factories import TabletopSystemFactory, UserFactory
+from config.tests.factories import (
+    PlayerCharacterFactory,
+    TabletopSystemFactory,
+    UserFactory,
+)
 from dunbud.models import Campaign
 
 User = get_user_model()
@@ -297,6 +301,24 @@ class CampaignDetailViewTests(TestCase):
         self.assertTemplateUsed(response, "campaign/campaign_detail.html")
         self.assertContains(response, "Epic Quest")
 
+    def test_player_character_name_display(self) -> None:
+        """
+        Test that the player's character name is displayed next to their username.
+        """
+        # Create a character for the player in this campaign
+        PlayerCharacterFactory.create(
+            user=self.player,
+            campaign=self.campaign,
+            name="Grog Strongjaw",
+        )
+
+        self.client.force_login(self.player)
+        response = self.client.get(self.url)
+
+        self.assertContains(response, self.player.username)
+        # Check that the character name appears in parenthesis
+        self.assertContains(response, "(Grog Strongjaw)")
+
     def test_access_outsider_denied(self) -> None:
         """
         Test that a user who is neither DM nor player receives a 403 Forbidden.
@@ -385,4 +407,5 @@ class CampaignDetailViewTests(TestCase):
         response = self.client.get(self.url)
 
         # The system name should no longer be in the response
+        self.assertNotContains(response, 'class="badge bg-light text-primary"')
         self.assertNotContains(response, 'class="badge bg-light text-primary"')
