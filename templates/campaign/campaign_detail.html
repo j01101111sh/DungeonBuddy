@@ -58,7 +58,9 @@
    class="text-decoration-none">{{ player.campaign_character.name }}</a>
                                             {% if player.campaign_character.character_sheet_link %}
                                                 <a href="{{ player.campaign_character.character_sheet_link }}"
-                                                   target="_blank">📜</a>
+                                                   target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   title="View character sheet">📜</a>
                                             {% endif %}
                                             )
                                         </span>
