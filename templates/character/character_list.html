@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+    My Characters - Dungeon Buddy
+{% endblock title %}
+{% block content %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">My Characters</h1>
+            <a href="{% url 'character_create' %}" class="btn btn-primary">Create Character</a>
+        </div>
+        {% if characters %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for character in characters %}
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'character_detail' character.pk %}"
+                                       class="text-decoration-none">{{ character.name }}</a>
+                                </h5>
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    Level {{ character.level }} {{ character.race }} {{ character.character_class }}
+                                </h6>
+                                <p class="card-text small text-truncate">{{ character.bio }}</p>
+                                {% if character.campaign %}
+                                    <p class="card-text small">
+                                        <i class="bi bi-flag"></i> Campaign: {{ character.campaign.name }}
+                                    </p>
+                                {% else %}
+                                    <p class="card-text small text-muted fst-italic">Not in a campaign</p>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <a href="{% url 'character_edit' character.pk %}"
+                                   class="btn btn-sm btn-outline-secondary">Edit</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                You haven't created any characters yet. <a href="{% url 'character_create' %}" class="alert-link">Create one now!</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}

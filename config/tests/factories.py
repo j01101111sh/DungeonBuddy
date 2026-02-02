@@ -3,7 +3,7 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 
-from dunbud.models import TabletopSystem
+from dunbud.models import Character, TabletopSystem
 from users.models import CustomUser
 
 # Type alias for the user model
@@ -69,3 +69,32 @@ class TabletopSystemFactory:
         defaults.update(kwargs)
 
         return TabletopSystem.objects.create(**defaults)
+
+
+class CharacterFactory:
+    """
+    Factory for creating Character instances for testing purposes.
+    """
+
+    @staticmethod
+    def create(user: CustomUser, **kwargs: Any) -> Character:
+        """
+        Creates a new Character instance.
+
+        Args:
+            user: The owner of the character.
+            **kwargs: Additional fields for the Character.
+
+        Returns:
+            Character instance.
+        """
+        defaults = {
+            "name": f"Char {secrets.token_hex(4)}",
+            "race": "Human",
+            "character_class": "Fighter",
+            "level": 1,
+            "bio": "A brave warrior.",
+        }
+        defaults.update(kwargs)
+
+        return Character.objects.create(user=user, **defaults)

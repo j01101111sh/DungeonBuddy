@@ -27,7 +27,23 @@
                         <a class="nav-link" href="{% url 'campaign_joined' %}">Joined Campaigns</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'campaign_create' %}">New Campaign</a>
+                        <a class="nav-link" href="{% url 'character_list' %}">My Characters</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle"
+                           href="#"
+                           id="createDropdown"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">Create</a>
+                        <ul class="dropdown-menu" aria-labelledby="createDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'campaign_create' %}">New Campaign</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'character_create' %}">New Character</a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle"
