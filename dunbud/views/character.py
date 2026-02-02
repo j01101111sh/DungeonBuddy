@@ -7,35 +7,35 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from dunbud.models import Character
+from dunbud.models import PlayerCharacter
 
 logger = logging.getLogger(__name__)
 
 
-class CharacterListView(LoginRequiredMixin, ListView):
+class PlayerCharacterListView(LoginRequiredMixin, ListView):
     """
     View to list characters belonging to the current user.
     """
 
-    model = Character
+    model = PlayerCharacter
     template_name = "character/character_list.html"
     context_object_name = "characters"
 
-    def get_queryset(self) -> QuerySet[Character]:
+    def get_queryset(self) -> QuerySet[PlayerCharacter]:
         """
         Returns characters owned by the logged-in user.
         """
         if not self.request.user.is_authenticated:
-            return Character.objects.none()
-        return Character.objects.filter(user=self.request.user)
+            return PlayerCharacter.objects.none()
+        return PlayerCharacter.objects.filter(user=self.request.user)
 
 
-class CharacterCreateView(LoginRequiredMixin, CreateView):
+class PlayerCharacterCreateView(LoginRequiredMixin, CreateView):
     """
     View to create a new character.
     """
 
-    model = Character
+    model = PlayerCharacter
     fields = ["name", "race", "character_class", "level", "bio", "campaign"]
     template_name = "character/character_form.html"
 
@@ -56,12 +56,12 @@ class CharacterCreateView(LoginRequiredMixin, CreateView):
         return reverse("character_list")
 
 
-class CharacterUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class PlayerCharacterUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """
     View to update an existing character.
     """
 
-    model = Character
+    model = PlayerCharacter
     fields = ["name", "race", "character_class", "level", "bio", "campaign"]
     template_name = "character/character_form.html"
 
@@ -76,13 +76,13 @@ class CharacterUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return reverse("character_detail", kwargs={"pk": self.object.pk})
 
 
-class CharacterDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+class PlayerCharacterDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     """
     View to display character details.
     Visible to the owner and members (DM/Players) of the assigned campaign.
     """
 
-    model = Character
+    model = PlayerCharacter
     template_name = "character/character_detail.html"
     context_object_name = "character"
 

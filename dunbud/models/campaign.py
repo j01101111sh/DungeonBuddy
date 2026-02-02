@@ -7,7 +7,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 if TYPE_CHECKING:
-    from dunbud.models.character import Character
+    from dunbud.models.character import PlayerCharacter
 
 logger = logging.getLogger(__name__)
 
@@ -107,8 +107,8 @@ class Campaign(models.Model):
     )
 
     if TYPE_CHECKING:
-        # Reverse relation for Character.campaign
-        characters: models.Manager[Character]
+        # Reverse relation for PlayerCharacter.campaign
+        player_characters: models.Manager[PlayerCharacter]
         # Reverse relation for PartyFeedItem.campaign
         feed_items: models.Manager[
             Any

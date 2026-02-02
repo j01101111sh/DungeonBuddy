@@ -1,5 +1,5 @@
 from .campaign import Campaign, TabletopSystem
-from .character import Character
+from .character import PlayerCharacter
 from .feed import PartyFeedItem
 
-__all__ = ["Campaign", "TabletopSystem", "PartyFeedItem", "Character"]
+__all__ = ["Campaign", "TabletopSystem", "PartyFeedItem", "PlayerCharacter"]

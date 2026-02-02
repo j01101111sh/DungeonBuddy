@@ -11,7 +11,7 @@ from .campaign import Campaign
 logger = logging.getLogger(__name__)
 
 
-class Character(models.Model):
+class PlayerCharacter(models.Model):
     """
     Model representing a player character in a tabletop RPG.
     """
@@ -69,8 +69,8 @@ class Character(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Character")
-        verbose_name_plural = _("Characters")
+        verbose_name = _("PlayerCharacter")
+        verbose_name_plural = _("PlayerCharacters")
         ordering = ["name"]
 
     def __str__(self) -> str:
@@ -79,7 +79,7 @@ class Character(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> None:
         """
         Saves the character instance.
-        Logs the creation of a new character.
+        Logs the creation of a new player character.
         """
         is_new = self._state.adding
         super().save(*args, **kwargs)

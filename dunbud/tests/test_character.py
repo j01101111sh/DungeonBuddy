@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from config.tests.factories import CharacterFactory, UserFactory
-from dunbud.models import Campaign, Character
+from config.tests.factories import PlayerCharacterFactory, UserFactory
+from dunbud.models import Campaign, PlayerCharacter
 
 
 class CharacterModelTests(TestCase):
@@ -18,7 +18,7 @@ class CharacterModelTests(TestCase):
         """
         Test that a character can be created with basic attributes.
         """
-        character = Character.objects.create(
+        character = PlayerCharacter.objects.create(
             user=self.user,
             name="Aragorn",
             race="Human",
@@ -33,20 +33,20 @@ class CharacterModelTests(TestCase):
         """
         Test linking a character to a campaign.
         """
-        character = Character.objects.create(
+        character = PlayerCharacter.objects.create(
             user=self.user,
             name="Gimli",
             campaign=self.campaign,
         )
         self.assertEqual(character.campaign, self.campaign)
-        self.assertIn(character, self.campaign.characters.all())
+        self.assertIn(character, self.campaign.player_characters.all())
 
     def test_character_creation_logs(self) -> None:
         """
         Test that creating a character logs the event.
         """
         with self.assertLogs("dunbud.models.character", level="INFO") as cm:
-            Character.objects.create(user=self.user, name="Legolas")
+            PlayerCharacter.objects.create(user=self.user, name="Legolas")
             self.assertTrue(
                 any("New character created: Legolas" in m for m in cm.output),
             )
@@ -62,8 +62,8 @@ class CharacterViewTests(TestCase):
         """
         Test that the list view shows only the user's characters.
         """
-        c1 = CharacterFactory.create(user=self.user, name="My Char")
-        CharacterFactory.create(user=self.other_user, name="Other Char")
+        c1 = PlayerCharacterFactory.create(user=self.user, name="My Char")
+        PlayerCharacterFactory.create(user=self.other_user, name="Other Char")
 
         response = self.client.get(reverse("character_list"))
         self.assertEqual(response.status_code, 200)
@@ -85,7 +85,7 @@ class CharacterViewTests(TestCase):
         response = self.client.post(url, data)
 
         # Should redirect to detail view
-        character = Character.objects.get(name="New Hero")
+        character = PlayerCharacter.objects.get(name="New Hero")
         self.assertRedirects(
             response,
             reverse("character_detail", kwargs={"pk": character.pk}),
@@ -96,7 +96,7 @@ class CharacterViewTests(TestCase):
         """
         Test that only the owner can edit the character.
         """
-        char = CharacterFactory.create(user=self.user)
+        char = PlayerCharacterFactory.create(user=self.user)
         url = reverse("character_edit", kwargs={"pk": char.pk})
 
         response = self.client.get(url)
@@ -118,7 +118,7 @@ class CharacterViewTests(TestCase):
         campaign = Campaign.objects.create(name="Camp", dungeon_master=dm)
         campaign.players.add(player)
 
-        char = CharacterFactory.create(user=self.user, campaign=campaign)
+        char = PlayerCharacterFactory.create(user=self.user, campaign=campaign)
         url = reverse("character_detail", kwargs={"pk": char.pk})
 
         # Owner can view

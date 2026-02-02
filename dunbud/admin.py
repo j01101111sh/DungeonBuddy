@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from dunbud.models import Campaign, Character, TabletopSystem
+from dunbud.models import Campaign, PlayerCharacter, TabletopSystem
 
 
 @admin.register(Campaign)
@@ -12,8 +12,8 @@ class CampaignAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
 
-@admin.register(Character)
-class CharacterAdmin(admin.ModelAdmin):
+@admin.register(PlayerCharacter)
+class PlayerCharacterAdmin(admin.ModelAdmin):
     list_display = ["name", "user", "campaign", "level", "character_class"]
     search_fields = ["name", "user__username", "campaign__name"]
     list_filter = ["created_at", "level"]

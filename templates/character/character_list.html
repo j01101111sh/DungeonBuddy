@@ -9,9 +9,9 @@
             <h1 class="h2">My Characters</h1>
             <a href="{% url 'character_create' %}" class="btn btn-primary">Create Character</a>
         </div>
-        {% if characters %}
+        {% if player_characters %}
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                {% for character in characters %}
+                {% for character in player_characters %}
                     <div class="col">
                         <div class="card h-100 shadow-sm">
                             <div class="card-body">
