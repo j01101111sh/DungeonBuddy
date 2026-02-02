@@ -90,21 +90,23 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-8">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h2 class="h5 mb-0">Party Feed</h2>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h2 class="h5 mb-0">Party Feed</h2>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in campaign.feed_items.all %}
+                            <li class="list-group-item">
+                                <small class="text-muted d-block">{{ item.created_at|date:"M d, Y H:i" }}</small>
+                                {{ item.message }}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted fst-italic">No recent activity.</li>
+                        {% endfor %}
+                    </ul>
                 </div>
-                <ul class="list-group list-group-flush">
-                    {% for item in campaign.feed_items.all %}
-                        <li class="list-group-item">
-                            <small class="text-muted d-block">{{ item.created_at|date:"M d, Y H:i" }}</small>
-                            {{ item.message }}
-                        </li>
-                    {% empty %}
-                        <li class="list-group-item text-muted fst-italic">No recent activity.</li>
-                    {% endfor %}
-                </ul>
             </div>
         </div>
     </div>
