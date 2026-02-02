@@ -18,7 +18,11 @@
                     </ol>
                 </nav>
                 <article class="blog-post">
-                    <h1 class="display-5 mb-3">{{ post.title }}</h1>
+                    {% if not post.is_published %}
+                        <h1 class="display-5 mb-3 text-danger fst-italic">Unpublished {{ post.title }}</h1>
+                    {% else %}
+                        <h1 class="display-5 mb-3">{{ post.title }}</h1>
+                    {% endif %}
                     <p class="blog-post-meta text-muted border-bottom pb-3 mb-4">
                         Posted on {{ post.created_at|date:"F j, Y" }} by <strong>{{ post.author.username }}</strong>
                         {% if user.is_staff %}
