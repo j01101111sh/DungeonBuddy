@@ -10,7 +10,7 @@ from dunbud.management.commands.populate_dev_data import (
     NUM_JOINED_USER_CAMPAIGNS,
     NUM_TEST_USERS,
 )
-from dunbud.models import Campaign
+from dunbud.models import Campaign, PlayerCharacter
 
 User = get_user_model()
 
@@ -107,3 +107,18 @@ class PopulateDevDataTests(TestCase):
                 campaign.players.all(),
                 f"Dev user should be a player in user campaign {campaign.name}",
             )
+
+    def test_character_generation(self) -> None:
+        """
+        Test that characters are automatically generated when players join campaigns.
+        """
+        # Verify that for every player-campaign association, a character exists
+        for campaign in Campaign.objects.all():
+            for player in campaign.players.all():
+                self.assertTrue(
+                    PlayerCharacter.objects.filter(
+                        user=player,
+                        campaign=campaign,
+                    ).exists(),
+                    f"Character missing for player {player.username} in campaign {campaign.name}",
+                )
