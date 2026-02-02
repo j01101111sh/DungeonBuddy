@@ -69,8 +69,8 @@ class PlayerCharacter(models.Model):
     )
 
     class Meta:
-        verbose_name = _("PlayerCharacter")
-        verbose_name_plural = _("PlayerCharacters")
+        verbose_name = _("Player Character")
+        verbose_name_plural = _("Player Characters")
         ordering = ["name"]
 
     def __str__(self) -> str:
