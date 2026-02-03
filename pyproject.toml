@@ -125,6 +125,7 @@ python_files = [
 ]
 
 [tool.coverage.run]
+core = "ctrace"
 source = ["."]
 omit = [
     "*/migrations/*",
@@ -135,6 +136,8 @@ omit = [
     "config/asgi.py",
     "env/*",
     "venv/*",
+    ".venv/*",
+    "requirements.txt",
 ]
 plugins = ["django_coverage_plugin"]
 
@@ -142,6 +145,9 @@ plugins = ["django_coverage_plugin"]
 show_missing = true
 skip_covered = true
 fail_under = 80
+
+[tool.coverage.django_coverage_plugin]
+template_extensions = "html"
 
 [tool.mypy]
 python_version = "3.14"

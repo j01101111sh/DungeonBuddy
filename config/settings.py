@@ -77,6 +77,8 @@ TEMPLATES = [
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
+            # Enable template debug for coverage if explicitly requested, otherwise follow DEBUG setting
+            "debug": os.getenv("TEMPLATE_DEBUG", "False") == "True" or DEBUG,
             "context_processors": [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
