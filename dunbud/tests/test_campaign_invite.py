@@ -130,3 +130,24 @@ class CampaignInvitationTests(TestCase):
         expected_str = f"Invite for {self.campaign.name} ({invite.token[:8]}...)"
 
         self.assertEqual(str(invite), expected_str)
+
+    def test_already_joined_player_cannot_rejoin(self) -> None:
+        """
+        Verify that a player who has already joined cannot join again via invite.
+        """
+        # First, the player joins the campaign
+        self.campaign.players.add(self.player)
+
+        # Create an invite link
+        invite = CampaignInvitation.objects.create(campaign=self.campaign)
+        join_url = reverse("campaign_join", kwargs={"token": invite.token})
+
+        self.client.login(username=self.player.username, password=self.player_pass)
+
+        # Attempt to join again
+        response = self.client.get(join_url, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        # Ensure the player count hasn't increased/changed unexpectedly
+        self.assertEqual(self.campaign.players.filter(pk=self.player.pk).count(), 1)
+        self.assertContains(response, "You are already a player in this campaign.")
