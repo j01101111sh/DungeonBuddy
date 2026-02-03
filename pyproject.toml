@@ -119,7 +119,7 @@ indent_size = 2
 indent_size = 2
 
 [tool.pytest.ini_options]
-addopts = "--ds=config.settings --reuse-db --cov"
+addopts = "--ds=config.settings --reuse-db --cov --cov-report=html"
 python_files = [
     "test_*.py",
 ]
