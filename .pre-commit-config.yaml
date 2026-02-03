@@ -102,3 +102,9 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push]
+      - id: run-tests
+        name: Run pytest
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
