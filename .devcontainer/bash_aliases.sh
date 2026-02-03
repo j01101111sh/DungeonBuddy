@@ -8,4 +8,4 @@ alias djc='dj collectstatic --noinput'
 alias djmm='dj makemigrations'
 alias djm='dj migrate'
 alias ds='./dev_setup.sh'
-alias prunelocal='git fetch --prune && git branch -vv | grep ": gone]" | awk "{print $1}" | xargs git branch -D'
+alias prunelocal="git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D"
