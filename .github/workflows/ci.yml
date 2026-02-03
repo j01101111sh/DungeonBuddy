@@ -53,6 +53,9 @@ jobs:
       - name: Run Django Tests
         run: uv run pytest
 
+      - name: Enforce Diff Coverage
+        run: uv run diff-cover coverage.xml --compare-branch=origin/main --fail-under=80
+
       - name: Upload Coverage Report
         if: always()
         uses: actions/upload-artifact@v4 # Updated to v4
