@@ -254,3 +254,21 @@ CACHES = {
         "LOCATION": "my_cache_table",  # The name of the table in the database
     },
 }
+
+if DEBUG:
+    # Use a faster, insecure password hasher for tests to speed up user creation/login
+    PASSWORD_HASHERS = [
+        "django.contrib.auth.hashers.MD5PasswordHasher",
+    ]
+
+    # Use in-memory caching instead of the database cache during tests
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        },
+    }
+
+    # Prevent log file I/O during tests to further improve speed
+    # This disables the 'file' handler defined in your LOGGING setting
+    if "handlers" in LOGGING and "file" in LOGGING["handlers"]:  # type: ignore[operator]
+        LOGGING["handlers"]["file"] = {"class": "logging.NullHandler"}  # type: ignore[index]
