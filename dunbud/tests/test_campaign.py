@@ -261,6 +261,25 @@ class CampaignListViewTests(TestCase):
         self.assertContains(response, "Player Campaign")
         self.assertNotContains(response, "DM Campaign")
 
+    def test_joined_list_empty(self) -> None:
+        """
+        Test that the joined list view displays a specific message when the user has joined no campaigns.
+        """
+        # Create a user who has not joined any campaigns as a player
+        lone_wolf, _ = UserFactory.create(username="lone_wolf")
+        self.client.force_login(lone_wolf)
+
+        response = self.client.get(self.joined_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/joined_campaign_list.html")
+
+        # Verify the context list is empty
+        self.assertFalse(response.context["campaigns"])
+
+        # Verify the empty state message from the template
+        self.assertContains(response, "You have not joined any campaigns yet.")
+
     def test_managed_list_anonymous(self) -> None:
         """
         Test that anonymous users are redirected from managed list.
