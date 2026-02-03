@@ -40,6 +40,10 @@ class PlayerCharacter(models.Model):
         max_length=255,
         help_text=_("The name of the character."),
     )
+    character_sheet_link = models.URLField(
+        blank=True,
+        help_text=_("A link to the character's sheet."),
+    )
     race = models.CharField(
         max_length=100,
         blank=True,
