@@ -35,7 +35,7 @@ class PopulateDevDataTests(TestCase):
         """
         out = StringIO()
         call_command("populate_dev_data", stdout=out)
-        self.assertIn("Successfully generated development data.", out.getvalue())
+        self.assertIn("Successfully generated all development data.", out.getvalue())
 
     def test_data_generation_counts(self) -> None:
         """
