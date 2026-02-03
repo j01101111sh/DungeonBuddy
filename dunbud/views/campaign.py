@@ -230,29 +230,22 @@ class CampaignInvitationCreateView(LoginRequiredMixin, View):
         # Here we create a new one as requested by the 'Generate' action.
 
         with transaction.atomic():
-            # Optional: Deactivate old invites to ensure only one valid link at a time
-            # campaign.invitations.update(is_active=False)
+            # Deactivate old invites to ensure only one is active.
+            campaign.invitations.filter(is_active=True).update(is_active=False)
 
-            invite, created = CampaignInvitation.objects.get_or_create(
-                campaign=campaign,
-                is_active=True,
+            # Create a new invitation.
+            invite = CampaignInvitation.objects.create(campaign=campaign)
+
+            logger.info(
+                "Created new invitation %s for campaign %s by %s",
+                invite.id,
+                campaign.id,
+                request.user,
             )
-
-            if created:
-                logger.info(
-                    "Created new invitation %s for campaign %s by %s",
-                    invite.id,
-                    campaign.id,
-                    request.user,
-                )
-                messages.success(request, "Invitation link generated.")
-            else:
-                logger.info(
-                    "Retrieved existing invitation %s for campaign %s",
-                    invite.id,
-                    campaign.id,
-                )
-                messages.info(request, "Existing active invitation retrieved.")
+            messages.success(
+                request,
+                "A new invitation link has been generated. Previous links are now inactive.",
+            )
 
         return redirect("campaign_detail", pk=pk)
 
@@ -301,18 +294,4 @@ class CampaignJoinView(LoginRequiredMixin, View):
             )
             messages.error(request, "An error occurred while joining the campaign.")
 
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
         return redirect("campaign_detail", pk=campaign.pk)
