@@ -151,6 +151,23 @@ fail_under = 95
 [tool.coverage.django_coverage_plugin]
 template_extensions = "html"
 
+[tool.diff-cover]
+coverage-xml = "coverage.xml"
+compare-branch = "origin/main"  # Or your default branch
+fail-under = 80
+ignore-files = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/__init__.py",
+    "manage.py",
+    "config/wsgi.py",
+    "config/asgi.py",
+    "env/*",
+    "venv/*",
+    ".venv/*",
+    "requirements.txt",
+]
+
 [tool.mypy]
 python_version = "3.14"
 check_untyped_defs = true
