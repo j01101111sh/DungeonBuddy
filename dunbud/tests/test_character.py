@@ -78,6 +78,27 @@ class CharacterViewTests(TestCase):
         # Verify user-friendly empty state message matches your template
         self.assertContains(response, "You haven't created any characters yet")
 
+    def test_character_detail_sheet_link(self) -> None:
+        """
+        Test that the external character sheet link is displayed when present.
+        """
+        # Create a character with a sheet link
+        character = PlayerCharacterFactory.create(
+            user=self.user,
+            name="Link Tester",
+            character_sheet_link="https://dndbeyond.com/characters/12345",
+        )
+        url = reverse("character_detail", kwargs={"pk": character.pk})
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Verify the link URL is present
+        self.assertContains(response, "https://dndbeyond.com/characters/12345")
+
+        # Verify the label/text is present (matches the template update)
+        self.assertContains(response, "Character sheet link")
+
     def test_character_list_with_campaign(self) -> None:
         """
         Test that the character list displays the campaign name for assigned characters.
