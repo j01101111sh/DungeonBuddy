@@ -82,3 +82,22 @@ class PartyFeedTests(TestCase):
 
         self.assertIsNotNone(feed_item)
         self.assertEqual(feed_item.message, "player_feed left the party.")
+
+    def test_party_feed_item_str(self) -> None:
+        """
+        Test that the __str__ representation includes the campaign name and message.
+        """
+        message_text = "The party has entered the dungeon."
+        feed_item = PartyFeedItem.objects.create(
+            campaign=self.campaign,
+            message=message_text,
+        )
+
+        # The expected format is "{campaign.name}: {message}"
+        expected_str = f"{self.campaign}: {message_text}"
+
+        self.assertEqual(
+            str(feed_item),
+            expected_str,
+            "PartyFeedItem __str__ should match '{campaign_name}: {message}' format.",
+        )
