@@ -329,7 +329,7 @@ class CharacterCreateFormTests(TestCase):
             "level": 5,
             "bio": "Dagger, dagger, dagger.",
             "campaign": self.campaign.pk,
-            # "character_sheet_link": "..." # Include this if you added the field earlier
+            "character_sheet_link": "https://pathbuilder2e.com/",
         }
 
         response = self.client.post(self.url, data)
