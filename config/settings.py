@@ -256,7 +256,7 @@ CACHES = {
     },
 }
 
-if DEBUG and "pytest" in "".join(sys.argv):
+if DEBUG and "pytest" in "".join(sys.argv) and sys.modules.get("pytest") is not None:
     # Use a faster, insecure password hasher for tests to speed up user creation/login
     PASSWORD_HASHERS = [
         "django.contrib.auth.hashers.MD5PasswordHasher",
