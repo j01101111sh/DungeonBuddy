@@ -1,6 +1,7 @@
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
 from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
@@ -630,7 +631,7 @@ class CampaignJoinViewTests(TestCase):
         self.assertRedirects(response, reverse("campaign_joined"))
 
         # Check flash message
-        messages = list(response.context["messages"])
+        messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(
             str(messages[0]),
