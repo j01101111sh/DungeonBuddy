@@ -186,6 +186,56 @@ class BlogViewTests(TestCase):
         self.assertNotContains(response, "<script>")
         self.assertContains(response, "Safe Text")
 
+    def test_post_list_pagination(self) -> None:
+        """
+        Test that the post list is paginated (5 posts per page).
+        """
+        # Create 6 additional published posts (Total 7 including setUp)
+        for i in range(6):
+            Post.objects.create(
+                title=f"Pagination Post {i}",
+                slug=f"pagination-post-{i}",
+                content="Content",
+                author=self.staff_user,
+                is_published=True,
+            )
+
+        # 1. Test Page 1
+        response = self.client.get(reverse("blog:post_list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["is_paginated"])
+        # Should only show 5 posts (defined in views.py)
+        self.assertEqual(len(response.context["posts"]), 5)
+
+        # 2. Test Page 2
+        response = self.client.get(reverse("blog:post_list") + "?page=2")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["is_paginated"])
+        # Should show remaining 2 posts (1 from setUp + 6 created = 7 total)
+        self.assertEqual(len(response.context["posts"]), 2)
+
+        # 3. Test Invalid Page
+        response = self.client.get(reverse("blog:post_list") + "?page=999")
+        self.assertEqual(response.status_code, 404)
+
+    def test_post_list_empty(self) -> None:
+        """
+        Test that the list view displays a specific message when no posts exist.
+        """
+        # Clear posts created in setUp so the database is empty for this specific test
+        Post.objects.all().delete()
+
+        response = self.client.get(reverse("blog:post_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "blog/post_list.html")
+
+        # Verify the "empty" message from the template is displayed
+        self.assertContains(response, "No announcements have been posted yet.")
+
+        # Verify the context object list is actually empty
+        self.assertFalse(response.context["posts"])
+
 
 class BlogAdminTests(TestCase):
     def setUp(self) -> None:
