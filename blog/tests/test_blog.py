@@ -119,7 +119,7 @@ class BlogViewTests(TestCase):
         self.assertTemplateUsed(response, "blog/post_detail.html")
 
         # Verify logging (optional, checks if log message was emitted)
-        with self.assertLogs("blog.views", level="INFO") as cm:
+        with self.assertLogs("blog.views", level="DEBUG") as cm:
             self.client.get(url)
             self.assertTrue(
                 any("Announcement viewed: Published Post" in m for m in cm.output),
