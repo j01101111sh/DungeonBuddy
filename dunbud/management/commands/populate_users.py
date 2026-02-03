@@ -30,13 +30,18 @@ class Command(BaseCommand):
     def _generate_users(self) -> None:
         # Dev User
         if not User.objects.filter(username="dev").exists():
-            dev_user, dev_pass = UserFactory.create(
+            _, dev_pass = UserFactory.create(
                 username="dev",
                 is_staff=True,
                 is_superuser=False,
             )
-            Path(".devpass").write_text(dev_pass)
-            logger.info("Created 'dev' user.")
+
+            file_path = Path(".devpass")
+            with file_path.open("w") as f:
+                f.write(dev_pass)
+        elif existing_dev_user := User.objects.filter(username="dev").first():
+            existing_dev_user.is_staff = True
+            existing_dev_user.save()
 
         # Test Users
         # We exclude the dev user to count only test users
