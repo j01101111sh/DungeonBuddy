@@ -1,6 +1,8 @@
 from .campaign import (
     CampaignCreateView,
     CampaignDetailView,
+    CampaignInvitationCreateView,
+    CampaignJoinView,
     CampaignUpdateView,
     JoinedCampaignListView,
     ManagedCampaignListView,
@@ -16,6 +18,8 @@ from .splash import SplashView
 __all__ = [
     "CampaignCreateView",
     "CampaignDetailView",
+    "CampaignInvitationCreateView",
+    "CampaignJoinView",
     "CampaignUpdateView",
     "JoinedCampaignListView",
     "ManagedCampaignListView",

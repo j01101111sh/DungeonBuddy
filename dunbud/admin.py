@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from dunbud.models import Campaign, PlayerCharacter, TabletopSystem
+from dunbud.models import Campaign, CampaignInvitation, PlayerCharacter, TabletopSystem
+
+
+class CampaignInvitationInline(admin.TabularInline):
+    model = CampaignInvitation
+    extra = 0
+    readonly_fields = ("token", "created_at")
 
 
 @admin.register(Campaign)
@@ -10,6 +16,7 @@ class CampaignAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "updated_at"]
     filter_horizontal = ["players"]
     date_hierarchy = "created_at"
+    inlines = [CampaignInvitationInline]
 
 
 @admin.register(PlayerCharacter)
@@ -27,3 +34,11 @@ class TabletopSystemAdmin(admin.ModelAdmin):
 
     list_display = ("name", "short_name", "description")
     search_fields = ("name",)
+
+
+@admin.register(CampaignInvitation)
+class CampaignInvitationAdmin(admin.ModelAdmin):
+    list_display = ("campaign", "created_at", "is_active")
+    list_filter = ("is_active", "created_at")
+    search_fields = ("campaign__name",)
+    readonly_fields = ("token",)

@@ -1,14 +1,18 @@
 import logging
 from typing import Any
 
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db import transaction
 from django.db.models import QuerySet
 from django.forms.models import BaseModelForm
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
-from dunbud.models import Campaign
+from dunbud.models.campaign import Campaign, CampaignInvitation
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +129,12 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         context = super().get_context_data(**kwargs)
         campaign = self.object  # type: ignore[attr-defined]
 
+        if self.request.user == self.object.dungeon_master:
+            # Fetch the most recent active invitation if it exists
+            context["active_invite"] = self.object.invitations.filter(
+                is_active=True,
+            ).first()
+
         # Map user_id to their character in this campaign
         character_map = {
             char.user_id: char for char in campaign.player_characters.all()
@@ -188,3 +198,100 @@ class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_success_url(self) -> str:
         return reverse("campaign_detail", kwargs={"pk": self.object.pk})
+
+
+class CampaignInvitationCreateView(LoginRequiredMixin, View):
+    """
+    View to generate a new invitation link for a campaign.
+    Only accessible by the Dungeon Master of the campaign.
+    """
+
+    def post(self, request: HttpRequest, pk: str) -> HttpResponse:
+        """
+        Handle POST request to create a new invitation.
+        """
+        campaign = get_object_or_404(Campaign, pk=pk)
+
+        # Permission check: Only DM can create invites
+        if campaign.dungeon_master != request.user:
+            logger.warning(
+                "Unauthorized invite creation attempt by user %s for campaign %s",
+                request.user.id,
+                campaign.id,
+            )
+            messages.error(
+                request,
+                "Only the Dungeon Master can generate invitation links.",
+            )
+            return redirect("campaign_detail", pk=pk)
+
+        # Invalidate old invites (optional logic, keeping it clean for now by just creating a new one)
+        # or get existing active one to ensure idempotency if desired.
+        # Here we create a new one as requested by the 'Generate' action.
+
+        with transaction.atomic():
+            # Deactivate old invites to ensure only one is active.
+            campaign.invitations.filter(is_active=True).update(is_active=False)
+
+            # Create a new invitation.
+            invite = CampaignInvitation.objects.create(campaign=campaign)
+
+            logger.info(
+                "Created new invitation %s for campaign %s by %s",
+                invite.id,
+                campaign.id,
+                request.user,
+            )
+            messages.success(
+                request,
+                "A new invitation link has been generated. Previous links are now inactive.",
+            )
+
+        return redirect("campaign_detail", pk=pk)
+
+
+class CampaignJoinView(LoginRequiredMixin, View):
+    """
+    View to process a user clicking an invitation link.
+    """
+
+    def get(self, request: HttpRequest, token: str) -> HttpResponse:
+        """
+        Validate token and add user to campaign.
+        """
+        if not request.user.is_authenticated:
+            return redirect(settings.LOGIN_URL)
+
+        invite = get_object_or_404(CampaignInvitation, token=token, is_active=True)
+        campaign = invite.campaign
+
+        # 1. Prevent DM from joining as a player
+        if request.user == campaign.dungeon_master:
+            messages.warning(request, "You are the Dungeon Master of this campaign.")
+            return redirect("campaign_detail", pk=campaign.pk)
+
+        # 2. Check if already a player
+        if request.user.pk and campaign.players.filter(pk=request.user.pk).exists():
+            messages.info(request, "You are already a player in this campaign.")
+            return redirect("campaign_detail", pk=campaign.pk)
+
+        # 3. Add to players
+        try:
+            campaign.players.add(request.user)
+            logger.info(
+                "User %s joined campaign %s via invite %s",
+                request.user.id,
+                campaign.id,
+                invite.id,
+            )
+            messages.success(request, f"You have successfully joined {campaign.name}!")
+        except Exception as e:
+            logger.error(
+                "Error adding user %s to campaign %s: %s",
+                request.user.id,
+                campaign.id,
+                e,
+            )
+            messages.error(request, "An error occurred while joining the campaign.")
+
+        return redirect("campaign_detail", pk=campaign.pk)

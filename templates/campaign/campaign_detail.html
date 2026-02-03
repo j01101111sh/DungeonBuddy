@@ -72,6 +72,40 @@
                         {% endfor %}
                     </ul>
                 </div>
+                {% if user == campaign.dungeon_master %}
+                    <div class="card border-primary mt-1">
+                        <div class="card-header bg-primary text-white">Invitation Link</div>
+                        <div class="card-body">
+                            {% if active_invite %}
+                                <p class="small text-muted">Share this link with players:</p>
+                                <div class="input-group mb-3">
+                                    <input type="text"
+                                           class="form-control"
+                                           value="{{ request.scheme }}://{{ request.get_host }}{{ active_invite.get_absolute_url }}"
+                                           readonly
+                                           id="inviteLink" />
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            onclick="navigator.clipboard.writeText(document.getElementById('inviteLink').value)">
+                                        Copy
+                                    </button>
+                                </div>
+                            {% else %}
+                                <p class="small text-muted">No active invitation link.</p>
+                            {% endif %}
+                            <form action="{% url 'campaign_invite_create' campaign.pk %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-primary w-100">
+                                    {% if active_invite %}
+                                        Regenerate Link
+                                    {% else %}
+                                        Generate Invite Link
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endif %}
                 <div class="mt-3">
                     <a href="{% if campaign.dungeon_master == request.user %}{% url 'campaign_managed' %}{% else %}{% url 'campaign_joined' %}{% endif %}"
                        class="btn btn-link">Back to My Campaigns</a>

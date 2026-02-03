@@ -3,6 +3,8 @@ from django.urls import path
 from .views import (
     CampaignCreateView,
     CampaignDetailView,
+    CampaignInvitationCreateView,
+    CampaignJoinView,
     CampaignUpdateView,
     JoinedCampaignListView,
     ManagedCampaignListView,
@@ -35,6 +37,16 @@ urlpatterns = [
         "campaigns/joined/",
         JoinedCampaignListView.as_view(),
         name="campaign_joined",
+    ),
+    path(
+        "campaigns/<uuid:pk>/invite/create/",
+        CampaignInvitationCreateView.as_view(),
+        name="campaign_invite_create",
+    ),
+    path(
+        "invites/<str:token>/",
+        CampaignJoinView.as_view(),
+        name="campaign_join",
     ),
     # Character URLs
     path("characters/", PlayerCharacterListView.as_view(), name="character_list"),
