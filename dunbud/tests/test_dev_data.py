@@ -4,12 +4,12 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
 
-from dunbud.management.commands.populate_dev_data import (
+from dunbud.management.commands.populate_campaigns import (
     NUM_DEV_CAMPAIGN_MEMBERS,
     NUM_DEV_CAMPAIGNS,
     NUM_JOINED_USER_CAMPAIGNS,
-    NUM_TEST_USERS,
 )
+from dunbud.management.commands.populate_users import NUM_TEST_USERS
 from dunbud.models import Campaign, PlayerCharacter
 
 User = get_user_model()
