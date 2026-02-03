@@ -39,6 +39,7 @@ if [ ! -f .env ]; then
     echo "SECRET_KEY=$(uv run python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')" > .env
     echo -e "${YELLOW}Setting DEBUG to True for dev environments...${NC}"
     echo "DEBUG=True" >> .env
+    echo "TEMPLATE_DEBUG=True" >> .env
     echo "CSRF_TRUSTED_ORIGINS=https://localhost:8000,https://*.github.dev,https://*.app.github.dev" >> .env
     echo "ADMIN_URL=admin/" >> .env
     echo "ALLOWED_HOSTS=*" >> .env

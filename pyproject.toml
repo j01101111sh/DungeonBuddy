@@ -18,10 +18,12 @@ dependencies = [
 [dependency-groups]
 dev = [
     "bandit>=1.9.3",
+    "django-coverage-plugin>=3.2.0",
     "django-stubs[compatible-mypy]>=5.2.9",
     "mypy>=1.19.1",
     "pre-commit>=4.5.1",
     "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
     "pytest-django>=4.11.1",
     "ruff>=0.14.14",
     "types-markdown>=3.10.0.20251106",
@@ -117,10 +119,35 @@ indent_size = 2
 indent_size = 2
 
 [tool.pytest.ini_options]
-addopts = "--ds=config.settings --reuse-db"
+addopts = "--ds=config.settings --reuse-db --cov --cov-report=html"
 python_files = [
     "test_*.py",
 ]
+
+[tool.coverage.run]
+core = "ctrace"
+source = ["."]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/__init__.py",
+    "manage.py",
+    "config/wsgi.py",
+    "config/asgi.py",
+    "env/*",
+    "venv/*",
+    ".venv/*",
+    "requirements.txt",
+]
+plugins = ["django_coverage_plugin"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 80
+
+[tool.coverage.django_coverage_plugin]
+template_extensions = "html"
 
 [tool.mypy]
 python_version = "3.14"

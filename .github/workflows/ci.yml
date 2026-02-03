@@ -15,6 +15,7 @@ jobs:
     env:
       SECRET_KEY: "django-insecure-test-key-for-ci-environment"
       LOG_LEVEL: "DEBUG"
+      TEMPLATE_DEBUG: "True"
 
     steps:
       - name: Checkout code
@@ -50,7 +51,14 @@ jobs:
         run: uv run python manage.py collectstatic --noinput
 
       - name: Run Django Tests
-        run: uv run python manage.py test
+        run: uv run pytest
+
+      - name: Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4 # Updated to v4
+        with:
+          name: coverage-report
+          path: htmlcov/
 
       - name: Upload Django Log
         if: always()
