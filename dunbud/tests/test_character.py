@@ -78,6 +78,31 @@ class CharacterViewTests(TestCase):
         # Verify user-friendly empty state message matches your template
         self.assertContains(response, "You haven't created any characters yet")
 
+    def test_character_update_view_get_success_url(self) -> None:
+        """
+        Test that get_success_url correctly redirects to the character's detail page.
+        """
+        # Create a character owned by the logged-in user
+        character = PlayerCharacterFactory.create(user=self.user, name="Old Name")
+        url = reverse("character_edit", kwargs={"pk": character.pk})
+
+        # Define the update data
+        data = {
+            "name": "Updated Name",
+            "race": character.race,
+            "character_class": character.character_class,
+            "level": character.level,
+            "bio": character.bio,
+        }
+
+        # Perform the update
+        response = self.client.post(url, data)
+
+        # Verify that the response is a redirect to the character_detail view
+        # This confirms get_success_url returned the expected URL
+        expected_url = reverse("character_detail", kwargs={"pk": character.pk})
+        self.assertRedirects(response, expected_url)
+
     def test_character_detail_sheet_link(self) -> None:
         """
         Test that the external character sheet link is displayed when present.
