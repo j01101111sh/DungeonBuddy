@@ -58,6 +58,64 @@ class CharacterViewTests(TestCase):
         self.other_user, _ = UserFactory.create(username="other_user")
         self.client.force_login(self.user)
 
+    def test_character_list_empty(self) -> None:
+        """
+        Test that the character list view renders correctly when the user has no characters.
+        """
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("character_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "character/character_list.html")
+
+        # Verify the context list is empty
+        # 'object_list' is always present in ListView
+        self.assertFalse(response.context["object_list"])
+
+        # 'characters' is present because context_object_name="characters" in the view
+        self.assertFalse(response.context["characters"])
+
+        # Verify user-friendly empty state message matches your template
+        self.assertContains(response, "You haven't created any characters yet")
+
+    def test_character_list_with_campaign(self) -> None:
+        """
+        Test that the character list displays the campaign name for assigned characters.
+        """
+        # 1. Setup: Create a campaign
+        # We need a DM for the campaign, using self.user or creating a new one works
+        dm_user, _ = UserFactory.create(username="dm_user")
+        campaign = Campaign.objects.create(
+            name="The Fellowship",
+            dungeon_master=dm_user,
+        )
+
+        # 2. Setup: Create a character linked to that campaign
+        # Assuming 'self.user' was created in setUp()
+        if not hasattr(self, "user"):
+            self.user, _ = UserFactory.create(username="test_user_w_campaign")
+
+        self.client.force_login(self.user)
+
+        _ = PlayerCharacterFactory.create(
+            user=self.user,
+            name="Frodo",
+            campaign=campaign,
+        )
+
+        # 3. Action: Get the list view
+        response = self.client.get(
+            reverse("character_list"),
+        )  # Ensure self.url is set to reverse("character_list")
+
+        # 4. Assertion: Check for character and campaign info
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Frodo")
+
+        # Verify the specific campaign line from the template is rendered
+        # Template: Campaign: {{ character.campaign.name }}
+        self.assertContains(response, "Campaign: The Fellowship")
+
     def test_character_list_view(self) -> None:
         """
         Test that the list view shows only the user's characters.
