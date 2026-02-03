@@ -51,6 +51,24 @@ class CharacterModelTests(TestCase):
                 any("New character created: Legolas" in m for m in cm.output),
             )
 
+    def test_string_representation(self) -> None:
+        """
+        Test that the string representation of a PlayerCharacter is its name.
+        """
+        # Define a specific name for the character
+        character_name: str = "Grog Strongjaw"
+
+        # Create a character instance using the factory
+        character = PlayerCharacterFactory.create(
+            user=self.user,
+            name=character_name,
+        )
+
+        # Assert that the __str__ method returns the character's name
+        self.assertEqual(str(character), character_name)
+        # Explicitly check that it matches the name field
+        self.assertEqual(str(character), character.name)
+
 
 class CharacterViewTests(TestCase):
     def setUp(self) -> None:
