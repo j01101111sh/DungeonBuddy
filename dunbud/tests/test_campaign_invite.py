@@ -42,7 +42,7 @@ class CampaignInvitationTests(TestCase):
         self.assertTrue(
             CampaignInvitation.objects.filter(campaign=self.campaign).exists(),
         )
-        self.assertContains(response, "invitation link has been generated")
+        self.assertContains(response, "Invitation link generated")
 
     def test_non_dm_cannot_create_invite(self) -> None:
         """

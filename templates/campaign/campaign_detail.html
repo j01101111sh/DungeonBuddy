@@ -45,7 +45,7 @@
             <div class="col-lg-4">
                 <div class="card shadow-sm">
                     <div class="card-header bg-secondary text-white">
-                        <h2 class="h5 mb-0">Players</h2>
+                        <h2 class="h5 mb-0">Players ({{ players_with_data|length }}/{{ campaign.max_players }})</h2>
                     </div>
                     <ul class="list-group list-group-flush">
                         {% for player in players_with_data %}
