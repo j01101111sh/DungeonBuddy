@@ -414,3 +414,88 @@ class CampaignDetailViewTests(TestCase):
 
         # The system name should no longer be in the response
         self.assertNotContains(response, 'class="badge bg-light text-primary"')
+
+
+class CampaignUpdateViewTests(TestCase):
+    def setUp(self) -> None:
+        self.dm, _ = UserFactory.create(username="dm_update")
+        self.player, _ = UserFactory.create(username="player_update")
+        self.outsider, _ = UserFactory.create(username="outsider_update")
+        self.system = TabletopSystemFactory.create()
+        self.campaign = Campaign.objects.create(
+            name="Original Campaign",
+            dungeon_master=self.dm,
+            description="Original Description",
+            system=self.system,
+            vtt_link="https://old-vtt.com",
+        )
+        self.campaign.players.add(self.player)
+        self.url = reverse("campaign_edit", kwargs={"pk": self.campaign.pk})
+
+    def test_access_anonymous(self) -> None:
+        """
+        Test that anonymous users are redirected to login.
+        """
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"/users/login/?next={self.url}")
+
+    def test_access_dm_success(self) -> None:
+        """
+        Test that the DM can access the update page and it is pre-filled.
+        """
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/campaign_form.html")
+
+        # Verify form is pre-filled with existing data
+        self.assertContains(response, 'value="Original Campaign"')
+        self.assertContains(response, "Original Description")
+        self.assertContains(response, "https://old-vtt.com")
+
+    def test_access_player_forbidden(self) -> None:
+        """
+        Test that a player in the campaign cannot edit it.
+        """
+        self.client.force_login(self.player)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_access_outsider_forbidden(self) -> None:
+        """
+        Test that a user unrelated to the campaign cannot edit it.
+        """
+        self.client.force_login(self.outsider)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_update_successful(self) -> None:
+        """
+        Test that the DM can successfully update campaign details.
+        """
+        self.client.force_login(self.dm)
+        new_system = TabletopSystemFactory.create()
+
+        data = {
+            "name": "Updated Campaign Name",
+            "description": "Updated Description",
+            "system": new_system.pk,
+            "vtt_link": "https://new-vtt.com",
+            "video_link": "https://new-video.com",
+        }
+
+        response = self.client.post(self.url, data)
+
+        # Should redirect to the detail view
+        self.assertRedirects(
+            response,
+            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
+        )
+
+        # Verify database update
+        self.campaign.refresh_from_db()
+        self.assertEqual(self.campaign.name, "Updated Campaign Name")
+        self.assertEqual(self.campaign.description, "Updated Description")
+        self.assertEqual(self.campaign.system, new_system)
+        self.assertEqual(self.campaign.vtt_link, "https://new-vtt.com")
