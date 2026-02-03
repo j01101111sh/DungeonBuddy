@@ -230,6 +230,26 @@ class CampaignListViewTests(TestCase):
         self.assertContains(response, "DM Campaign")
         self.assertNotContains(response, "Player Campaign")
 
+    def test_managed_list_empty(self) -> None:
+        """
+        Test that the managed list view displays a specific message when the user manages no campaigns.
+        """
+        # Create a user who manages no campaigns
+        user_no_campaigns, _ = UserFactory.create(username="lazy_dm")
+        self.client.force_login(user_no_campaigns)
+
+        response = self.client.get(self.managed_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/managed_campaign_list.html")
+
+        # Verify the context list is empty
+        self.assertFalse(response.context["campaigns"])
+
+        # Verify the empty state message and call-to-action from the template
+        self.assertContains(response, "You are not managing any campaigns yet.")
+        self.assertContains(response, "Create One")
+
     def test_joined_list_view(self) -> None:
         """
         Test that the joined list view returns only campaigns the user is a player in.
