@@ -138,13 +138,14 @@ omit = [
     "venv/*",
     ".venv/*",
     "requirements.txt",
+    "*/config/settings.py",
 ]
 plugins = ["django_coverage_plugin"]
 
 [tool.coverage.report]
 show_missing = true
-skip_covered = true
-fail_under = 80
+skip_covered = false
+fail_under = 95
 
 [tool.coverage.django_coverage_plugin]
 template_extensions = "html"

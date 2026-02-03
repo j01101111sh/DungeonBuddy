@@ -230,6 +230,26 @@ class CampaignListViewTests(TestCase):
         self.assertContains(response, "DM Campaign")
         self.assertNotContains(response, "Player Campaign")
 
+    def test_managed_list_empty(self) -> None:
+        """
+        Test that the managed list view displays a specific message when the user manages no campaigns.
+        """
+        # Create a user who manages no campaigns
+        user_no_campaigns, _ = UserFactory.create(username="lazy_dm")
+        self.client.force_login(user_no_campaigns)
+
+        response = self.client.get(self.managed_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/managed_campaign_list.html")
+
+        # Verify the context list is empty
+        self.assertFalse(response.context["campaigns"])
+
+        # Verify the empty state message and call-to-action from the template
+        self.assertContains(response, "You are not managing any campaigns yet.")
+        self.assertContains(response, "Create One")
+
     def test_joined_list_view(self) -> None:
         """
         Test that the joined list view returns only campaigns the user is a player in.
@@ -240,6 +260,25 @@ class CampaignListViewTests(TestCase):
         self.assertTemplateUsed(response, "campaign/joined_campaign_list.html")
         self.assertContains(response, "Player Campaign")
         self.assertNotContains(response, "DM Campaign")
+
+    def test_joined_list_empty(self) -> None:
+        """
+        Test that the joined list view displays a specific message when the user has joined no campaigns.
+        """
+        # Create a user who has not joined any campaigns as a player
+        lone_wolf, _ = UserFactory.create(username="lone_wolf")
+        self.client.force_login(lone_wolf)
+
+        response = self.client.get(self.joined_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/joined_campaign_list.html")
+
+        # Verify the context list is empty
+        self.assertFalse(response.context["campaigns"])
+
+        # Verify the empty state message from the template
+        self.assertContains(response, "You have not joined any campaigns yet.")
 
     def test_managed_list_anonymous(self) -> None:
         """
@@ -324,6 +363,34 @@ class CampaignDetailViewTests(TestCase):
         # Check that the character name appears in parenthesis and is linked
         self.assertContains(response, f'href="{char_url}"')
         self.assertContains(response, ">Grog Strongjaw</a>")
+
+    def test_player_character_sheet_link_display(self) -> None:
+        """
+        Test that the character sheet link emoji (📜) is displayed when a character
+        has a sheet link, and that it points to the correct URL.
+        """
+        # Define a specific external sheet link
+        sheet_url: str = "https://www.dndbeyond.com/characters/12345"
+
+        # Create a character for the player in this campaign with a sheet link
+        PlayerCharacterFactory.create(
+            user=self.player,
+            campaign=self.campaign,
+            name="Grog Strongjaw",
+            character_sheet_link=sheet_url,
+        )
+
+        # Log in as the DM to view the campaign details
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+
+        # Verify the response is successful
+        self.assertEqual(response.status_code, 200)
+
+        # Check that the sheet link emoji is present and has the correct href
+        expected_link_html: str = f'href="{sheet_url}"'
+        self.assertContains(response, expected_link_html)
+        self.assertContains(response, "📜")
 
     def test_access_outsider_denied(self) -> None:
         """
@@ -414,3 +481,88 @@ class CampaignDetailViewTests(TestCase):
 
         # The system name should no longer be in the response
         self.assertNotContains(response, 'class="badge bg-light text-primary"')
+
+
+class CampaignUpdateViewTests(TestCase):
+    def setUp(self) -> None:
+        self.dm, _ = UserFactory.create(username="dm_update")
+        self.player, _ = UserFactory.create(username="player_update")
+        self.outsider, _ = UserFactory.create(username="outsider_update")
+        self.system = TabletopSystemFactory.create()
+        self.campaign = Campaign.objects.create(
+            name="Original Campaign",
+            dungeon_master=self.dm,
+            description="Original Description",
+            system=self.system,
+            vtt_link="https://old-vtt.com",
+        )
+        self.campaign.players.add(self.player)
+        self.url = reverse("campaign_edit", kwargs={"pk": self.campaign.pk})
+
+    def test_access_anonymous(self) -> None:
+        """
+        Test that anonymous users are redirected to login.
+        """
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"/users/login/?next={self.url}")
+
+    def test_access_dm_success(self) -> None:
+        """
+        Test that the DM can access the update page and it is pre-filled.
+        """
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/campaign_form.html")
+
+        # Verify form is pre-filled with existing data
+        self.assertContains(response, 'value="Original Campaign"')
+        self.assertContains(response, "Original Description")
+        self.assertContains(response, "https://old-vtt.com")
+
+    def test_access_player_forbidden(self) -> None:
+        """
+        Test that a player in the campaign cannot edit it.
+        """
+        self.client.force_login(self.player)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_access_outsider_forbidden(self) -> None:
+        """
+        Test that a user unrelated to the campaign cannot edit it.
+        """
+        self.client.force_login(self.outsider)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_update_successful(self) -> None:
+        """
+        Test that the DM can successfully update campaign details.
+        """
+        self.client.force_login(self.dm)
+        new_system = TabletopSystemFactory.create()
+
+        data = {
+            "name": "Updated Campaign Name",
+            "description": "Updated Description",
+            "system": new_system.pk,
+            "vtt_link": "https://new-vtt.com",
+            "video_link": "https://new-video.com",
+        }
+
+        response = self.client.post(self.url, data)
+
+        # Should redirect to the detail view
+        self.assertRedirects(
+            response,
+            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
+        )
+
+        # Verify database update
+        self.campaign.refresh_from_db()
+        self.assertEqual(self.campaign.name, "Updated Campaign Name")
+        self.assertEqual(self.campaign.description, "Updated Description")
+        self.assertEqual(self.campaign.system, new_system)
+        self.assertEqual(self.campaign.vtt_link, "https://new-vtt.com")
