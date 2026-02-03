@@ -9,3 +9,90 @@
     text-align: center;
     padding: 2rem;
 }
+
+/* --- Campaign Detail Enhancements --- */
+
+/* Avatar circle for player list */
+.campaign-avatar-initial {
+    width: 40px;
+    height: 40px;
+    min-width: 40px; /* Prevent shrinking */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Interactive hover state for player rows */
+.player-card-row {
+    transition: background-color 0.2s ease;
+}
+.player-card-row:hover {
+    background-color: #f8f9fa; /* Bootstrap var(--bs-gray-100) equivalent */
+}
+
+/* Feed items styling */
+.feed-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-left: 4px solid var(--bs-primary);
+}
+.feed-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.08)!important;
+}
+
+/* Circular icon buttons */
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* Custom dark button for primary card secondary actions */
+.btn-primary-dark {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+.btn-primary-dark:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Typography Utilities */
+.ls-1 {
+    letter-spacing: 1px;
+}
+
+.ls-sm {
+    letter-spacing: 0.5px;
+}
+
+.text-pre-line {
+    white-space: pre-line;
+}
+
+.text-small-caps {
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Layout Utilities */
+.min-width-0 {
+    min-width: 0;
+}
+
+/* Specific Component Overrides */
+.feed-empty-icon {
+    font-size: 2rem;
+}
+
+.invite-input {
+    font-size: 0.85rem;
+}
