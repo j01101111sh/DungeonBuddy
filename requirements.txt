@@ -17,6 +17,10 @@ django-crispy-forms==2.5
     #   crispy-bootstrap5
     #   dungeonbuddy
 gunicorn==25.0.1
+markdown==3.10.1
+    # via dungeonbuddy
+nh3==0.3.2
+    # via dungeonbuddy
 packaging==26.0
     # via gunicorn
 psycopg==3.3.2
