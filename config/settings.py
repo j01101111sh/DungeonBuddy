@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "dunbud",
     "users",
+    "blog",
 ]
 
 MIDDLEWARE = [
@@ -226,6 +227,11 @@ LOGGING = {
             "propagate": False,
         },
         "users": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "blog": {
             "handlers": ["file"],
             "level": "INFO",
             "propagate": False,

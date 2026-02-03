@@ -62,7 +62,15 @@ class PlayerCharacterUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateV
     """
 
     model = PlayerCharacter
-    fields = ["name", "race", "character_class", "level", "bio", "campaign"]
+    fields = [
+        "name",
+        "race",
+        "character_class",
+        "level",
+        "bio",
+        "campaign",
+        "character_sheet_link",
+    ]
     template_name = "character/character_form.html"
 
     def test_func(self) -> bool:
