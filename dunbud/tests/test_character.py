@@ -215,3 +215,95 @@ class CharacterViewTests(TestCase):
         # Outsider cannot view
         self.client.force_login(outsider)
         self.assertEqual(self.client.get(url).status_code, 403)
+
+
+class CharacterCreateFormTests(TestCase):
+    def setUp(self) -> None:
+        self.user, _ = UserFactory.create(username="builder")
+        self.url = reverse("character_create")
+
+        # Create a campaign to test the dropdown selection
+        self.campaign_dm, _ = UserFactory.create(username="dungeon_master")
+        self.campaign = Campaign.objects.create(
+            name="Curse of Strahd",
+            dungeon_master=self.campaign_dm,
+        )
+
+    def test_access_anonymous(self) -> None:
+        """
+        Test that anonymous users are redirected to login.
+        """
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"/users/login/?next={self.url}")
+
+    def test_create_form_renders(self) -> None:
+        """
+        Test that the creation page renders the correct template and fields.
+        """
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "character/character_form.html")
+
+        # Verify common fields are present in the HTML
+        self.assertContains(response, 'name="name"')
+        self.assertContains(response, 'name="character_class"')
+        self.assertContains(response, 'name="level"')
+        # Verify the campaign dropdown contains our created campaign
+        self.assertContains(response, self.campaign.name)
+
+    def test_create_character_success(self) -> None:
+        """
+        Test that submitting valid data creates a character assigned to the current user.
+        """
+        self.client.force_login(self.user)
+
+        data = {
+            "name": "Vax'ildan",
+            "race": "Half-Elf",
+            "character_class": "Rogue",
+            "level": 5,
+            "bio": "Dagger, dagger, dagger.",
+            "campaign": self.campaign.pk,
+            # "character_sheet_link": "..." # Include this if you added the field earlier
+        }
+
+        response = self.client.post(self.url, data)
+
+        # Verify redirection to the detail page
+        new_char = PlayerCharacter.objects.get(name="Vax'ildan")
+        self.assertRedirects(
+            response,
+            reverse("character_detail", kwargs={"pk": new_char.pk}),
+        )
+
+        # Verify Database Integrity
+        self.assertEqual(new_char.user, self.user)
+        self.assertEqual(new_char.character_class, "Rogue")
+        self.assertEqual(new_char.campaign, self.campaign)
+
+    def test_create_character_invalid(self) -> None:
+        """
+        Test that submitting invalid data (missing required name) shows errors.
+        """
+        self.client.force_login(self.user)
+
+        data = {
+            "name": "",  # Name is required
+            "race": "Human",
+            "character_class": "Fighter",
+            "level": 1,
+        }
+
+        response = self.client.post(self.url, data)
+
+        # Should stay on the same page (200 OK)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "character/character_form.html")
+
+        # Check for form error
+        form = response.context["form"]
+        self.assertTrue(form.errors)
+        self.assertIn("name", form.errors)
+        self.assertContains(response, "This field is required")
