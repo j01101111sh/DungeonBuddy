@@ -79,6 +79,10 @@ class Campaign(models.Model):
         related_name="campaigns",
         help_text=_("The tabletop system used for this campaign."),
     )
+    max_players = models.PositiveIntegerField(
+        default=6,
+        help_text=_("The maximum number of players allowed in the campaign."),
+    )
     dungeon_master = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

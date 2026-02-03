@@ -10,7 +10,7 @@ from config.tests.factories import (
     TabletopSystemFactory,
     UserFactory,
 )
-from dunbud.models import Campaign
+from dunbud.models import Campaign, CampaignInvitation
 
 User = get_user_model()
 
@@ -41,6 +41,16 @@ class CampaignModelTests(TestCase):
         self.assertEqual(campaign.video_link, "https://zoom.us/j/123456")
         # Verify the ID is a UUID
         self.assertIsInstance(campaign.pk, uuid.UUID)
+
+    def test_max_players_default(self) -> None:
+        """
+        Test that max_players defaults to 6.
+        """
+        campaign = Campaign.objects.create(
+            name="Default Limit Campaign",
+            dungeon_master=self.dm,
+        )
+        self.assertEqual(campaign.max_players, 6)
 
     def test_add_players(self) -> None:
         """
@@ -122,6 +132,7 @@ class CampaignCreateViewTests(TestCase):
             "name": "New Adventure",
             "description": "A grand journey.",
             "system": self.system.pk,
+            "max_players": 4,
             "vtt_link": "https://roll20.net/join/123",
             "video_link": "https://discord.gg/abc",
         }
@@ -139,6 +150,7 @@ class CampaignCreateViewTests(TestCase):
         # Check database
         self.assertEqual(campaign.dungeon_master, self.dm)
         self.assertEqual(campaign.system, self.system)
+        self.assertEqual(campaign.max_players, 4)
         self.assertEqual(campaign.vtt_link, "https://roll20.net/join/123")
         self.assertEqual(campaign.video_link, "https://discord.gg/abc")
 
@@ -147,7 +159,11 @@ class CampaignCreateViewTests(TestCase):
         Test that the view logs the creation event.
         """
         self.client.force_login(self.player)
-        data = {"name": "View Logged Campaign", "description": "Test"}
+        data = {
+            "name": "View Logged Campaign",
+            "description": "Test",
+            "max_players": 5,
+        }
 
         with self.assertLogs("dunbud.views", level="INFO") as cm:
             self.client.post(self.url, data)
@@ -495,6 +511,7 @@ class CampaignUpdateViewTests(TestCase):
             description="Original Description",
             system=self.system,
             vtt_link="https://old-vtt.com",
+            max_players=5,
         )
         self.campaign.players.add(self.player)
         self.url = reverse("campaign_edit", kwargs={"pk": self.campaign.pk})
@@ -520,6 +537,7 @@ class CampaignUpdateViewTests(TestCase):
         self.assertContains(response, 'value="Original Campaign"')
         self.assertContains(response, "Original Description")
         self.assertContains(response, "https://old-vtt.com")
+        self.assertContains(response, 'value="5"')
 
     def test_access_player_forbidden(self) -> None:
         """
@@ -548,6 +566,7 @@ class CampaignUpdateViewTests(TestCase):
             "name": "Updated Campaign Name",
             "description": "Updated Description",
             "system": new_system.pk,
+            "max_players": 8,
             "vtt_link": "https://new-vtt.com",
             "video_link": "https://new-video.com",
         }
@@ -565,4 +584,76 @@ class CampaignUpdateViewTests(TestCase):
         self.assertEqual(self.campaign.name, "Updated Campaign Name")
         self.assertEqual(self.campaign.description, "Updated Description")
         self.assertEqual(self.campaign.system, new_system)
+        self.assertEqual(self.campaign.max_players, 8)
         self.assertEqual(self.campaign.vtt_link, "https://new-vtt.com")
+
+
+class CampaignJoinViewTests(TestCase):
+    def setUp(self) -> None:
+        self.dm, _ = UserFactory.create(username="dm_join")
+        self.player, _ = UserFactory.create(username="player_join")
+        self.campaign = Campaign.objects.create(
+            name="Limited Campaign",
+            dungeon_master=self.dm,
+            max_players=1,
+        )
+        self.invite = CampaignInvitation.objects.create(campaign=self.campaign)
+        self.url = self.invite.get_absolute_url()
+
+    def test_join_campaign_success(self) -> None:
+        """
+        Test that a user can join a campaign if the limit is not reached.
+        """
+        self.client.force_login(self.player)
+        response = self.client.get(self.url)
+
+        # Should redirect to detail page
+        self.assertRedirects(
+            response,
+            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
+        )
+        self.assertIn(self.player, self.campaign.players.all())
+
+    def test_join_campaign_full(self) -> None:
+        """
+        Test that a user cannot join a campaign if the player limit is reached.
+        """
+        # Fill the campaign
+        player1, _ = UserFactory.create(username="existing_player")
+        self.campaign.players.add(player1)
+
+        # Attempt to join as new player
+        self.client.force_login(self.player)
+        response = self.client.get(self.url)
+
+        # Should redirect to joined campaigns list (since they can't see the detail page)
+        self.assertRedirects(response, reverse("campaign_joined"))
+
+        # Check flash message
+        messages = list(response.context["messages"])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            str(messages[0]),
+            "This campaign has reached its player limit.",
+        )
+
+        # Ensure player was not added
+        self.assertNotIn(self.player, self.campaign.players.all())
+
+    def test_join_full_logging(self) -> None:
+        """
+        Test that attempting to join a full campaign is logged.
+        """
+        player1, _ = UserFactory.create(username="existing_player")
+        self.campaign.players.add(player1)
+        self.client.force_login(self.player)
+
+        with self.assertLogs("dunbud.views", level="WARNING") as cm:
+            self.client.get(self.url)
+            self.assertTrue(
+                any(
+                    f"User {self.player.id} attempted to join full campaign {self.campaign.id}"
+                    in m
+                    for m in cm.output
+                ),
+            )

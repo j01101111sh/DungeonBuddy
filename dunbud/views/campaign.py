@@ -28,6 +28,7 @@ class CampaignCreateView(LoginRequiredMixin, CreateView):
         "name",
         "description",
         "system",
+        "max_players",
         "vtt_link",
         "video_link",
     ]
@@ -183,6 +184,7 @@ class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         "name",
         "description",
         "system",
+        "max_players",
         "vtt_link",
         "video_link",
     ]
@@ -230,22 +232,29 @@ class CampaignInvitationCreateView(LoginRequiredMixin, View):
         # Here we create a new one as requested by the 'Generate' action.
 
         with transaction.atomic():
-            # Deactivate old invites to ensure only one is active.
-            campaign.invitations.filter(is_active=True).update(is_active=False)
+            # Optional: Deactivate old invites to ensure only one valid link at a time
+            # campaign.invitations.update(is_active=False)
 
-            # Create a new invitation.
-            invite = CampaignInvitation.objects.create(campaign=campaign)
+            invite, created = CampaignInvitation.objects.get_or_create(
+                campaign=campaign,
+                is_active=True,
+            )
 
-            logger.info(
-                "Created new invitation %s for campaign %s by %s",
-                invite.id,
-                campaign.id,
-                request.user,
-            )
-            messages.success(
-                request,
-                "A new invitation link has been generated. Previous links are now inactive.",
-            )
+            if created:
+                logger.info(
+                    "Created new invitation %s for campaign %s by %s",
+                    invite.id,
+                    campaign.id,
+                    request.user,
+                )
+                messages.success(request, "Invitation link generated.")
+            else:
+                logger.info(
+                    "Retrieved existing invitation %s for campaign %s",
+                    invite.id,
+                    campaign.id,
+                )
+                messages.info(request, "Existing active invitation retrieved.")
 
         return redirect("campaign_detail", pk=pk)
 
@@ -275,7 +284,19 @@ class CampaignJoinView(LoginRequiredMixin, View):
             messages.info(request, "You are already a player in this campaign.")
             return redirect("campaign_detail", pk=campaign.pk)
 
-        # 3. Add to players
+        # 3. Check for player limit
+        if campaign.players.count() >= campaign.max_players:
+            logger.warning(
+                "User %s attempted to join full campaign %s (Limit: %s)",
+                request.user.id,
+                campaign.id,
+                campaign.max_players,
+            )
+            messages.error(request, "This campaign has reached its player limit.")
+            # Redirect to 'joined' list (safe for non-members) instead of detail view (403 forbidden)
+            return redirect("campaign_joined")
+
+        # 4. Add to players
         try:
             campaign.players.add(request.user)
             logger.info(
