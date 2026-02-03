@@ -1,10 +1,11 @@
 import logging
 from typing import Any
 
-from blog.models import Post
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+
+from blog.models import Post
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
