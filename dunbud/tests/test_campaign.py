@@ -364,6 +364,34 @@ class CampaignDetailViewTests(TestCase):
         self.assertContains(response, f'href="{char_url}"')
         self.assertContains(response, ">Grog Strongjaw</a>")
 
+    def test_player_character_sheet_link_display(self) -> None:
+        """
+        Test that the character sheet link emoji (📜) is displayed when a character
+        has a sheet link, and that it points to the correct URL.
+        """
+        # Define a specific external sheet link
+        sheet_url: str = "https://www.dndbeyond.com/characters/12345"
+
+        # Create a character for the player in this campaign with a sheet link
+        PlayerCharacterFactory.create(
+            user=self.player,
+            campaign=self.campaign,
+            name="Grog Strongjaw",
+            character_sheet_link=sheet_url,
+        )
+
+        # Log in as the DM to view the campaign details
+        self.client.force_login(self.dm)
+        response = self.client.get(self.url)
+
+        # Verify the response is successful
+        self.assertEqual(response.status_code, 200)
+
+        # Check that the sheet link emoji is present and has the correct href
+        expected_link_html: str = f'href="{sheet_url}"'
+        self.assertContains(response, expected_link_html)
+        self.assertContains(response, "📜")
+
     def test_access_outsider_denied(self) -> None:
         """
         Test that a user who is neither DM nor player receives a 403 Forbidden.
