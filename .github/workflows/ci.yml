@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
@@ -52,6 +54,9 @@ jobs:
 
       - name: Run Django Tests
         run: uv run pytest
+
+      - name: Enforce Diff Coverage
+        run: uv run diff-cover coverage.xml --compare-branch=origin/main --fail-under=80
 
       - name: Upload Coverage Report
         if: always()
