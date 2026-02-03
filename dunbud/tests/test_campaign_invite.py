@@ -121,3 +121,12 @@ class CampaignInvitationTests(TestCase):
 
         # Should be 404 because get_object_or_404 filters by is_active=True
         self.assertEqual(response.status_code, 404)
+
+    def test_invitation_str_representation(self) -> None:
+        """
+        Verify the string representation of a CampaignInvitation.
+        """
+        invite = CampaignInvitation.objects.create(campaign=self.campaign)
+        expected_str = f"Invite for {self.campaign.name} ({invite.token[:8]}...)"
+
+        self.assertEqual(str(invite), expected_str)
