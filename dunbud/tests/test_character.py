@@ -124,6 +124,26 @@ class CharacterViewTests(TestCase):
         # Verify the label/text is present (matches the template update)
         self.assertContains(response, "Character sheet link")
 
+    def test_character_list_view_anonymous(self) -> None:
+        """
+        Test that an anonymous user is redirected to the login page.
+        """
+        # Ensure the client is logged out
+        self.client.logout()
+        url = reverse("character_list")
+
+        response = self.client.get(url)
+
+        # LoginRequiredMixin redirects to the settings.LOGIN_URL with a 'next' parameter
+        # Based on your urls.py, the login path is /users/login/
+        expected_url = f"{reverse('login')}?next={url}"
+
+        self.assertRedirects(
+            response,
+            expected_url,
+            msg_prefix="Anonymous users must be redirected to the login page.",
+        )
+
     def test_character_list_with_campaign(self) -> None:
         """
         Test that the character list displays the campaign name for assigned characters.
