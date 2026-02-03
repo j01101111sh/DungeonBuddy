@@ -48,6 +48,9 @@ class CampaignInvitationTests(TestCase):
         """
         Verify that a non-DM user cannot generate an invitation link.
         """
+        # Add player to campaign so they can access the detail page to see the error message
+        self.campaign.players.add(self.player)
+
         self.client.login(username=self.player.username, password=self.player_pass)
         url = reverse("campaign_invite_create", kwargs={"pk": self.campaign.pk})
 
