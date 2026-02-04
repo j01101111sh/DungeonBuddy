@@ -1,134 +1,34 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
     {{ campaign.name }} - Dungeon Buddy
 {% endblock title %}
 {% block content %}
-    <div class="container mt-4">
-        <div class="row">
+    <div class="container py-4 py-lg-5">
+        {# Campaign Header #}
+        {% include "campaign/includes/detail/header.html" %}
+
+        <div class="row g-4">
             <div class="col-lg-8">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3">
-                            <h1 class="h3 mb-0">{{ campaign.name }}</h1>
-                            {% if campaign.system %}<span class="badge bg-light text-primary">{{ campaign.system.short_name }}</span>{% endif %}
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            {% if campaign.dungeon_master == request.user %}
-                                <a href="{% url 'campaign_edit' campaign.pk %}"
-                                   class="btn btn-sm btn-light text-primary">Edit</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title text-muted mb-3">Dungeon Master: {{ campaign.dungeon_master.username }}</h5>
-                        <h6 class="fw-bold">Description</h6>
-                        <p class="card-text">{{ campaign.description|linebreaks }}</p>
-                        <div class="mt-4">
-                            {% if campaign.vtt_link %}
-                                <a href="{{ campaign.vtt_link }}"
-                                   class="btn btn-outline-primary me-2"
-                                   target="_blank"
-                                   rel="noopener noreferrer">Virtual Tabletop</a>
-                            {% endif %}
-                            {% if campaign.video_link %}
-                                <a href="{{ campaign.video_link }}"
-                                   class="btn btn-outline-secondary"
-                                   target="_blank"
-                                   rel="noopener noreferrer">Video Conference</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="card-footer text-muted small">Last updated: {{ campaign.updated_at|date:"F d, Y" }}</div>
-                </div>
+                {# About Section #}
+                {% include "campaign/includes/detail/about_card.html" %}
+
+                {# Adventure Log / Feed #}
+                {% include "campaign/includes/detail/adventure_log.html" %}
+
             </div>
             <div class="col-lg-4">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-secondary text-white">
-                        <h2 class="h5 mb-0">Players ({{ players_with_data|length }}/{{ campaign.max_players }})</h2>
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        {% for player in players_with_data %}
-                            <li class="list-group-item d-flex align-items-center">
-                                <div class="fw-bold">
-                                    {{ player.username }}
-                                    {% if player.campaign_character %}
-                                        <span class="fw-normal text-muted">
-                                            (<a href="{% url 'character_detail' player.campaign_character.pk %}"
-   class="text-decoration-none">{{ player.campaign_character.name }}</a>
-                                            {% if player.campaign_character.character_sheet_link %}
-                                                <a href="{{ player.campaign_character.character_sheet_link }}"
-                                                   target="_blank"
-                                                   rel="noopener noreferrer"
-                                                   title="View character sheet">📜</a>
-                                            {% endif %}
-                                            )
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </li>
-                        {% empty %}
-                            <li class="list-group-item text-muted fst-italic">No players joined yet.</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% if user == campaign.dungeon_master %}
-                    <div class="card border-primary mt-1">
-                        <div class="card-header bg-primary text-white">Invitation Link</div>
-                        <div class="card-body">
-                            {% if active_invite %}
-                                <p class="small text-muted">Share this link with players:</p>
-                                <div class="input-group mb-3">
-                                    <input type="text"
-                                           class="form-control"
-                                           value="{{ request.scheme }}://{{ request.get_host }}{{ active_invite.get_absolute_url }}"
-                                           readonly
-                                           id="inviteLink" />
-                                    <button class="btn btn-outline-secondary"
-                                            type="button"
-                                            onclick="navigator.clipboard.writeText(document.getElementById('inviteLink').value)">
-                                        Copy
-                                    </button>
-                                </div>
-                            {% else %}
-                                <p class="small text-muted">No active invitation link.</p>
-                            {% endif %}
-                            <form action="{% url 'campaign_invite_create' campaign.pk %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-primary w-100">
-                                    {% if active_invite %}
-                                        Regenerate Link
-                                    {% else %}
-                                        Generate Invite Link
-                                    {% endif %}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                {% endif %}
-                <div class="mt-3">
-                    <a href="{% if campaign.dungeon_master == request.user %}{% url 'campaign_managed' %}{% else %}{% url 'campaign_joined' %}{% endif %}"
-                       class="btn btn-link">Back to My Campaigns</a>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-secondary text-white">
-                        <h2 class="h5 mb-0">Party Feed</h2>
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        {% for item in campaign.feed_items.all %}
-                            <li class="list-group-item">
-                                <small class="text-muted d-block">{{ item.created_at|date:"M d, Y H:i" }}</small>
-                                {{ item.message }}
-                            </li>
-                        {% empty %}
-                            <li class="list-group-item text-muted fst-italic">No recent activity.</li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                {# Session Tools (VTT/Video) #}
+                {% include "campaign/includes/detail/session_tools.html" %}
+
+                {# Party Members List #}
+                {% include "campaign/includes/detail/party_list.html" %}
+
+                {# DM Invite Controls #}
+                {% include "campaign/includes/detail/invite_card.html" %}
+
             </div>
         </div>
     </div>

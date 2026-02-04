@@ -1,0 +1,33 @@
+<div class="row mb-4 align-items-end">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% if campaign.dungeon_master == request.user %}{% url 'campaign_managed' %}{% else %}{% url 'campaign_joined' %}{% endif %}"
+                       class="text-decoration-none text-muted small">
+                        <span class="fw-semibold text-small-caps">My Campaigns</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-muted small" aria-current="page">{{ campaign.name }}</li>
+            </ol>
+        </nav>
+        <h1 class="display-5 fw-bold text-dark mb-2 lh-1">{{ campaign.name }}</h1>
+        <div class="d-flex align-items-center flex-wrap gap-2 mt-3">
+            {% if campaign.system %}
+                <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                    {{ campaign.system.short_name }}
+                </span>
+            {% endif %}
+            <div class="d-flex align-items-center text-muted ms-1">
+                <span class="small me-1">Dungeon Master:</span>
+                <span class="fw-semibold text-dark">{{ campaign.dungeon_master.username }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        {% if campaign.dungeon_master == request.user %}
+            <a href="{% url 'campaign_edit' campaign.pk %}"
+               class="btn btn-outline-secondary rounded-pill px-4">Edit Campaign</a>
+        {% endif %}
+    </div>
+</div>

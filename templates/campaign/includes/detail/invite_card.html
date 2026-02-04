@@ -1,0 +1,32 @@
+{% if user == campaign.dungeon_master %}
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <h5 class="card-title fw-bold mb-2 text-dark">Invite Players</h5>
+            <p class="small text-muted mb-3">Share this secure link to add players.</p>
+            {% if active_invite %}
+                <div class="input-group mb-3">
+                    <input type="text"
+                           class="form-control bg-light border-0 small invite-input"
+                           value="{{ request.scheme }}://{{ request.get_host }}{{ active_invite.get_absolute_url }}"
+                           readonly
+                           id="inviteLink" />
+                    <button class="btn btn-dark"
+                            type="button"
+                            onclick="navigator.clipboard.writeText(document.getElementById('inviteLink').value)">
+                        Copy
+                    </button>
+                </div>
+            {% endif %}
+            <form action="{% url 'campaign_invite_create' campaign.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-dark w-100 btn-sm rounded-pill">
+                    {% if active_invite %}
+                        Rotate Invite Link
+                    {% else %}
+                        Generate New Link
+                    {% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+{% endif %}
