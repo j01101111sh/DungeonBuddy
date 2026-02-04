@@ -88,6 +88,10 @@
     min-width: 0;
 }
 
+.hidden {
+    display: none;
+}
+
 /* Specific Component Overrides */
 .feed-empty-icon {
     font-size: 2rem;

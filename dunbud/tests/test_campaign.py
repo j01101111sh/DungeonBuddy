@@ -674,6 +674,7 @@ class HelpfulLinkTests(TestCase):
             dungeon_master=self.dm,
         )
         self.campaign.players.add(self.player)
+        self.add_url = reverse("helpful_link_add", kwargs={"pk": self.campaign.pk})
         self.campaign_url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
 
     def test_dm_can_add_link(self) -> None:
@@ -682,13 +683,18 @@ class HelpfulLinkTests(TestCase):
         """
         self.client.force_login(self.dm)
         data = {"name": "Test Link", "url": "https://test.com"}
-        response = self.client.post(self.campaign_url, data)
-        self.assertRedirects(response, self.campaign_url)
+        response = self.client.post(
+            self.add_url,
+            data,
+            headers={"x-requested-with": "XMLHttpRequest"},
+        )
+        self.assertEqual(response.status_code, 201)
         self.assertTrue(
             HelpfulLink.objects.filter(campaign=self.campaign)
             .filter(name="Test Link")
             .exists(),
         )
+        self.assertEqual(response.json()["name"], "Test Link")
 
     def test_player_cannot_add_link(self) -> None:
         """
@@ -696,7 +702,12 @@ class HelpfulLinkTests(TestCase):
         """
         self.client.force_login(self.player)
         data = {"name": "Player Link", "url": "https://player.com"}
-        self.client.post(self.campaign_url, data)
+        response = self.client.post(
+            self.add_url,
+            data,
+            headers={"x-requested-with": "XMLHttpRequest"},
+        )
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(
             HelpfulLink.objects.filter(campaign=self.campaign)
             .filter(name="Player Link")
@@ -709,7 +720,12 @@ class HelpfulLinkTests(TestCase):
         """
         self.client.force_login(self.outsider)
         data = {"name": "Outsider Link", "url": "https://outsider.com"}
-        self.client.post(self.campaign_url, data)
+        response = self.client.post(
+            self.add_url,
+            data,
+            headers={"x-requested-with": "XMLHttpRequest"},
+        )
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(
             HelpfulLink.objects.filter(campaign=self.campaign)
             .filter(name="Outsider Link")
@@ -726,8 +742,16 @@ class HelpfulLinkTests(TestCase):
         self.assertEqual(HelpfulLink.objects.filter(campaign=self.campaign).count(), 20)
 
         data = {"name": "21st Link", "url": "https://toomany.com"}
-        response = self.client.post(self.campaign_url, data)
-        self.assertEqual(response.status_code, 200)  # Form error re-renders page
+        response = self.client.post(
+            self.add_url,
+            data,
+            headers={"x-requested-with": "XMLHttpRequest"},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(
+            "You can only add up to 20 helpful links per campaign.",
+            response.json()["errors"]["__all__"][0],
+        )
         self.assertFalse(
             HelpfulLink.objects.filter(campaign=self.campaign)
             .filter(name="21st Link")
@@ -742,8 +766,12 @@ class HelpfulLinkTests(TestCase):
         link = HelpfulLinkFactory.create(campaign=self.campaign)
         delete_url = reverse("helpful_link_delete", kwargs={"pk": link.pk})
         self.client.force_login(self.dm)
-        response = self.client.post(delete_url)
-        self.assertRedirects(response, self.campaign_url)
+        response = self.client.post(
+            delete_url,
+            headers={"x-requested-with": "XMLHttpRequest"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["message"], "Link deleted successfully.")
         self.assertFalse(
             HelpfulLink.objects.filter(campaign=self.campaign)
             .filter(pk=link.pk)
@@ -757,8 +785,11 @@ class HelpfulLinkTests(TestCase):
         link = HelpfulLinkFactory.create(campaign=self.campaign)
         delete_url = reverse("helpful_link_delete", kwargs={"pk": link.pk})
         self.client.force_login(self.player)
-        response = self.client.post(delete_url)
-        self.assertEqual(response.status_code, 403)
+        response = self.client.post(
+            delete_url,
+            headers={"x-requested-with": "XMLHttpRequest"},
+        )
+        self.assertEqual(response.status_code, 404)
         self.assertTrue(
             HelpfulLink.objects.filter(campaign=self.campaign)
             .filter(pk=link.pk)
@@ -784,14 +815,3 @@ class HelpfulLinkTests(TestCase):
             campaign=self.campaign,
         )
         self.assertEqual(str(link), "My Link")
-
-    def test_delete_link_uses_correct_template(self) -> None:
-        """
-        Test that the delete link view uses the correct template.
-        """
-        link = HelpfulLinkFactory.create(campaign=self.campaign)
-        delete_url = reverse("helpful_link_delete", kwargs={"pk": link.pk})
-        self.client.force_login(self.dm)
-        response = self.client.get(delete_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "campaign/helpful_link_confirm_delete.html")

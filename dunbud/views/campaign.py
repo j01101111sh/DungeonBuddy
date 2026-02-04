@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
 from django.db.models import QuerySet
 from django.forms.models import BaseModelForm
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import (
@@ -160,27 +160,6 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
         context["players_with_data"] = players_with_data
         return context
-
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        """
-        Handles the POST request for adding a helpful link.
-        """
-        self.object = self.get_object()
-        campaign = self.object
-        if request.user != campaign.dungeon_master:
-            messages.error(request, "You do not have permission to add links.")
-            return self.get(request, *args, **kwargs)
-
-        form = HelpfulLinkForm(request.POST)
-        # Manually assign campaign to instance before validation
-        form.instance.campaign = campaign
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Helpful link added successfully.")
-            return redirect("campaign_detail", pk=campaign.pk)
-        messages.error(request, "There was an error with the form.")
-        kwargs["link_form"] = form
-        return self.get(request, *args, **kwargs)
 
     def test_func(self) -> bool:
         """
@@ -350,34 +329,61 @@ class CampaignJoinView(LoginRequiredMixin, View):
         return redirect("campaign_detail", pk=campaign.pk)
 
 
-class HelpfulLinkDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class HelpfulLinkCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
-    View to delete a helpful link.
+    View to create a new helpful link via AJAX.
+    """
+
+    model = HelpfulLink
+    form_class = HelpfulLinkForm
+
+    def test_func(self) -> bool:
+        campaign = get_object_or_404(Campaign, pk=self.kwargs["pk"])
+        return bool(campaign.dungeon_master == self.request.user)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        campaign = get_object_or_404(Campaign, pk=self.kwargs["pk"])
+        form = self.form_class(request.POST)
+        form.instance.campaign = campaign
+
+        if form.is_valid():
+            link = form.save()
+            data = {
+                "pk": link.pk,
+                "name": link.name,
+                "url": link.url,
+                "delete_url": reverse("helpful_link_delete", kwargs={"pk": link.pk}),
+            }
+            return JsonResponse(data, status=201)
+        return JsonResponse({"errors": form.errors}, status=400)
+
+
+class HelpfulLinkDeleteView(LoginRequiredMixin, DeleteView):
+    """
+    View to delete a helpful link via AJAX.
     Restricted to the Dungeon Master of the campaign.
     """
 
     model = HelpfulLink
-    template_name = "campaign/helpful_link_confirm_delete.html"
 
     def get_queryset(self) -> QuerySet:
         """
-        Fetches link and DM models
+        Only allow the DM to delete links from their own campaign.
         """
-        return super().get_queryset().select_related("campaign__dungeon_master")
+        return super().get_queryset().filter(campaign__dungeon_master=self.request.user)
 
     def get_success_url(self) -> str:
-        """
-        Redirects to the campaign detail page after deletion.
-        """
-        return reverse("campaign_detail", kwargs={"pk": self.object.campaign.pk})
-
-    def test_func(self) -> bool:
-        """
-        Only the Dungeon Master can delete a helpful link.
-        """
-        link = self.get_object()
-        return bool(link.campaign.dungeon_master == self.request.user)
+        # Prevent redirection
+        return ""
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
-        messages.success(self.request, "Helpful link deleted successfully.")
-        return super().form_valid(form)
+        """
+        Log the deletion and return a JSON response.
+        """
+        logger.info(
+            "Deleted helpful link %s by user %s",
+            self.object.pk,
+            self.request.user,
+        )
+        super().form_valid(form)
+        return JsonResponse({"message": "Link deleted successfully."})
