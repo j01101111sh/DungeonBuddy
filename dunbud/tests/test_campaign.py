@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from config.tests.factories import (
+    HelpfulLinkFactory,
     PlayerCharacterFactory,
     TabletopSystemFactory,
     UserFactory,
@@ -661,3 +662,95 @@ class CampaignJoinViewTests(TestCase):
                     for m in cm.output
                 ),
             )
+
+
+class HelpfulLinkTests(TestCase):
+    def setUp(self) -> None:
+        self.dm, _ = UserFactory.create(username="dm_user_link")
+        self.player, _ = UserFactory.create(username="player_user_link")
+        self.outsider, _ = UserFactory.create(username="outsider_user_link")
+        self.campaign = Campaign.objects.create(
+            name="Link Test Campaign",
+            dungeon_master=self.dm,
+        )
+        self.campaign.players.add(self.player)
+        self.campaign_url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
+
+    def test_dm_can_add_link(self) -> None:
+        """
+        Test that the Dungeon Master can add a helpful link.
+        """
+        self.client.force_login(self.dm)
+        data = {"name": "Test Link", "url": "https://test.com"}
+        response = self.client.post(self.campaign_url, data)
+        self.assertRedirects(response, self.campaign_url)
+        self.assertTrue(self.campaign.helpful_links.filter(name="Test Link").exists())
+
+    def test_player_cannot_add_link(self) -> None:
+        """
+        Test that a player cannot add a helpful link.
+        """
+        self.client.force_login(self.player)
+        data = {"name": "Player Link", "url": "https://player.com"}
+        self.client.post(self.campaign_url, data)
+        self.assertFalse(
+            self.campaign.helpful_links.filter(name="Player Link").exists(),
+        )
+
+    def test_outsider_cannot_add_link(self) -> None:
+        """
+        Test that an outsider cannot add a helpful link.
+        """
+        self.client.force_login(self.outsider)
+        data = {"name": "Outsider Link", "url": "https://outsider.com"}
+        self.client.post(self.campaign_url, data)
+        self.assertFalse(
+            self.campaign.helpful_links.filter(name="Outsider Link").exists(),
+        )
+
+    def test_link_limit_is_enforced(self) -> None:
+        """
+        Test that no more than 20 links can be added.
+        """
+        self.client.force_login(self.dm)
+        for i in range(20):
+            HelpfulLinkFactory.create(campaign=self.campaign, name=f"Link {i}")
+        self.assertEqual(self.campaign.helpful_links.count(), 20)
+
+        data = {"name": "21st Link", "url": "https://toomany.com"}
+        response = self.client.post(self.campaign_url, data)
+        self.assertEqual(response.status_code, 200)  # Form error re-renders page
+        self.assertFalse(self.campaign.helpful_links.filter(name="21st Link").exists())
+        self.assertEqual(self.campaign.helpful_links.count(), 20)
+
+    def test_dm_can_delete_link(self) -> None:
+        """
+        Test that the Dungeon Master can delete a helpful link.
+        """
+        link = HelpfulLinkFactory.create(campaign=self.campaign)
+        delete_url = reverse("helpful_link_delete", kwargs={"pk": link.pk})
+        self.client.force_login(self.dm)
+        response = self.client.post(delete_url)
+        self.assertRedirects(response, self.campaign_url)
+        self.assertFalse(self.campaign.helpful_links.filter(pk=link.pk).exists())
+
+    def test_player_cannot_delete_link(self) -> None:
+        """
+        Test that a player cannot delete a helpful link.
+        """
+        link = HelpfulLinkFactory.create(campaign=self.campaign)
+        delete_url = reverse("helpful_link_delete", kwargs={"pk": link.pk})
+        self.client.force_login(self.player)
+        response = self.client.post(delete_url)
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(self.campaign.helpful_links.filter(pk=link.pk).exists())
+
+    def test_links_are_displayed(self) -> None:
+        """
+        Test that helpful links are displayed on the campaign detail page.
+        """
+        link = HelpfulLinkFactory.create(campaign=self.campaign)
+        self.client.force_login(self.dm)
+        response = self.client.get(self.campaign_url)
+        self.assertContains(response, link.name)
+        self.assertContains(response, link.url)

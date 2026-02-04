@@ -1,0 +1,44 @@
+{% if request.user == campaign.dungeon_master %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Helpful Links</h5>
+        </div>
+        <div class="card-body">
+            {% if campaign.helpful_links.all %}
+                <ul class="list-group list-group-flush">
+                    {% for link in campaign.helpful_links.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{{ link.url }}" target="_blank">{{ link.name }}</a>
+                            <form action="{% url 'helpful_link_delete' pk=link.pk %}"
+                                  method="post"
+                                  class="ms-2">
+                                {% csrf_token %}
+                                <button type.py="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No helpful links yet.</p>
+            {% endif %}
+            {% if campaign.helpful_links.count < 20 %}
+                <hr />
+                <h6>Add a New Link</h6>
+                <form method="post" action="{% url 'campaign_detail' pk=campaign.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_name" class="form-label">Name</label>
+                        <input type="text" name="name" id="id_name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_url" class="form-label">URL</label>
+                        <input type="url" name="url" id="id_url" class="form-control" required />
+                    </div>
+                    <button type.py="submit" class="btn btn-primary">Add Link</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}

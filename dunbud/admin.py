@@ -1,12 +1,23 @@
 from django.contrib import admin
 
-from dunbud.models import Campaign, CampaignInvitation, PlayerCharacter, TabletopSystem
+from dunbud.models import (
+    Campaign,
+    CampaignInvitation,
+    HelpfulLink,
+    PlayerCharacter,
+    TabletopSystem,
+)
 
 
 class CampaignInvitationInline(admin.TabularInline):
     model = CampaignInvitation
     extra = 0
     readonly_fields = ("token", "created_at")
+
+
+class HelpfulLinkInline(admin.TabularInline):
+    model = HelpfulLink
+    extra = 0
 
 
 @admin.register(Campaign)
@@ -16,7 +27,7 @@ class CampaignAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "updated_at"]
     filter_horizontal = ["players"]
     date_hierarchy = "created_at"
-    inlines = [CampaignInvitationInline]
+    inlines = [CampaignInvitationInline, HelpfulLinkInline]
 
 
 @admin.register(PlayerCharacter)

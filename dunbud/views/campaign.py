@@ -10,8 +10,17 @@ from django.forms.models import BaseModelForm
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+    View,
+)
 
+from dunbud.forms import HelpfulLinkForm
+from dunbud.models import HelpfulLink
 from dunbud.models.campaign import Campaign, CampaignInvitation
 
 logger = logging.getLogger(__name__)
@@ -120,7 +129,7 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             super()
             .get_queryset()
             .select_related("dungeon_master", "system")
-            .prefetch_related("players", "player_characters")
+            .prefetch_related("players", "player_characters", "helpful_links")
         )
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -135,6 +144,8 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             context["active_invite"] = self.object.invitations.filter(
                 is_active=True,
             ).first()
+            if "link_form" not in kwargs:
+                context["link_form"] = HelpfulLinkForm()
 
         # Map user_id to their character in this campaign
         character_map = {
@@ -149,6 +160,27 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
         context["players_with_data"] = players_with_data
         return context
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        """
+        Handles the POST request for adding a helpful link.
+        """
+        self.object = self.get_object()
+        campaign = self.object
+        if request.user != campaign.dungeon_master:
+            messages.error(request, "You do not have permission to add links.")
+            return self.get(request, *args, **kwargs)
+
+        form = HelpfulLinkForm(request.POST)
+        # Manually assign campaign to instance before validation
+        form.instance.campaign = campaign
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Helpful link added successfully.")
+            return redirect("campaign_detail", pk=campaign.pk)
+        messages.error(request, "There was an error with the form.")
+        kwargs["link_form"] = form
+        return self.get(request, *args, **kwargs)
 
     def test_func(self) -> bool:
         """
@@ -316,3 +348,30 @@ class CampaignJoinView(LoginRequiredMixin, View):
             messages.error(request, "An error occurred while joining the campaign.")
 
         return redirect("campaign_detail", pk=campaign.pk)
+
+
+class HelpfulLinkDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    View to delete a helpful link.
+    Restricted to the Dungeon Master of the campaign.
+    """
+
+    model = HelpfulLink
+    template_name = "campaign/helpful_link_confirm_delete.html"
+
+    def get_success_url(self) -> str:
+        """
+        Redirects to the campaign detail page after deletion.
+        """
+        return reverse("campaign_detail", kwargs={"pk": self.object.campaign.pk})
+
+    def test_func(self) -> bool:
+        """
+        Only the Dungeon Master can delete a helpful link.
+        """
+        link = self.get_object()
+        return bool(link.campaign.dungeon_master == self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, "Helpful link deleted successfully.")
+        return super().form_valid(form)

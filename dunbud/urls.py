@@ -6,6 +6,7 @@ from .views import (
     CampaignInvitationCreateView,
     CampaignJoinView,
     CampaignUpdateView,
+    HelpfulLinkDeleteView,
     JoinedCampaignListView,
     ManagedCampaignListView,
     PlayerCharacterCreateView,
@@ -47,6 +48,12 @@ urlpatterns = [
         "invites/<str:token>/",
         CampaignJoinView.as_view(),
         name="campaign_join",
+    ),
+    # Link URLs
+    path(
+        "links/<int:pk>/delete/",
+        HelpfulLinkDeleteView.as_view(),
+        name="helpful_link_delete",
     ),
     # Character URLs
     path("characters/", PlayerCharacterListView.as_view(), name="character_list"),
