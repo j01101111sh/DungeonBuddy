@@ -8,26 +8,26 @@
 {% block content %}
     <div class="container py-4 py-lg-5">
         {# Campaign Header #}
-        {% include "campaign/includes/header.html" %}
+        {% include "campaign/includes/detail/header.html" %}
 
         <div class="row g-4">
             <div class="col-lg-8">
                 {# About Section #}
-                {% include "campaign/includes/about_card.html" %}
+                {% include "campaign/includes/detail/about_card.html" %}
 
                 {# Adventure Log / Feed #}
-                {% include "campaign/includes/adventure_log.html" %}
+                {% include "campaign/includes/detail/adventure_log.html" %}
 
             </div>
             <div class="col-lg-4">
                 {# Session Tools (VTT/Video) #}
-                {% include "campaign/includes/session_tools.html" %}
+                {% include "campaign/includes/detail/session_tools.html" %}
 
                 {# Party Members List #}
-                {% include "campaign/includes/party_list.html" %}
+                {% include "campaign/includes/detail/party_list.html" %}
 
                 {# DM Invite Controls #}
-                {% include "campaign/includes/invite_card.html" %}
+                {% include "campaign/includes/detail/invite_card.html" %}
 
             </div>
         </div>
