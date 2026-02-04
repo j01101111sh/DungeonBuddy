@@ -379,7 +379,7 @@ class CampaignDetailViewTests(TestCase):
 
         # Check that the character name appears in parenthesis and is linked
         self.assertContains(response, f'href="{char_url}"')
-        self.assertContains(response, ">Grog Strongjaw</a>")
+        self.assertContains(response, ">Grog Strongjaw</div>")
 
     def test_player_character_sheet_link_display(self) -> None:
         """
@@ -427,7 +427,7 @@ class CampaignDetailViewTests(TestCase):
         self.assertContains(response, "https://foundry.example.com")
         self.assertContains(response, "https://zoom.us/j/123456")
         self.assertContains(response, "Virtual Tabletop")
-        self.assertContains(response, "Video Conference")
+        self.assertContains(response, "Video Call")
 
     def test_links_hidden_when_empty(self) -> None:
         """
@@ -483,7 +483,10 @@ class CampaignDetailViewTests(TestCase):
         # Verify the system name is present in the rendered HTML
         self.assertContains(response, self.system.short_name)
         # Specifically check for the badge formatting used in the template
-        self.assertContains(response, 'class="badge bg-light text-primary"')
+        self.assertContains(
+            response,
+            '<span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">',
+        )
 
     def test_system_name_hidden_when_null(self) -> None:
         """
