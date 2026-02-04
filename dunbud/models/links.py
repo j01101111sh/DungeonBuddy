@@ -13,14 +13,18 @@ class HelpfulLink(models.Model):
     name = models.CharField(max_length=100)
     url = models.URLField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def clean(self):
+    def clean(self) -> None:
         """
         Validate that the campaign does not have more than 20 helpful links.
         """
-        if self.campaign.helpful_links.count() >= 20:
+        if (
+            self.pk is None
+            and self.campaign
+            and self.campaign.helpful_links.count() >= 20
+        ):
             raise ValidationError(
                 "You can only add up to 20 helpful links per campaign.",
             )
