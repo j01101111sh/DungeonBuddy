@@ -12,7 +12,7 @@ from config.tests.factories import (
     TabletopSystemFactory,
     UserFactory,
 )
-from dunbud.models import Campaign, CampaignInvitation
+from dunbud.models import Campaign, CampaignInvitation, HelpfulLink
 
 User = get_user_model()
 
@@ -684,7 +684,11 @@ class HelpfulLinkTests(TestCase):
         data = {"name": "Test Link", "url": "https://test.com"}
         response = self.client.post(self.campaign_url, data)
         self.assertRedirects(response, self.campaign_url)
-        self.assertTrue(self.campaign.helpful_links.filter(name="Test Link").exists())
+        self.assertTrue(
+            HelpfulLink.objects.filter(campaign=self.campaign)
+            .filter(name="Test Link")
+            .exists(),
+        )
 
     def test_player_cannot_add_link(self) -> None:
         """
@@ -694,7 +698,9 @@ class HelpfulLinkTests(TestCase):
         data = {"name": "Player Link", "url": "https://player.com"}
         self.client.post(self.campaign_url, data)
         self.assertFalse(
-            self.campaign.helpful_links.filter(name="Player Link").exists(),
+            HelpfulLink.objects.filter(campaign=self.campaign)
+            .filter(name="Player Link")
+            .exists(),
         )
 
     def test_outsider_cannot_add_link(self) -> None:
@@ -705,7 +711,9 @@ class HelpfulLinkTests(TestCase):
         data = {"name": "Outsider Link", "url": "https://outsider.com"}
         self.client.post(self.campaign_url, data)
         self.assertFalse(
-            self.campaign.helpful_links.filter(name="Outsider Link").exists(),
+            HelpfulLink.objects.filter(campaign=self.campaign)
+            .filter(name="Outsider Link")
+            .exists(),
         )
 
     def test_link_limit_is_enforced(self) -> None:
@@ -715,13 +723,17 @@ class HelpfulLinkTests(TestCase):
         self.client.force_login(self.dm)
         for i in range(20):
             HelpfulLinkFactory.create(campaign=self.campaign, name=f"Link {i}")
-        self.assertEqual(self.campaign.helpful_links.count(), 20)
+        self.assertEqual(HelpfulLink.objects.filter(campaign=self.campaign).count(), 20)
 
         data = {"name": "21st Link", "url": "https://toomany.com"}
         response = self.client.post(self.campaign_url, data)
         self.assertEqual(response.status_code, 200)  # Form error re-renders page
-        self.assertFalse(self.campaign.helpful_links.filter(name="21st Link").exists())
-        self.assertEqual(self.campaign.helpful_links.count(), 20)
+        self.assertFalse(
+            HelpfulLink.objects.filter(campaign=self.campaign)
+            .filter(name="21st Link")
+            .exists(),
+        )
+        self.assertEqual(HelpfulLink.objects.filter(campaign=self.campaign).count(), 20)
 
     def test_dm_can_delete_link(self) -> None:
         """
@@ -732,7 +744,11 @@ class HelpfulLinkTests(TestCase):
         self.client.force_login(self.dm)
         response = self.client.post(delete_url)
         self.assertRedirects(response, self.campaign_url)
-        self.assertFalse(self.campaign.helpful_links.filter(pk=link.pk).exists())
+        self.assertFalse(
+            HelpfulLink.objects.filter(campaign=self.campaign)
+            .filter(pk=link.pk)
+            .exists(),
+        )
 
     def test_player_cannot_delete_link(self) -> None:
         """
@@ -743,7 +759,11 @@ class HelpfulLinkTests(TestCase):
         self.client.force_login(self.player)
         response = self.client.post(delete_url)
         self.assertEqual(response.status_code, 403)
-        self.assertTrue(self.campaign.helpful_links.filter(pk=link.pk).exists())
+        self.assertTrue(
+            HelpfulLink.objects.filter(campaign=self.campaign)
+            .filter(pk=link.pk)
+            .exists(),
+        )
 
     def test_links_are_displayed(self) -> None:
         """
