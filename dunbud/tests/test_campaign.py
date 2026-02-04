@@ -784,3 +784,14 @@ class HelpfulLinkTests(TestCase):
             campaign=self.campaign,
         )
         self.assertEqual(str(link), "My Link")
+
+    def test_delete_link_uses_correct_template(self) -> None:
+        """
+        Test that the delete link view uses the correct template.
+        """
+        link = HelpfulLinkFactory.create(campaign=self.campaign)
+        delete_url = reverse("helpful_link_delete", kwargs={"pk": link.pk})
+        self.client.force_login(self.dm)
+        response = self.client.get(delete_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaign/helpful_link_confirm_delete.html")
