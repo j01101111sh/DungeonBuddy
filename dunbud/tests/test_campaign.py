@@ -774,3 +774,13 @@ class HelpfulLinkTests(TestCase):
         response = self.client.get(self.campaign_url)
         self.assertContains(response, link.name)
         self.assertContains(response, link.url)
+
+    def test_string_representation(self) -> None:
+        """
+        Test the string representation of the HelpfulLink model.
+        """
+        link = HelpfulLinkFactory.create(
+            name="My Link",
+            campaign=self.campaign,
+        )
+        self.assertEqual(str(link), "My Link")
