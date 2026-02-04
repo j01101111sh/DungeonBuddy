@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
+
+from dunbud.models.campaign import Campaign
 
 
 class HelpfulLink(models.Model):
@@ -20,11 +22,14 @@ class HelpfulLink(models.Model):
         """
         Validate that the campaign does not have more than 20 helpful links.
         """
-        if (
-            self.pk is None
-            and self.campaign
-            and self.campaign.helpful_links.count() >= 20
-        ):
-            raise ValidationError(
-                "You can only add up to 20 helpful links per campaign.",
-            )
+        if self.pk is None and self.campaign:
+            with transaction.atomic():
+                campaign = (
+                    Campaign.objects.select_for_update()
+                    .filter(pk=self.campaign.pk)
+                    .get()
+                )
+                if campaign.helpful_links.count() >= 20:
+                    raise ValidationError(
+                        "You can only add up to 20 helpful links per campaign.",
+                    )
