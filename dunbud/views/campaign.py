@@ -359,6 +359,12 @@ class HelpfulLinkDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView)
     model = HelpfulLink
     template_name = "campaign/helpful_link_confirm_delete.html"
 
+    def get_queryset(self) -> QuerySet:
+        """
+        Fetches link and DM models
+        """
+        return super().get_queryset().select_related("campaign__dungeon_master")
+
     def get_success_url(self) -> str:
         """
         Redirects to the campaign detail page after deletion.
