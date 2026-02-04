@@ -372,6 +372,6 @@ class HelpfulLinkDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView)
         link = self.get_object()
         return bool(link.campaign.dungeon_master == self.request.user)
 
-    def form_valid(self, form):
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
         messages.success(self.request, "Helpful link deleted successfully.")
         return super().form_valid(form)
