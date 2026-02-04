@@ -1,0 +1,9 @@
+<div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
+    <div class="card-body p-4 p-lg-5">
+        <h5 class="fw-bold text-uppercase text-muted small mb-3 ls-1">About the Adventure</h5>
+        <div class="card-text lead fs-6 text-secondary text-pre-line">{{ campaign.description }}</div>
+        <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted">Last updated {{ campaign.updated_at|date:"F d, Y" }}</small>
+        </div>
+    </div>
+</div>

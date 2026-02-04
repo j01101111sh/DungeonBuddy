@@ -1,0 +1,25 @@
+{% if campaign.vtt_link or campaign.video_link %}
+    <div class="card border-0 shadow-sm mb-4 rounded-4 bg-primary text-white overflow-hidden position-relative">
+        <div class="card-body p-4 position-relative z-1">
+            <h5 class="card-title fw-bold mb-3">Session Tools</h5>
+            <div class="d-grid gap-2">
+                {% if campaign.vtt_link %}
+                    <a href="{{ campaign.vtt_link }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="btn btn-light text-primary fw-semibold border-0 shadow-sm d-flex align-items-center justify-content-center gap-2 py-2">
+                        <span>🎲</span> Launch Virtual Tabletop
+                    </a>
+                {% endif %}
+                {% if campaign.video_link %}
+                    <a href="{{ campaign.video_link }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="btn btn-primary-dark text-white border border-white border-opacity-25 shadow-sm d-flex align-items-center justify-content-center gap-2 py-2">
+                        <span>📹</span> Join Video Call
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endif %}

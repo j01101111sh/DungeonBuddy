@@ -7,174 +7,28 @@
 {% endblock title %}
 {% block content %}
     <div class="container py-4 py-lg-5">
-        <div class="row mb-4 align-items-end">
-            <div class="col-md-8">
-                <nav aria-label="breadcrumb" class="mb-2">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="{% if campaign.dungeon_master == request.user %}{% url 'campaign_managed' %}{% else %}{% url 'campaign_joined' %}{% endif %}"
-                               class="text-decoration-none text-muted small">
-                                <span class="fw-semibold text-small-caps">My Campaigns</span>
-                            </a>
-                        </li>
-                        <li class="breadcrumb-item active text-muted small" aria-current="page">{{ campaign.name }}</li>
-                    </ol>
-                </nav>
-                <h1 class="display-5 fw-bold text-dark mb-2 lh-1">{{ campaign.name }}</h1>
-                <div class="d-flex align-items-center flex-wrap gap-2 mt-3">
-                    {% if campaign.system %}
-                        <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
-                            {{ campaign.system.short_name }}
-                        </span>
-                    {% endif %}
-                    <div class="d-flex align-items-center text-muted ms-1">
-                        <span class="small me-1">Dungeon Master:</span>
-                        <span class="fw-semibold text-dark">{{ campaign.dungeon_master.username }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                {% if campaign.dungeon_master == request.user %}
-                    <a href="{% url 'campaign_edit' campaign.pk %}"
-                       class="btn btn-outline-secondary rounded-pill px-4">Edit Campaign</a>
-                {% endif %}
-            </div>
-        </div>
+        {# Campaign Header #}
+        {% include "campaign/includes/header.html" %}
+
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
-                    <div class="card-body p-4 p-lg-5">
-                        <h5 class="fw-bold text-uppercase text-muted small mb-3 ls-1">About the Adventure</h5>
-                        <div class="card-text lead fs-6 text-secondary text-pre-line">{{ campaign.description }}</div>
-                        <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
-                            <small class="text-muted">Last updated {{ campaign.updated_at|date:"F d, Y" }}</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center justify-content-between mb-3 px-1">
-                    <h3 class="h5 fw-bold mb-0 text-dark">Adventure Log</h3>
-                </div>
-                <div class="feed-container">
-                    {% for item in campaign.feed_items.all %}
-                        <div class="card border-0 shadow-sm mb-3 rounded-3 feed-card">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="badge bg-light text-secondary border fw-normal">{{ item.created_at|date:"M d" }}</span>
-                                    <small class="text-muted">{{ item.created_at|date:"H:i" }}</small>
-                                </div>
-                                <p class="mb-0 text-dark">{{ item.message }}</p>
-                            </div>
-                        </div>
-                    {% empty %}
-                        <div class="text-center py-5 rounded-4 bg-light-subtle border border-dashed">
-                            <div class="text-muted mb-2 feed-empty-icon">📭</div>
-                            <p class="mb-0 text-muted fw-semibold">No recent activity recorded.</p>
-                            <p class="small text-muted">Game updates and events will appear here.</p>
-                        </div>
-                    {% endfor %}
-                </div>
+                {# About Section #}
+                {% include "campaign/includes/about_card.html" %}
+
+                {# Adventure Log / Feed #}
+                {% include "campaign/includes/adventure_log.html" %}
+
             </div>
             <div class="col-lg-4">
-                {% if campaign.vtt_link or campaign.video_link %}
-                    <div class="card border-0 shadow-sm mb-4 rounded-4 bg-primary text-white overflow-hidden position-relative">
-                        <div class="card-body p-4 position-relative z-1">
-                            <h5 class="card-title fw-bold mb-3">Session Tools</h5>
-                            <div class="d-grid gap-2">
-                                {% if campaign.vtt_link %}
-                                    <a href="{{ campaign.vtt_link }}"
-                                       target="_blank"
-                                       rel="noopener noreferrer"
-                                       class="btn btn-light text-primary fw-semibold border-0 shadow-sm d-flex align-items-center justify-content-center gap-2 py-2">
-                                        <span>🎲</span> Launch Virtual Tabletop
-                                    </a>
-                                {% endif %}
-                                {% if campaign.video_link %}
-                                    <a href="{{ campaign.video_link }}"
-                                       target="_blank"
-                                       rel="noopener noreferrer"
-                                       class="btn btn-primary-dark text-white border border-white border-opacity-25 shadow-sm d-flex align-items-center justify-content-center gap-2 py-2">
-                                        <span>📹</span> Join Video Call
-                                    </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-                <div class="card border-0 shadow-sm mb-4 rounded-4">
-                    <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-2">
-                        <div class="d-flex justify-content-between align-items-end">
-                            <h5 class="card-title fw-bold mb-0 text-dark">Party Members</h5>
-                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">{{ campaign.players.count }} / {{ campaign.max_players }}</span>
-                        </div>
-                    </div>
-                    <div class="card-body p-2">
-                        <div class="list-group list-group-flush">
-                            {% for player in players_with_data %}
-                                <div class="list-group-item border-0 px-3 py-2 rounded-3 mb-1 d-flex align-items-center justify-content-between player-card-row">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="campaign-avatar-initial bg-primary-subtle text-primary">{{ player.username|slice:":1"|upper }}</div>
-                                        <div class="min-width-0">
-                                            <div class="fw-bold text-dark text-truncate">{{ player.username }}</div>
-                                            {% if player.campaign_character %}
-                                                <div class="small text-muted text-truncate">{{ player.campaign_character.name }}</div>
-                                            {% else %}
-                                                <div class="small text-muted fst-italic">No Character</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    {% if player.campaign_character %}
-                                        <div class="d-flex gap-1">
-                                            <a href="{% url 'character_detail' player.campaign_character.pk %}"
-                                               class="btn btn-sm btn-icon btn-light text-secondary"
-                                               title="View Profile">👤</a>
-                                            {% if player.campaign_character.character_sheet_link %}
-                                                <a href="{{ player.campaign_character.character_sheet_link }}"
-                                                   target="_blank"
-                                                   rel="noopener noreferrer"
-                                                   class="btn btn-sm btn-icon btn-light text-secondary"
-                                                   title="Character Sheet">📜</a>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            {% empty %}
-                                <div class="text-center py-4 text-muted small">The party is gathering...</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                {% if user == campaign.dungeon_master %}
-                    <div class="card border-0 shadow-sm rounded-4">
-                        <div class="card-body p-4">
-                            <h5 class="card-title fw-bold mb-2 text-dark">Invite Players</h5>
-                            <p class="small text-muted mb-3">Share this secure link to add players.</p>
-                            {% if active_invite %}
-                                <div class="input-group mb-3">
-                                    <input type="text"
-                                           class="form-control bg-light border-0 small invite-input"
-                                           value="{{ request.scheme }}://{{ request.get_host }}{{ active_invite.get_absolute_url }}"
-                                           readonly
-                                           id="inviteLink" />
-                                    <button class="btn btn-dark"
-                                            type="button"
-                                            onclick="navigator.clipboard.writeText(document.getElementById('inviteLink').value)">
-                                        Copy
-                                    </button>
-                                </div>
-                            {% endif %}
-                            <form action="{% url 'campaign_invite_create' campaign.pk %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-dark w-100 btn-sm rounded-pill">
-                                    {% if active_invite %}
-                                        Rotate Invite Link
-                                    {% else %}
-                                        Generate New Link
-                                    {% endif %}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                {% endif %}
+                {# Session Tools (VTT/Video) #}
+                {% include "campaign/includes/session_tools.html" %}
+
+                {# Party Members List #}
+                {% include "campaign/includes/party_list.html" %}
+
+                {# DM Invite Controls #}
+                {% include "campaign/includes/invite_card.html" %}
+
             </div>
         </div>
     </div>
