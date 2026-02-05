@@ -14,9 +14,6 @@ class HelpfulLinkForm(forms.ModelForm):
         fields = ["name", "url"]
 
     def clean_url(self) -> str:
-        """
-        Automatically prepend 'https://' to the URL if no scheme is present.
-        """
         url = self.cleaned_data["url"]
         if not url.startswith(("http://", "https://")):
             url = f"https://{url}"
@@ -35,8 +32,10 @@ class PartyFeedItemForm(forms.ModelForm):
             "message": forms.Textarea(
                 attrs={
                     "class": "form-control",
-                    "rows": 2,
-                    "placeholder": _("Post an announcement to the party feed..."),
+                    "rows": 3,
+                    "placeholder": _(
+                        "Post an announcement... (Markdown supported: **bold**, *italics*, [links](url))",
+                    ),
                 },
             ),
         }

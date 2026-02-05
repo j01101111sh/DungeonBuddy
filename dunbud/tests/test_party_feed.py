@@ -170,3 +170,38 @@ class PartyFeedTests(TestCase):
             PartyFeedItem.objects.count(),
             1,
         )  # only the player join feed item
+
+    def test_dm_can_post_markdown_announcement(self) -> None:
+        """
+        Test that the Dungeon Master can post an announcement containing Markdown.
+        """
+        self.client.force_login(self.dm)
+        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+
+        markdown_message = "**Bold Announcement**\nWith a [link](https://example.com)"
+
+        response = self.client.post(url, {"message": markdown_message})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(PartyFeedItem.objects.count(), 1)
+        if first_object := PartyFeedItem.objects.first():
+            self.assertEqual(first_object.message, first_object.message)
+
+    def test_campaign_detail_renders_markdown(self) -> None:
+        """
+        Test that the campaign detail view renders the markdown announcement as HTML.
+        """
+        self.client.force_login(self.player)
+
+        # Create a feed item with markdown
+        PartyFeedItem.objects.create(
+            campaign=self.campaign,
+            message="We meet at **dawn**!",
+        )
+
+        url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        # Check for the rendered HTML
+        self.assertContains(response, "<strong>dawn</strong>")

@@ -22,9 +22,8 @@ class PartyFeedItem(models.Model):
         related_name="feed_items",
         help_text=_("The campaign this feed item belongs to."),
     )
-    message = models.CharField(
-        max_length=512,
-        help_text=_("The text content of the feed item."),
+    message = models.TextField(
+        help_text=_("The text content of the feed item. Supports Markdown."),
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
