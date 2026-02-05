@@ -12,7 +12,7 @@
                     <div class="d-flex w-100 justify-content-between align-items-center mt-2">
                         <div>
                             {% if campaign.system %}<span class="badge bg-secondary me-1">{{ campaign.system.name }}</span>{% endif %}
-                            <small class="text-muted">{{ campaign.players.count }} / {{ campaign.max_players }} Player{{ campaign.max_players|pluralize }}</small>
+                            <small class="text-muted">{{ campaign.player_count }} / {{ campaign.max_players }} Player{{ campaign.max_players|pluralize }}</small>
                         </div>
                         {% with latest=campaign.feed_items.first %}
                             {% if latest %}<small class="text-muted">Updated {{ latest.created_at|timesince }} ago</small>{% endif %}
