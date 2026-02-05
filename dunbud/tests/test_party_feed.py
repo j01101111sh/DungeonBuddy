@@ -185,7 +185,7 @@ class PartyFeedTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(PartyFeedItem.objects.count(), 2)  # party joining + this one
         if first_object := PartyFeedItem.objects.latest("created_at"):
-            self.assertEqual(first_object.message, first_object.message)
+            self.assertEqual(first_object.message, markdown_message)
 
     def test_campaign_detail_renders_markdown(self) -> None:
         """
