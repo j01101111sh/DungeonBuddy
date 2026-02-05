@@ -7,11 +7,20 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
 from django.db.models import QuerySet
 from django.forms.models import BaseModelForm
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+    View,
+)
 
+from dunbud.forms import HelpfulLinkForm
+from dunbud.models import HelpfulLink
 from dunbud.models.campaign import Campaign, CampaignInvitation
 
 logger = logging.getLogger(__name__)
@@ -120,7 +129,7 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             super()
             .get_queryset()
             .select_related("dungeon_master", "system")
-            .prefetch_related("players", "player_characters")
+            .prefetch_related("players", "player_characters", "helpful_links")
         )
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -135,6 +144,8 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             context["active_invite"] = self.object.invitations.filter(
                 is_active=True,
             ).first()
+            if "link_form" not in kwargs:
+                context["link_form"] = HelpfulLinkForm()
 
         # Map user_id to their character in this campaign
         character_map = {
@@ -316,3 +327,62 @@ class CampaignJoinView(LoginRequiredMixin, View):
             messages.error(request, "An error occurred while joining the campaign.")
 
         return redirect("campaign_detail", pk=campaign.pk)
+
+
+class HelpfulLinkCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """
+    View to create a new helpful link via AJAX.
+    """
+
+    model = HelpfulLink
+    form_class = HelpfulLinkForm
+
+    def test_func(self) -> bool:
+        self.campaign = get_object_or_404(Campaign, pk=self.kwargs["pk"])
+        return bool(self.campaign.dungeon_master == self.request.user)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        form = self.form_class(request.POST)
+        form.instance.campaign = self.campaign
+
+        if form.is_valid():
+            link = form.save()
+            data = {
+                "pk": link.pk,
+                "name": link.name,
+                "url": link.url,
+                "delete_url": reverse("helpful_link_delete", kwargs={"pk": link.pk}),
+            }
+            return JsonResponse(data, status=201)
+        return JsonResponse({"errors": form.errors}, status=400)
+
+
+class HelpfulLinkDeleteView(LoginRequiredMixin, DeleteView):
+    """
+    View to delete a helpful link via AJAX.
+    Restricted to the Dungeon Master of the campaign.
+    """
+
+    model = HelpfulLink
+
+    def get_queryset(self) -> QuerySet:
+        """
+        Only allow the DM to delete links from their own campaign.
+        """
+        return super().get_queryset().filter(campaign__dungeon_master=self.request.user)
+
+    def get_success_url(self) -> str:
+        # Prevent redirection
+        return ""
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        """
+        Log the deletion and return a JSON response.
+        """
+        logger.info(
+            "Deleted helpful link %s by user %s",
+            self.object.pk,
+            self.request.user,
+        )
+        super().form_valid(form)
+        return JsonResponse({"message": "Link deleted successfully."})

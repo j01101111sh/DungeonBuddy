@@ -1,6 +1,7 @@
 from .campaign import Campaign, CampaignInvitation, TabletopSystem
 from .character import PlayerCharacter
 from .feed import PartyFeedItem
+from .links import HelpfulLink
 
 __all__ = [
     "Campaign",
@@ -8,4 +9,5 @@ __all__ = [
     "TabletopSystem",
     "PartyFeedItem",
     "PlayerCharacter",
+    "HelpfulLink",
 ]

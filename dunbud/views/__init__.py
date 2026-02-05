@@ -4,6 +4,8 @@ from .campaign import (
     CampaignInvitationCreateView,
     CampaignJoinView,
     CampaignUpdateView,
+    HelpfulLinkCreateView,
+    HelpfulLinkDeleteView,
     JoinedCampaignListView,
     ManagedCampaignListView,
 )
@@ -28,4 +30,6 @@ __all__ = [
     "PlayerCharacterListView",
     "PlayerCharacterUpdateView",
     "SplashView",
+    "HelpfulLinkCreateView",
+    "HelpfulLinkDeleteView",
 ]

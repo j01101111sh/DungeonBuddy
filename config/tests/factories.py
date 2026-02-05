@@ -3,7 +3,7 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 
-from dunbud.models import PlayerCharacter, TabletopSystem
+from dunbud.models import HelpfulLink, PlayerCharacter, TabletopSystem
 from users.models import CustomUser
 
 # Type alias for the user model
@@ -98,3 +98,27 @@ class PlayerCharacterFactory:
         defaults.update(kwargs)
 
         return PlayerCharacter.objects.create(user=user, **defaults)
+
+
+class HelpfulLinkFactory:
+    """
+    Factory for creating HelpfulLink instances for testing purposes.
+    """
+
+    @staticmethod
+    def create(**kwargs: Any) -> HelpfulLink:
+        """
+        Creates a new HelpfulLink instance.
+
+        Args:
+            **kwargs: Fields for the HelpfulLink.
+
+        Returns:
+            HelpfulLink instance.
+        """
+        if "name" not in kwargs:
+            kwargs["name"] = f"Link {secrets.token_hex(4)}"
+        if "url" not in kwargs:
+            kwargs["url"] = f"https://example.com/{secrets.token_hex(4)}"
+
+        return HelpfulLink.objects.create(**kwargs)
