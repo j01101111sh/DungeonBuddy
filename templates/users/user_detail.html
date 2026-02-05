@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <h2>{{ object.username }}</h2>
+                {% if object == request.user %}
+                    <a class="btn btn-primary" href="{% url 'profile_edit' %}" role="button">Edit Profile</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}
