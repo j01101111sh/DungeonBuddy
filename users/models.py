@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.urls import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,9 @@ class CustomUser(AbstractUser):
         default=False,
         help_text="Designates whether this user is a test user.",
     )
+
+    def get_absolute_url(self) -> str:
+        return reverse("user_detail", kwargs={"username": self.username})
 
     def __str__(self) -> str:
         return self.username

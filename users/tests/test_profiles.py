@@ -79,3 +79,61 @@ class ProfileEditViewTests(TestCase):
         # Verify DB was NOT updated
         self.user.refresh_from_db()
         self.assertEqual(self.user.bio, old_bio)
+
+
+class UserDetailViewTests(TestCase):
+    def setUp(self) -> None:
+        self.user, self.password = UserFactory.create(
+            bio="A dedicated dungeon master.",
+            location="Seattle, WA",
+            website="https://dungeonmaster.com",
+        )
+        self.other_user, self.other_password = UserFactory.create()
+        self.url = reverse("user_detail", kwargs={"username": self.user.username})
+
+    def test_redirect_if_not_logged_in(self) -> None:
+        """Test that unauthenticated users are redirected to the login page."""
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"{reverse('login')}?next={self.url}")
+
+    def test_page_renders_with_profile_info(self) -> None:
+        """Test that the user detail page renders with the correct profile information."""
+        self.client.login(username=self.user.username, password=self.password)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "users/user_detail.html")
+        self.assertContains(response, self.user.username)
+        self.assertContains(response, self.user.bio)
+        self.assertContains(response, self.user.location)
+        self.assertContains(response, self.user.website)
+
+    def test_edit_button_visible_for_owner(self) -> None:
+        """Test that the 'Edit Profile' button is visible when the user views their own profile."""
+        self.client.login(username=self.user.username, password=self.password)
+        response = self.client.get(self.url)
+        self.assertContains(response, "Edit Profile")
+        self.assertContains(response, reverse("profile_edit"))
+
+    def test_edit_button_hidden_for_others(self) -> None:
+        """Test that the 'Edit Profile' button is NOT visible when viewing another user's profile."""
+        # Login as a different user
+        self.client.login(
+            username=self.other_user.username,
+            password=self.other_password,
+        )
+        response = self.client.get(self.url)
+        edit_url = reverse("profile_edit")
+        self.assertNotContains(response, f'href="{edit_url}" role="button">')
+
+    def test_profile_without_bio(self) -> None:
+        """Test that the profile page renders correctly for a user without a bio."""
+        user_no_bio, password = UserFactory.create(bio="")
+        self.client.login(username=user_no_bio.username, password=password)
+        url = reverse("user_detail", kwargs={"username": user_no_bio.username})
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, user_no_bio.username)
+        self.assertContains(response, "No bio provided.")

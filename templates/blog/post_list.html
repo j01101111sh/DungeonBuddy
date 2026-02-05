@@ -24,7 +24,9 @@
                                 {% endif %}
                             </a>
                         </h2>
-                        <h6 class="card-subtitle mb-2 text-muted">{{ post.created_at|date:"F j, Y" }} by {{ post.author.username }}</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            {{ post.created_at|date:"F j, Y" }} by <a href="{{ post.author.get_absolute_url }}">{{ post.author.username }}</a>
+                        </h6>
                         <p class="card-text text-truncate">{{ post.content|markdown_format|striptags|truncatewords:100 }}</p>
                         <a href="{{ post.get_absolute_url }}"
                            class="btn btn-outline-primary btn-sm">Read More</a>

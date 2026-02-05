@@ -12,7 +12,9 @@
                     <div class="d-flex align-items-center gap-3">
                         <div class="campaign-avatar-initial bg-primary-subtle text-primary">{{ player.username|slice:":1"|upper }}</div>
                         <div class="min-width-0">
-                            <div class="fw-bold text-dark text-truncate">{{ player.username }}</div>
+                            <div class="fw-bold text-dark text-truncate">
+                                <a href="{{ player.get_absolute_url }}">{{ player.username }}</a>
+                            </div>
                             {% if player.campaign_character %}
                                 <div class="small text-muted text-truncate">{{ player.campaign_character.name }}</div>
                             {% else %}

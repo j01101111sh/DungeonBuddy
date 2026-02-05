@@ -20,7 +20,7 @@
             {% endif %}
             <div class="d-flex align-items-center text-muted ms-1">
                 <span class="small me-1">Dungeon Master:</span>
-                <span class="fw-semibold text-dark">{{ campaign.dungeon_master.username }}</span>
+                <span class="fw-semibold text-dark"><a href="{{ campaign.dungeon_master.get_absolute_url }}">{{ campaign.dungeon_master.username }}</a></span>
             </div>
         </div>
     </div>
