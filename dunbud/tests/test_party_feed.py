@@ -123,6 +123,22 @@ class PartyFeedTests(TestCase):
         if first_object := PartyFeedItem.objects.first():
             self.assertEqual(first_object.message, message)
 
+    def test_dm_cannot_post_empty_announcement(self) -> None:
+        """
+        Test that the Dungeon Master cannot post an empty announcement.
+        """
+        self.client.force_login(self.dm)
+        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+
+        # Submitting an empty message
+        response = self.client.post(url, {"message": ""})
+
+        # Should redirect back to detail view (where error message is displayed)
+        self.assertEqual(response.status_code, 302)
+
+        # Ensure no feed item was created
+        self.assertEqual(PartyFeedItem.objects.count(), 1)  # Only player joining
+
     def test_player_cannot_post_announcement(self) -> None:
         """
         Test that a player in the campaign cannot post an announcement.
