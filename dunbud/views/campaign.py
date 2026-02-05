@@ -411,24 +411,23 @@ class CampaignAnnouncementCreateView(LoginRequiredMixin, UserPassesTestMixin, Vi
         """
         Only the Dungeon Master can post announcements.
         """
-        campaign = get_object_or_404(Campaign, pk=self.kwargs["pk"])
-        return bool(campaign.dungeon_master == self.request.user)
+        self.campaign = get_object_or_404(Campaign, pk=self.kwargs["pk"])
+        return bool(self.campaign.dungeon_master == self.request.user)
 
     def post(self, request: HttpRequest, pk: str) -> HttpResponse:
         """
         Handle POST request to create a new announcement.
         """
-        campaign = get_object_or_404(Campaign, pk=pk)
         form = PartyFeedItemForm(request.POST)
 
         if form.is_valid():
             feed_item = form.save(commit=False)
-            feed_item.campaign = campaign
+            feed_item.campaign = self.campaign
             feed_item.save()
 
             logger.info(
                 "Announcement posted to campaign %s by user %s",
-                campaign.id,
+                self.campaign.id,
                 request.user,
             )
             messages.success(request, "Announcement posted successfully.")
