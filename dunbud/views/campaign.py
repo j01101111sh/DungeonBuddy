@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 from django.forms.models import BaseModelForm
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -89,7 +89,12 @@ class ManagedCampaignListView(LoginRequiredMixin, ListView):
         if not self.request.user.is_authenticated:
             return Campaign.objects.none()
 
-        return Campaign.objects.filter(dungeon_master=self.request.user)
+        return (
+            Campaign.objects.filter(dungeon_master=self.request.user)
+            .select_related("dungeon_master", "system")
+            .annotate(player_count=Count("players"))
+            .prefetch_related("feed_items")
+        )
 
 
 class JoinedCampaignListView(LoginRequiredMixin, ListView):
@@ -108,7 +113,12 @@ class JoinedCampaignListView(LoginRequiredMixin, ListView):
         if not self.request.user.is_authenticated:
             return Campaign.objects.none()
 
-        return Campaign.objects.filter(players=self.request.user)
+        return (
+            Campaign.objects.filter(players=self.request.user)
+            .select_related("dungeon_master", "system")
+            .annotate(player_count=Count("players"))
+            .prefetch_related("feed_items")
+        )
 
 
 class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
