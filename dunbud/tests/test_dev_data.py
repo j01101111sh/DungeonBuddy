@@ -10,7 +10,8 @@ from dunbud.management.commands.populate_campaigns import (
     NUM_JOINED_USER_CAMPAIGNS,
 )
 from dunbud.management.commands.populate_users import NUM_TEST_USERS
-from dunbud.models import Campaign, PlayerCharacter
+from dunbud.models import Campaign, HelpfulLink, PlayerCharacter
+from dunbud.models.links import MAX_LINKS_PER_CAMPAIGN
 
 User = get_user_model()
 
@@ -122,3 +123,23 @@ class PopulateDevDataTests(TestCase):
                     ).exists(),
                     f"Character missing for player {player.username} in campaign {campaign.name}",
                 )
+
+    def test_helpful_links_generation(self) -> None:
+        """
+        Test that helpful links are generated for campaigns.
+        """
+        campaigns = Campaign.objects.all()
+        self.assertTrue(campaigns.exists())
+
+        for campaign in campaigns:
+            link_count = HelpfulLink.objects.filter(campaign=campaign).count()
+            self.assertGreaterEqual(
+                link_count,
+                1,
+                f"Campaign {campaign.name} should have at least 1 helpful link",
+            )
+            self.assertLessEqual(
+                link_count,
+                MAX_LINKS_PER_CAMPAIGN,
+                f"Campaign {campaign.name} should have at most {MAX_LINKS_PER_CAMPAIGN} helpful links",
+            )
