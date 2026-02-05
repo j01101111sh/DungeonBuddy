@@ -696,6 +696,28 @@ class HelpfulLinkTests(TestCase):
         )
         self.assertEqual(response.json()["name"], "Test Link")
 
+    def test_add_link_without_protocol(self) -> None:
+        """
+        Test that adding a link without a protocol ('http://' or 'https://')
+        results in 'https://' being prepended.
+        """
+        self.client.force_login(self.dm)
+        data = {"name": "No Protocol Link", "url": "google.com"}
+        response = self.client.post(
+            self.add_url,
+            data,
+            headers={"x-requested-with": "XMLHttpRequest"},
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(
+            HelpfulLink.objects.filter(campaign=self.campaign)
+            .filter(name="No Protocol Link")
+            .exists(),
+        )
+        link = HelpfulLink.objects.get(name="No Protocol Link")
+        self.assertEqual(link.url, "https://google.com")
+        self.assertEqual(response.json()["url"], "https://google.com")
+
     def test_player_cannot_add_link(self) -> None:
         """
         Test that a player cannot add a helpful link.
