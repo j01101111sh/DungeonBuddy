@@ -127,3 +127,14 @@ class UserDetailViewTests(TestCase):
             response,
             'href="/users/profile/edit/" role="button">Edit Profile</a>',
         )
+
+    def test_profile_without_bio(self) -> None:
+        """Test that the profile page renders correctly for a user without a bio."""
+        user_no_bio, password = UserFactory.create(bio="")
+        self.client.login(username=user_no_bio.username, password=password)
+        url = reverse("user_detail", kwargs={"username": user_no_bio.username})
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, user_no_bio.username)
