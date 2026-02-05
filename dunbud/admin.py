@@ -53,3 +53,9 @@ class CampaignInvitationAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "created_at")
     search_fields = ("campaign__name",)
     readonly_fields = ("token",)
+
+
+@admin.register(HelpfulLink)
+class HelpfulLinkAdmin(admin.ModelAdmin):
+    list_display = ["name", "url", "campaign"]
+    search_fields = ["name", "url", "campaign__name"]
