@@ -123,10 +123,8 @@ class UserDetailViewTests(TestCase):
             password=self.other_password,
         )
         response = self.client.get(self.url)
-        self.assertNotContains(
-            response,
-            'href="/users/profile/edit/" role="button">Edit Profile</a>',
-        )
+        edit_url = reverse("profile_edit")
+        self.assertNotContains(response, f'href="{edit_url}" role="button">')
 
     def test_profile_without_bio(self) -> None:
         """Test that the profile page renders correctly for a user without a bio."""
