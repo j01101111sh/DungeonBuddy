@@ -13,7 +13,7 @@ class Command(BaseCommand):
     This is a wrapper that calls individual population commands.
     """
 
-    help = "Generates all development data: systems, users, campaigns, and blog posts."
+    help = "Generates all development data: systems, users, campaigns, helpful links, and blog posts."
 
     def handle(self, *args: Any, **options: Any) -> None:
         """
@@ -26,6 +26,7 @@ class Command(BaseCommand):
             call_command("populate_systems")
             call_command("populate_users")
             call_command("populate_campaigns")
+            call_command("populate_helpful_links")
             call_command("populate_blog")
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error generating data: {e}"))
