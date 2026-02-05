@@ -13,6 +13,7 @@ from config.tests.factories import (
     UserFactory,
 )
 from dunbud.models import Campaign, CampaignInvitation, HelpfulLink
+from dunbud.models.links import MAX_LINKS_PER_CAMPAIGN
 
 User = get_user_model()
 
@@ -756,14 +757,17 @@ class HelpfulLinkTests(TestCase):
 
     def test_link_limit_is_enforced(self) -> None:
         """
-        Test that no more than 20 links can be added.
+        Test that no more than MAX_LINKS_PER_CAMPAIGN links can be added.
         """
         self.client.force_login(self.dm)
-        for i in range(20):
+        for i in range(MAX_LINKS_PER_CAMPAIGN):
             HelpfulLinkFactory.create(campaign=self.campaign, name=f"Link {i}")
-        self.assertEqual(HelpfulLink.objects.filter(campaign=self.campaign).count(), 20)
+        self.assertEqual(
+            HelpfulLink.objects.filter(campaign=self.campaign).count(),
+            MAX_LINKS_PER_CAMPAIGN,
+        )
 
-        data = {"name": "21st Link", "url": "https://toomany.com"}
+        data = {"name": "MAX_LINKS_PER_CAMPAIGN+1 Link", "url": "https://toomany.com"}
         response = self.client.post(
             self.add_url,
             data,
@@ -771,15 +775,18 @@ class HelpfulLinkTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn(
-            "You can only add up to 20 helpful links per campaign.",
+            f"You can only add up to {MAX_LINKS_PER_CAMPAIGN} helpful links per campaign.",
             response.json()["errors"]["__all__"][0],
         )
         self.assertFalse(
             HelpfulLink.objects.filter(campaign=self.campaign)
-            .filter(name="21st Link")
+            .filter(name="MAX_LINKS_PER_CAMPAIGN+1 Link")
             .exists(),
         )
-        self.assertEqual(HelpfulLink.objects.filter(campaign=self.campaign).count(), 20)
+        self.assertEqual(
+            HelpfulLink.objects.filter(campaign=self.campaign).count(),
+            MAX_LINKS_PER_CAMPAIGN,
+        )
 
     def test_dm_can_delete_link(self) -> None:
         """

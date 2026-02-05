@@ -3,6 +3,8 @@ from django.db import models, transaction
 
 from dunbud.models.campaign import Campaign
 
+MAX_LINKS_PER_CAMPAIGN = 20
+
 
 class HelpfulLink(models.Model):
     """A helpful link for a campaign."""
@@ -29,7 +31,7 @@ class HelpfulLink(models.Model):
                     .filter(pk=self.campaign.pk)
                     .get()
                 )
-                if campaign.helpful_links.count() >= 20:
+                if campaign.helpful_links.count() >= MAX_LINKS_PER_CAMPAIGN:
                     raise ValidationError(
                         "You can only add up to 20 helpful links per campaign.",
                     )
