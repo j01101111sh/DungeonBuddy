@@ -17,7 +17,7 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <p>
-                            <strong>Player:</strong> {{ character.user.username }}
+                            <strong>Player:</strong> <a href="{{ character.user.get_absolute_url }}">{{ character.user.username }}</a>
                         </p>
                         {% if character.character_sheet_link %}
                             <p>
