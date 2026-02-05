@@ -25,15 +25,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Successfully populated helpful links."))
 
     def _generate_links(self) -> None:
-        campaigns = Campaign.objects.all()
-        if not campaigns.exists():
-            self.stdout.write(
-                self.style.WARNING("No campaigns found. Run populate_campaigns first."),
-            )
-            return
+        from django.db.models import Count
 
-        secure_random = secrets.SystemRandom()
-
+        # It's good practice to move this to a module-level constant
         link_data = [
             ("D&D Beyond", "https://www.dndbeyond.com"),
             ("Roll20", "https://roll20.net"),
@@ -57,44 +51,52 @@ class Command(BaseCommand):
             ("DriveThruRPG", "https://www.drivethrurpg.com"),
         ]
 
-        total_created = 0
+        campaigns = Campaign.objects.annotate(
+            link_count=Count("helpful_links"),
+        ).filter(link_count__lt=MAX_LINKS_PER_CAMPAIGN)
 
+        if not campaigns.exists():
+            self.stdout.write(
+                self.style.WARNING(
+                    "No campaigns found needing links, or all are full. Run populate_campaigns first.",
+                ),
+            )
+            return
+
+        secure_random = secrets.SystemRandom()
+
+        # Pre-fetch all existing link names to avoid N+1 queries
+        existing_links_qs = HelpfulLink.objects.values("campaign_id", "name")
+        links_by_campaign: dict[Any, Any] = {}
+        for link in existing_links_qs:
+            links_by_campaign.setdefault(link["campaign_id"], set()).add(link["name"])
+        logger.warning(existing_links_qs)
+
+        links_to_create = []
         for campaign in campaigns:
-            current_count = HelpfulLink.objects.filter(campaign=campaign).count()
-            if current_count >= MAX_LINKS_PER_CAMPAIGN:
-                continue
+            current_count = campaign.link_count
 
-            # Determine target count (1 to MAX)
             target_count = secure_random.randint(1, MAX_LINKS_PER_CAMPAIGN)
-
             if current_count >= target_count:
                 continue
 
             needed = target_count - current_count
 
-            # Filter out links already present in this campaign
-            existing_names = set(
-                HelpfulLink.objects.filter(campaign=campaign).values_list(
-                    "name",
-                    flat=True,
-                ),
-            )
+            existing_names = links_by_campaign.get(campaign.id, set())
             available_samples = [
                 (name, url) for name, url in link_data if name not in existing_names
             ]
 
-            # Select random links
             count_to_add = min(needed, len(available_samples))
             selected_samples = secure_random.sample(available_samples, count_to_add)
-
-            new_links = []
             for name, url in selected_samples:
-                new_links.append(HelpfulLink(campaign=campaign, name=name, url=url))
+                links_to_create.append(
+                    HelpfulLink(campaign=campaign, name=name, url=url),
+                )
 
-            # If we still need more (e.g. we ran out of unique samples), generate generic ones
             remaining = needed - count_to_add
             for _i in range(remaining):
-                new_links.append(
+                links_to_create.append(
                     HelpfulLink(
                         campaign=campaign,
                         name=f"Resource Link {secure_random.randint(1000, 9999)}",
@@ -102,7 +104,7 @@ class Command(BaseCommand):
                     ),
                 )
 
-            HelpfulLink.objects.bulk_create(new_links)
-            total_created += len(new_links)
+        if links_to_create:
+            HelpfulLink.objects.bulk_create(links_to_create)
 
-        logger.info("Created %d helpful links.", total_created)
+        logger.info("Created %d helpful links.", len(links_to_create))
