@@ -116,7 +116,10 @@ class PartyFeedTests(TestCase):
         response = self.client.post(url, {"message": message})
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(PartyFeedItem.objects.count(), 1)
+        self.assertEqual(
+            PartyFeedItem.objects.count(),
+            2,
+        )  # Player joining + announcement
         if first_object := PartyFeedItem.objects.first():
             self.assertEqual(first_object.message, message)
 
@@ -131,7 +134,10 @@ class PartyFeedTests(TestCase):
         response = self.client.post(url, {"message": message})
 
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(PartyFeedItem.objects.count(), 0)
+        self.assertEqual(
+            PartyFeedItem.objects.count(),
+            1,
+        )  # only the player join feed item
 
     def test_outsider_cannot_post_announcement(self) -> None:
         """
@@ -144,4 +150,7 @@ class PartyFeedTests(TestCase):
         response = self.client.post(url, {"message": message})
 
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(PartyFeedItem.objects.count(), 0)
+        self.assertEqual(
+            PartyFeedItem.objects.count(),
+            1,
+        )  # only the player join feed item
