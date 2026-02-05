@@ -27,10 +27,7 @@ class PartyFeedTests(TestCase):
         self.campaign.description = "New description"
         self.campaign.save()
 
-        feed_item = PartyFeedItem.objects.first()
-
-        if not feed_item:
-            raise AssertionError
+        feed_item = PartyFeedItem.objects.latest("created_at")
 
         self.assertIsNotNone(feed_item)
         self.assertEqual(
@@ -38,6 +35,7 @@ class PartyFeedTests(TestCase):
             "The campaign description has been updated.",
         )
         self.assertEqual(feed_item.campaign, self.campaign)
+        self.assertEqual(feed_item.category, PartyFeedItem.Category.DATA_UPDATE)
 
     def test_link_change_feed(self) -> None:
         """
@@ -46,13 +44,11 @@ class PartyFeedTests(TestCase):
         self.campaign.vtt_link = "https://example.com/vtt"
         self.campaign.save()
 
-        feed_item = PartyFeedItem.objects.first()
-
-        if not feed_item:
-            raise AssertionError
+        feed_item = PartyFeedItem.objects.latest("created_at")
 
         self.assertIsNotNone(feed_item)
         self.assertEqual(feed_item.message, "The Virtual Tabletop link was added.")
+        self.assertEqual(feed_item.category, PartyFeedItem.Category.DATA_UPDATE)
 
     def test_player_added_feed(self) -> None:
         """
@@ -61,13 +57,11 @@ class PartyFeedTests(TestCase):
         new_player, _ = UserFactory.create(username="new_player")
         self.campaign.players.add(new_player)
 
-        feed_item = PartyFeedItem.objects.first()
-
-        if not feed_item:
-            raise AssertionError
+        feed_item = PartyFeedItem.objects.latest("created_at")
 
         self.assertIsNotNone(feed_item)
         self.assertEqual(feed_item.message, "new_player joined the party.")
+        self.assertEqual(feed_item.category, PartyFeedItem.Category.MEMBERSHIP)
 
     def test_player_removed_feed(self) -> None:
         """
@@ -85,6 +79,7 @@ class PartyFeedTests(TestCase):
 
         self.assertIsNotNone(feed_item)
         self.assertEqual(feed_item.message, "player_feed left the party.")
+        self.assertEqual(feed_item.category, PartyFeedItem.Category.MEMBERSHIP)
 
     def test_party_feed_item_str(self) -> None:
         """
@@ -94,15 +89,16 @@ class PartyFeedTests(TestCase):
         feed_item = PartyFeedItem.objects.create(
             campaign=self.campaign,
             message=message_text,
+            category=PartyFeedItem.Category.JOURNAL,
         )
 
-        # The expected format is "{campaign.name}: {message}"
-        expected_str = f"{self.campaign}: {message_text}"
+        # The expected format is "{campaign.name}: [{category}] {message}"
+        expected_str = f"{self.campaign}: [journal] {message_text}"
 
         self.assertEqual(
             str(feed_item),
             expected_str,
-            "PartyFeedItem __str__ should match '{campaign_name}: {message}' format.",
+            "PartyFeedItem __str__ should match '{campaign_name}: [{category}] {message}' format.",
         )
 
     def test_dm_can_post_announcement(self) -> None:
@@ -116,12 +112,9 @@ class PartyFeedTests(TestCase):
         response = self.client.post(url, {"message": message})
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            PartyFeedItem.objects.count(),
-            2,
-        )  # Player joining + announcement
         if first_object := PartyFeedItem.objects.latest("created_at"):
             self.assertEqual(first_object.message, message)
+            self.assertEqual(first_object.category, PartyFeedItem.Category.ANNOUNCEMENT)
 
     def test_dm_cannot_post_empty_announcement(self) -> None:
         """
@@ -130,14 +123,17 @@ class PartyFeedTests(TestCase):
         self.client.force_login(self.dm)
         url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
 
+        # Snapshot count before attempt
+        initial_count = PartyFeedItem.objects.count()
+
         # Submitting an empty message
         response = self.client.post(url, {"message": ""})
 
-        # Should redirect back to detail view (where error message is displayed)
+        # Should redirect back to detail view
         self.assertEqual(response.status_code, 302)
 
         # Ensure no feed item was created
-        self.assertEqual(PartyFeedItem.objects.count(), 1)  # Only player joining
+        self.assertEqual(PartyFeedItem.objects.count(), initial_count)
 
     def test_player_cannot_post_announcement(self) -> None:
         """
@@ -151,9 +147,9 @@ class PartyFeedTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            PartyFeedItem.objects.count(),
-            1,
-        )  # only the player join feed item
+            PartyFeedItem.objects.filter(message=message).count(),
+            0,
+        )
 
     def test_outsider_cannot_post_announcement(self) -> None:
         """
@@ -167,9 +163,9 @@ class PartyFeedTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            PartyFeedItem.objects.count(),
-            1,
-        )  # only the player join feed item
+            PartyFeedItem.objects.filter(message=message).count(),
+            0,
+        )
 
     def test_dm_can_post_markdown_announcement(self) -> None:
         """
@@ -183,9 +179,9 @@ class PartyFeedTests(TestCase):
         response = self.client.post(url, {"message": markdown_message})
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(PartyFeedItem.objects.count(), 2)  # party joining + this one
         if first_object := PartyFeedItem.objects.latest("created_at"):
             self.assertEqual(first_object.message, markdown_message)
+            self.assertEqual(first_object.category, PartyFeedItem.Category.ANNOUNCEMENT)
 
     def test_campaign_detail_renders_markdown(self) -> None:
         """
@@ -197,6 +193,7 @@ class PartyFeedTests(TestCase):
         PartyFeedItem.objects.create(
             campaign=self.campaign,
             message="We meet at **dawn**!",
+            category=PartyFeedItem.Category.ANNOUNCEMENT,
         )
 
         url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
