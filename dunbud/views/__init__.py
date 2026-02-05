@@ -1,4 +1,5 @@
 from .campaign import (
+    CampaignAnnouncementCreateView,
     CampaignCreateView,
     CampaignDetailView,
     CampaignInvitationCreateView,
@@ -18,6 +19,7 @@ from .character import (
 from .splash import SplashView
 
 __all__ = [
+    "CampaignAnnouncementCreateView",
     "CampaignCreateView",
     "CampaignDetailView",
     "CampaignInvitationCreateView",

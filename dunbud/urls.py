@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    CampaignAnnouncementCreateView,
     CampaignCreateView,
     CampaignDetailView,
     CampaignInvitationCreateView,
@@ -49,6 +50,12 @@ urlpatterns = [
         "invites/<str:token>/",
         CampaignJoinView.as_view(),
         name="campaign_join",
+    ),
+    # Feed URLs
+    path(
+        "campaigns/<uuid:pk>/announcement/create/",
+        CampaignAnnouncementCreateView.as_view(),
+        name="campaign_announcement_create",
     ),
     # Link URLs
     path(
