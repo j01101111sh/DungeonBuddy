@@ -5,12 +5,16 @@
 {% endblock title %}
 {% block content %}
     <div class="container mt-4">
-        <h2 class="mb-4">Joined Campaigns</h2>
-        {% if campaigns %}
-            {% include "campaign/includes/campaign_list.html" %}
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="mb-4">Joined Campaigns</h2>
+                {% if campaigns %}
+                    {% include "campaign/includes/campaign_list.html" %}
 
-        {% else %}
-            <p class="text-muted">You have not joined any campaigns yet.</p>
-        {% endif %}
+                {% else %}
+                    <p class="text-muted">You have not joined any campaigns yet.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 {% endblock content %}
