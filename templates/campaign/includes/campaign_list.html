@@ -4,7 +4,7 @@
            class="list-group-item list-group-item-action">
             <div class="d-flex w-100 justify-content-between">
                 <h5 class="mb-1">{{ campaign.name }}</h5>
-                <small class="text-muted">DM: <a href="{{ campaign.dungeon_master.get_absolute_url }}">{{ campaign.dungeon_master.username }}</a></small>
+                <small class="text-muted">DM: {{ campaign.dungeon_master.username }}</small>
             </div>
             <p class="mb-1">{{ campaign.description|truncatewords:20 }}</p>
             <div class="d-flex w-100 justify-content-between align-items-center mt-2">
