@@ -1,6 +1,20 @@
 <div class="d-flex align-items-center justify-content-between mb-3 px-1">
     <h3 class="h5 fw-bold mb-0 text-dark">Adventure Log</h3>
 </div>
+{% if request.user == campaign.dungeon_master and announcement_form %}
+    <div class="mb-4">
+        <form method="post"
+              action="{% url 'campaign_announcement_create' pk=campaign.pk %}">
+            {% csrf_token %}
+            <div class="input-group">
+                {{ announcement_form.message }}
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-send-fill"></i> Post
+                </button>
+            </div>
+        </form>
+    </div>
+{% endif %}
 <div class="feed-container">
     {% for item in campaign.feed_items.all %}
         <div class="card border-0 shadow-sm mb-3 rounded-3 feed-card">

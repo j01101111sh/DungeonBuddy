@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 
 from config.tests.factories import UserFactory
 from dunbud.models import Campaign, PartyFeedItem
@@ -11,11 +12,13 @@ class PartyFeedTests(TestCase):
     def setUp(self) -> None:
         self.dm, _ = UserFactory.create(username="dm_feed")
         self.player, _ = UserFactory.create(username="player_feed")
+        self.outsider, _ = UserFactory.create(username="outsider_feed")
         self.campaign = Campaign.objects.create(
             name="Feed Campaign",
             dungeon_master=self.dm,
             description="Initial description",
         )
+        self.campaign.players.add(self.player)
 
     def test_description_change_feed(self) -> None:
         """
@@ -55,7 +58,8 @@ class PartyFeedTests(TestCase):
         """
         Test that adding a player creates a feed item.
         """
-        self.campaign.players.add(self.player)
+        new_player, _ = UserFactory.create(username="new_player")
+        self.campaign.players.add(new_player)
 
         feed_item = PartyFeedItem.objects.first()
 
@@ -63,14 +67,13 @@ class PartyFeedTests(TestCase):
             raise AssertionError
 
         self.assertIsNotNone(feed_item)
-        self.assertEqual(feed_item.message, "player_feed joined the party.")
+        self.assertEqual(feed_item.message, "new_player joined the party.")
 
     def test_player_removed_feed(self) -> None:
         """
         Test that removing a player creates a feed item.
         """
-        self.campaign.players.add(self.player)
-        # Clear feed from addition
+        # Clear feed from setup
         PartyFeedItem.objects.all().delete()
 
         self.campaign.players.remove(self.player)
@@ -101,3 +104,44 @@ class PartyFeedTests(TestCase):
             expected_str,
             "PartyFeedItem __str__ should match '{campaign_name}: {message}' format.",
         )
+
+    def test_dm_can_post_announcement(self) -> None:
+        """
+        Test that the Dungeon Master can post an announcement.
+        """
+        self.client.force_login(self.dm)
+        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+        message = "Session next Tuesday!"
+
+        response = self.client.post(url, {"message": message})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(PartyFeedItem.objects.count(), 1)
+        if first_object := PartyFeedItem.objects.first():
+            self.assertEqual(first_object.message, message)
+
+    def test_player_cannot_post_announcement(self) -> None:
+        """
+        Test that a player in the campaign cannot post an announcement.
+        """
+        self.client.force_login(self.player)
+        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+        message = "I try to post."
+
+        response = self.client.post(url, {"message": message})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(PartyFeedItem.objects.count(), 0)
+
+    def test_outsider_cannot_post_announcement(self) -> None:
+        """
+        Test that a user not in the campaign cannot post an announcement.
+        """
+        self.client.force_login(self.outsider)
+        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+        message = "Hacker post."
+
+        response = self.client.post(url, {"message": message})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(PartyFeedItem.objects.count(), 0)

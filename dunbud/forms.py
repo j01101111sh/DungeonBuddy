@@ -1,6 +1,7 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
-from .models import HelpfulLink
+from .models import HelpfulLink, PartyFeedItem
 
 
 class HelpfulLinkForm(forms.ModelForm):
@@ -20,3 +21,22 @@ class HelpfulLinkForm(forms.ModelForm):
         if not url.startswith(("http://", "https://")):
             url = f"https://{url}"
         return str(url)
+
+
+class PartyFeedItemForm(forms.ModelForm):
+    """
+    Form for creating a new party feed item (announcement).
+    """
+
+    class Meta:
+        model = PartyFeedItem
+        fields = ["message"]
+        widgets = {
+            "message": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 2,
+                    "placeholder": _("Post an announcement to the party feed..."),
+                },
+            ),
+        }
