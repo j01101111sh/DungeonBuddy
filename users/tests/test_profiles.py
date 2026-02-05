@@ -136,3 +136,4 @@ class UserDetailViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, user_no_bio.username)
+        self.assertContains(response, "No bio provided.")
