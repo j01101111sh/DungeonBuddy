@@ -3,11 +3,50 @@
 {% block content %}
     <div class="container">
         <div class="row">
-            <div class="col-sm-12">
-                <h2>{{ object.username }}</h2>
-                {% if object == request.user %}
-                    <a class="btn btn-primary" href="{% url 'profile_edit' %}" role="button">Edit Profile</a>
-                {% endif %}
+            <div class="col-md-8 offset-md-2">
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 class="card-title mb-0">{{ object.username }}</h2>
+                            {% if object == request.user %}
+                                <a class="btn btn-outline-primary"
+                                   href="{% url 'profile_edit' %}"
+                                   role="button">Edit Profile</a>
+                            {% endif %}
+                        </div>
+                        <hr />
+                        <div class="mb-3">
+                            <h5 class="text-muted">Bio</h5>
+                            {% if object.bio %}
+                                <p class="lead">{{ object.bio|linebreaksbr }}</p>
+                            {% else %}
+                                <p class="text-muted font-italic">No bio provided.</p>
+                            {% endif %}
+                        </div>
+                        <div class="row mt-4">
+                            {% if object.location %}
+                                <div class="col-sm-6 mb-3">
+                                    <h6 class="text-muted">Location</h6>
+                                    <p>
+                                        <i class="bi bi-geo-alt"></i> {{ object.location }}
+                                    </p>
+                                </div>
+                            {% endif %}
+                            {% if object.website %}
+                                <div class="col-sm-6 mb-3">
+                                    <h6 class="text-muted">Website</h6>
+                                    <p>
+                                        <i class="bi bi-globe"></i>
+                                        <a href="{{ object.website }}" target="_blank" rel="noopener noreferrer">{{ object.website }}</a>
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Member since: {{ object.date_joined|date:"F Y" }}</small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
