@@ -183,7 +183,7 @@ class PartyFeedTests(TestCase):
         response = self.client.post(url, {"message": markdown_message})
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(PartyFeedItem.objects.count(), 1)
+        self.assertEqual(PartyFeedItem.objects.count(), 2)  # party joining + this one
         if first_object := PartyFeedItem.objects.first():
             self.assertEqual(first_object.message, first_object.message)
 

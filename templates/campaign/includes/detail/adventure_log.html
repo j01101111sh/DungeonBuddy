@@ -25,8 +25,7 @@
                     <span class="badge bg-light text-secondary border fw-normal">{{ item.created_at|date:"M d" }}</span>
                     <small class="text-muted">{{ item.created_at|date:"H:i" }}</small>
                 </div>
-                {# Apply markdown filter and then mark as safe #}
-                <div class="mb-0 text-dark">{{ item.message|markdown|safe }}</div>
+                <div class="mb-0 text-dark">{{ item.message|markdown_format }}</div>
             </div>
         </div>
     {% empty %}
