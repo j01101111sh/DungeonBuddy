@@ -20,7 +20,7 @@ from django.views.generic import (
 )
 
 from dunbud.forms import HelpfulLinkForm, PartyFeedItemForm
-from dunbud.models import Campaign, CampaignInvitation, HelpfulLink, PartyFeedItem
+from dunbud.models import Campaign, CampaignInvitation, HelpfulLink
 
 logger = logging.getLogger(__name__)
 
@@ -422,8 +422,6 @@ class CampaignAnnouncementCreateView(LoginRequiredMixin, UserPassesTestMixin, Vi
         if form.is_valid():
             feed_item = form.save(commit=False)
             feed_item.campaign = self.campaign
-            # Explicitly set category, though it defaults to ANNOUNCEMENT
-            feed_item.category = PartyFeedItem.Category.ANNOUNCEMENT
             feed_item.save()
 
             logger.info(
