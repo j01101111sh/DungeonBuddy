@@ -37,6 +37,7 @@ def track_campaign_changes(
         PartyFeedItem.objects.create(
             campaign=instance,
             message="The campaign description has been updated.",
+            category=PartyFeedItem.Category.DATA_UPDATE,
         )
         logger.info("Feed item created: Description updated for %s", instance.pk)
 
@@ -49,6 +50,7 @@ def track_campaign_changes(
         PartyFeedItem.objects.create(
             campaign=instance,
             message=f"The Virtual Tabletop link was {action}.",
+            category=PartyFeedItem.Category.DATA_UPDATE,
         )
         logger.info("Feed item created: VTT link %s for %s", action, instance.pk)
 
@@ -61,6 +63,7 @@ def track_campaign_changes(
         PartyFeedItem.objects.create(
             campaign=instance,
             message=f"The Video Conference link was {action}.",
+            category=PartyFeedItem.Category.DATA_UPDATE,
         )
         logger.info("Feed item created: Video link %s for %s", action, instance.pk)
 
@@ -88,6 +91,7 @@ def track_player_changes(
             PartyFeedItem.objects.create(
                 campaign=instance,
                 message=f"{user.username} joined the party.",
+                category=PartyFeedItem.Category.MEMBERSHIP,
             )
             logger.info(
                 "Feed item created: Player %s added to %s",
@@ -101,6 +105,7 @@ def track_player_changes(
             PartyFeedItem.objects.create(
                 campaign=instance,
                 message=f"{user.username} left the party.",
+                category=PartyFeedItem.Category.MEMBERSHIP,
             )
             logger.info(
                 "Feed item created: Player %s removed from %s",

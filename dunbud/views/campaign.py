@@ -20,8 +20,7 @@ from django.views.generic import (
 )
 
 from dunbud.forms import HelpfulLinkForm, PartyFeedItemForm
-from dunbud.models import HelpfulLink
-from dunbud.models.campaign import Campaign, CampaignInvitation
+from dunbud.models import Campaign, CampaignInvitation, HelpfulLink
 
 logger = logging.getLogger(__name__)
 
