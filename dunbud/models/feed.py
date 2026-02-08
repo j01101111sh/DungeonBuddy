@@ -11,6 +11,12 @@ class PartyFeedItem(models.Model):
     Model representing an entry in the campaign's party feed.
     """
 
+    class Category(models.TextChoices):
+        MEMBERSHIP = "membership", _("Membership")
+        ANNOUNCEMENT = "announcements", _("Announcements")
+        DATA_UPDATE = "data_updates", _("Data Updates")
+        JOURNAL = "journal", _("Journal")
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -25,6 +31,12 @@ class PartyFeedItem(models.Model):
     message = models.TextField(
         help_text=_("The text content of the feed item. Supports Markdown."),
     )
+    category = models.CharField(
+        max_length=20,
+        choices=Category.choices,
+        default=Category.ANNOUNCEMENT,
+        help_text=_("The category of this feed item."),
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text=_("When this feed item was created."),
@@ -36,4 +48,4 @@ class PartyFeedItem(models.Model):
         verbose_name_plural = _("Party Feed Items")
 
     def __str__(self) -> str:
-        return f"{self.campaign.name}: {self.message}"
+        return f"{self.campaign.name}: [{self.category}] {self.message}"
