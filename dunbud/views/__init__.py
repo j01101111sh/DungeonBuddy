@@ -1,4 +1,4 @@
-from .campaign import (
+from .campaign_announcement_create import (
     CampaignAnnouncementCreateView,
 )
 from .campaign_create import CampaignCreateView
