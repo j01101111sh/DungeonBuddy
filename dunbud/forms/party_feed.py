@@ -1,26 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import HelpfulLink, PartyFeedItem
-
-
-class HelpfulLinkForm(forms.ModelForm):
-    """
-    A form for creating and editing helpful links.
-    """
-
-    class Meta:
-        model = HelpfulLink
-        fields = ["name", "url"]
-
-    def clean_url(self) -> str:
-        """
-        Automatically prepend 'https://' to the URL if no scheme is present.
-        """
-        url = self.cleaned_data["url"]
-        if not url.startswith(("http://", "https://")):
-            url = f"https://{url}"
-        return str(url)
+from dunbud.models import PartyFeedItem
 
 
 class PartyFeedItemForm(forms.ModelForm):
