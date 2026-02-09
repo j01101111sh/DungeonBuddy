@@ -1,6 +1,5 @@
 from .campaign import (
     CampaignAnnouncementCreateView,
-    HelpfulLinkDeleteView,
 )
 from .campaign_create import CampaignCreateView
 from .campaign_detail import CampaignDetailView
@@ -16,6 +15,7 @@ from .character import (
     PlayerCharacterUpdateView,
 )
 from .helpful_link_create import HelpfulLinkCreateView
+from .helpful_link_delete import HelpfulLinkDeleteView
 from .splash import SplashView
 
 __all__ = [
