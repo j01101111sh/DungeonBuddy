@@ -1,17 +1,14 @@
 from django.contrib.auth import get_user_model
-from django.test import SimpleTestCase, TestCase
+from django.test import TestCase
 from django.urls import reverse
 
-from config.tests.factories import (
-    TabletopSystemFactory,
-    UserFactory,
-)
+from config.tests.factories import TabletopSystemFactory, UserFactory
 from dunbud.models import Campaign
 
 User = get_user_model()
 
 
-class FrontendTests(SimpleTestCase):
+class FrontendTests(TestCase):
     """
     Unit tests for frontend template rendering and static asset inclusion.
     """
