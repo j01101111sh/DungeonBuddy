@@ -6,9 +6,9 @@ from .campaign import (
     CampaignUpdateView,
     HelpfulLinkCreateView,
     HelpfulLinkDeleteView,
-    JoinedCampaignListView,
 )
 from .campaign_create import CampaignCreateView
+from .campaign_list_joined import JoinedCampaignListView
 from .campaign_list_managed import ManagedCampaignListView
 from .character import (
     PlayerCharacterCreateView,

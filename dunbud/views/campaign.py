@@ -5,47 +5,17 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
-from django.db.models import Count, QuerySet
+from django.db.models import QuerySet
 from django.forms.models import BaseModelForm
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import (
-    DeleteView,
-    DetailView,
-    ListView,
-    UpdateView,
-    View,
-)
+from django.views.generic import DeleteView, DetailView, UpdateView, View
 
 from dunbud.forms import HelpfulLinkForm, PartyFeedItemForm
 from dunbud.models import Campaign, CampaignInvitation, HelpfulLink, PartyFeedItem
 
 logger = logging.getLogger(__name__)
-
-
-class JoinedCampaignListView(LoginRequiredMixin, ListView):
-    """
-    View to list campaigns the current user has joined.
-    """
-
-    model = Campaign
-    template_name = "campaign/joined_campaign_list.html"
-    context_object_name = "campaigns"
-
-    def get_queryset(self) -> QuerySet[Campaign]:
-        """
-        Returns the campaigns where the current user is a player.
-        """
-        if not self.request.user.is_authenticated:
-            return Campaign.objects.none()
-
-        return (
-            Campaign.objects.filter(players=self.request.user)
-            .select_related("dungeon_master", "system")
-            .annotate(player_count=Count("players"))
-            .prefetch_related("feed_items")
-        )
 
 
 class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
