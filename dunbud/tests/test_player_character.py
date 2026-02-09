@@ -45,7 +45,7 @@ class CharacterModelTests(TestCase):
         """
         Test that creating a character logs the event.
         """
-        with self.assertLogs("dunbud.models.character", level="INFO") as cm:
+        with self.assertLogs("dunbud.models.player_character", level="INFO") as cm:
             PlayerCharacter.objects.create(user=self.user, name="Legolas")
             self.assertTrue(
                 any("New character created: Legolas" in m for m in cm.output),
