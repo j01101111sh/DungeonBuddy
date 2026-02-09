@@ -1,7 +1,7 @@
 {% load markdown_extras %}
 
 <div class="d-flex align-items-center justify-content-between mb-3 px-1">
-    <h3 class="h5 fw-bold mb-0 text-dark">Adventure Log</h3>
+    <h3 class="h5 fw-bold mb-0">Adventure Log</h3>
 </div>
 {% if request.user == campaign.dungeon_master and announcement_form %}
     <div class="mb-4">
@@ -28,7 +28,7 @@
                     </div>
                     <small class="text-muted">{{ item.created_at|date:"H:i" }}</small>
                 </div>
-                <div class="mb-0 text-dark">{{ item.message|markdown_format }}</div>
+                <div class="mb-0">{{ item.message|markdown_format }}</div>
             </div>
         </div>
     {% empty %}
