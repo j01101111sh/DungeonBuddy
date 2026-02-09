@@ -126,18 +126,18 @@
 
 /* Fix for bg-light in dark mode (Bootstrap 5.3 bg-light is still light gray) */
 [data-bs-theme="dark"] .bg-light {
-    background-color: #2b3035 !important; /* Gray-800 equivalent */
+    background-color: var(--bs-gray-800) !important; /* Gray-800 equivalent */
     color: var(--bs-body-color);
 }
 
 /* Explicit Feed Card overrides */
 [data-bs-theme="dark"] .feed-card {
-    background-color: #2b3035 !important; /* Ensure it matches the dark theme */
+    background-color: var(--bs-gray-800) !important; /* Ensure it matches the dark theme */
     color: var(--bs-body-color);
     border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Ensure text-muted is readable on dark backgrounds */
 [data-bs-theme="dark"] .text-muted {
-    color: #adb5bd !important; /* Gray-500 */
+    color: var(--bs-gray-500) !important; /* Gray-500 */
 }
