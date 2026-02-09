@@ -100,3 +100,30 @@
 .invite-input {
     font-size: 0.85rem;
 }
+
+.feed-badge {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Category Badge Colors */
+.badge-membership {
+    background-color: #28a745; /* Green */
+    color: #fff;
+}
+
+.badge-announcements {
+    background-color: #dc3545; /* Red */
+    color: #fff;
+}
+
+.badge-data_updates {
+    background-color: #17a2b8; /* Cyan */
+    color: #fff;
+}
+
+.badge-journal {
+    background-color: #6f42c1; /* Purple */
+    color: #fff;
+}
