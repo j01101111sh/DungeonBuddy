@@ -27,7 +27,9 @@ class FrontendTests(TestCase):
         self.assertIn("bootstrap-icons.css", content)
 
         # Check for Theme JS
-        self.assertIn("js/theme.js", content)
+        # Use regex to handle both standard filenames (dev) and hashed filenames (CI/prod)
+        # Matches: js/theme.js OR js/theme.1234abcd.js
+        self.assertRegex(content, r"js/theme(\.[a-f0-9]+)?\.js")
 
         # Check for inline script for FOUC prevention
         self.assertIn("data-bs-theme", content)
