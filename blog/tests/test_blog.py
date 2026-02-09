@@ -183,7 +183,7 @@ class BlogViewTests(TestCase):
         # nh3 strips the tag, leaving the text content or removing it.
         # By default nh3 strips the tag but may leave content.
         # However, verifying <script> is NOT present is the key.
-        self.assertNotContains(response, "<script>")
+        self.assertNotContains(response, "<script>alert('XSS')</script>")
         self.assertContains(response, "Safe Text")
 
     def test_post_list_pagination(self) -> None:

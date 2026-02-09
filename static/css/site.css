@@ -1,6 +1,5 @@
 /* Splash Page Styles */
 .splash-container {
-    /* Centers content vertically and horizontally within the main area */
     min-height: 80vh;
     display: flex;
     flex-direction: column;
@@ -16,7 +15,7 @@
 .campaign-avatar-initial {
     width: 40px;
     height: 40px;
-    min-width: 40px; /* Prevent shrinking */
+    min-width: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -30,7 +29,7 @@
     transition: background-color 0.2s ease;
 }
 .player-card-row:hover {
-    background-color: #f8f9fa; /* Bootstrap var(--bs-gray-100) equivalent */
+    background-color: #f8f9fa;
 }
 
 /* Feed items styling */
@@ -68,15 +67,12 @@
 .ls-1 {
     letter-spacing: 1px;
 }
-
 .ls-sm {
     letter-spacing: 0.5px;
 }
-
 .text-pre-line {
     white-space: pre-line;
 }
-
 .text-small-caps {
     font-size: 0.75rem;
     letter-spacing: 0.5px;
@@ -87,7 +83,6 @@
 .min-width-0 {
     min-width: 0;
 }
-
 .hidden {
     display: none;
 }
@@ -96,11 +91,9 @@
 .feed-empty-icon {
     font-size: 2rem;
 }
-
 .invite-input {
     font-size: 0.85rem;
 }
-
 .feed-badge {
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -109,21 +102,42 @@
 
 /* Category Badge Colors */
 .badge-membership {
-    background-color: #28a745; /* Green */
+    background-color: #28a745;
     color: #fff;
 }
-
 .badge-announcements {
-    background-color: #dc3545; /* Red */
+    background-color: #dc3545;
     color: #fff;
 }
-
 .badge-data_updates {
-    background-color: #17a2b8; /* Cyan */
+    background-color: #17a2b8;
+    color: #fff;
+}
+.badge-journal {
+    background-color: #6f42c1;
     color: #fff;
 }
 
-.badge-journal {
-    background-color: #6f42c1; /* Purple */
-    color: #fff;
+/* --- Dark Mode Overrides --- */
+
+[data-bs-theme="dark"] .player-card-row:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Fix for bg-light in dark mode (Bootstrap 5.3 bg-light is still light gray) */
+[data-bs-theme="dark"] .bg-light {
+    background-color: var(--bs-gray-800) !important; /* Gray-800 equivalent */
+    color: var(--bs-body-color);
+}
+
+/* Explicit Feed Card overrides */
+[data-bs-theme="dark"] .feed-card {
+    background-color: var(--bs-gray-800) !important; /* Ensure it matches the dark theme */
+    color: var(--bs-body-color);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure text-muted is readable on dark backgrounds */
+[data-bs-theme="dark"] .text-muted {
+    color: var(--bs-gray-500) !important; /* Gray-500 */
 }
