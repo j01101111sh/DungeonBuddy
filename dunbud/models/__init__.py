@@ -1,8 +1,8 @@
 from .campaign import Campaign
 from .campaign_invite import CampaignInvitation
-from .character import PlayerCharacter
 from .feed import PartyFeedItem
 from .links import HelpfulLink
+from .player_character import PlayerCharacter
 from .tabletop_system import TabletopSystem
 
 __all__ = [

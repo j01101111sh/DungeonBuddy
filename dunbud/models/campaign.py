@@ -7,7 +7,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 if TYPE_CHECKING:
-    from dunbud.models.character import PlayerCharacter
+    from dunbud.models.player_character import PlayerCharacter
 
 from dunbud.models.tabletop_system import TabletopSystem
 
