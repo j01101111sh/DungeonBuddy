@@ -1,6 +1,5 @@
 from .campaign import (
     CampaignAnnouncementCreateView,
-    CampaignDetailView,
     CampaignInvitationCreateView,
     CampaignJoinView,
     CampaignUpdateView,
@@ -8,6 +7,7 @@ from .campaign import (
     HelpfulLinkDeleteView,
 )
 from .campaign_create import CampaignCreateView
+from .campaign_detail import CampaignDetailView
 from .campaign_list_joined import JoinedCampaignListView
 from .campaign_list_managed import ManagedCampaignListView
 from .character import (
