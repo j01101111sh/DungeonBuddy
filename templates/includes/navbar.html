@@ -21,7 +21,15 @@
                     <a class="nav-link" href="{% url 'blog:post_list' %}">Announcements</a>
                 </li>
             </ul>
-            <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+            <ul class="navbar-nav ms-auto mb-2 mb-md-0 align-items-center">
+                <li class="nav-item">
+                    <button class="btn btn-link nav-link px-2"
+                            id="theme-toggle"
+                            type="button"
+                            title="Toggle Dark Mode">
+                        <i class="bi bi-sun-fill" id="theme-icon-active"></i>
+                    </button>
+                </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'campaign_managed' %}">Managed Campaigns</a>
