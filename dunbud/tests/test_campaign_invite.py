@@ -5,7 +5,8 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from config.tests.factories import TabletopSystemFactory, UserFactory
-from dunbud.models.campaign import Campaign, CampaignInvitation
+from dunbud.models.campaign import Campaign
+from dunbud.models.campaign_invite import CampaignInvitation
 
 User = get_user_model()
 

@@ -1,4 +1,5 @@
-from .campaign import Campaign, CampaignInvitation
+from .campaign import Campaign
+from .campaign_invite import CampaignInvitation
 from .character import PlayerCharacter
 from .feed import PartyFeedItem
 from .links import HelpfulLink
