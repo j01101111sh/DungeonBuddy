@@ -11,11 +11,11 @@ from .campaign_update import CampaignUpdateView
 from .character import (
     PlayerCharacterCreateView,
     PlayerCharacterDetailView,
-    PlayerCharacterListView,
     PlayerCharacterUpdateView,
 )
 from .helpful_link_create import HelpfulLinkCreateView
 from .helpful_link_delete import HelpfulLinkDeleteView
+from .player_character_list import PlayerCharacterListView
 from .splash import SplashView
 
 __all__ = [
