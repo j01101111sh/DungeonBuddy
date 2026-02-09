@@ -8,7 +8,7 @@ from .campaign_join_view import CampaignJoinView
 from .campaign_list_joined import JoinedCampaignListView
 from .campaign_list_managed import ManagedCampaignListView
 from .campaign_update import CampaignUpdateView
-from .character import (
+from .character_detail import (
     PlayerCharacterDetailView,
 )
 from .helpful_link_create import HelpfulLinkCreateView
