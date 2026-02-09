@@ -1,6 +1,5 @@
 from .campaign import (
     CampaignAnnouncementCreateView,
-    CampaignCreateView,
     CampaignDetailView,
     CampaignInvitationCreateView,
     CampaignJoinView,
@@ -10,6 +9,7 @@ from .campaign import (
     JoinedCampaignListView,
     ManagedCampaignListView,
 )
+from .campaign_create import CampaignCreateView
 from .character import (
     PlayerCharacterCreateView,
     PlayerCharacterDetailView,
