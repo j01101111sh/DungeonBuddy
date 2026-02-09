@@ -24,7 +24,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <div>
                         <span class="badge bg-light text-secondary border fw-normal me-1">{{ item.created_at|date:"M d" }}</span>
-                        <span class="badge badge-{{ item.category }} fw-normal">{{ item.get_category_display }}</span>
+                        <span class="badge feed-badge badge-{{ item.category }} fw-normal">{{ item.get_category_display }}</span>
                     </div>
                     <small class="text-muted">{{ item.created_at|date:"H:i" }}</small>
                 </div>
