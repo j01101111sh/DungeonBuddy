@@ -116,3 +116,50 @@ class SessionCreateViewTest(TestCase):
         self.assertNotEqual(response.status_code, 200)
         # Should redirect to login
         self.assertEqual(response.status_code, 302)
+
+
+class TestProposedSessionsDisplay(TestCase):
+    def setUp(self) -> None:
+        self.user, _ = UserFactory.create()
+        self.system = TabletopSystemFactory.create()
+        self.campaign = CampaignFactory.create(
+            dungeon_master=self.user,
+            system=self.system,
+            players=[self.user],
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("campaign_detail", kwargs={"pk": self.campaign.id})
+
+    def test_proposed_sessions_are_shown(self) -> None:
+        """
+        GIVEN a campaign with proposed sessions
+        WHEN a user views the campaign detail page
+        THEN they see the proposed sessions listed.
+        """
+        now = timezone.now()
+        Session.objects.create(
+            campaign=self.campaign,
+            proposer=self.user,
+            proposed_date=now,
+            duration=4,
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Proposed Sessions")
+        self.assertNotContains(response, "No sessions proposed yet")
+        self.assertContains(response, now.strftime("%B"))  # e.g., February
+        self.assertContains(response, str(now.day))  # e.g., 10
+        self.assertContains(response, str(now.year))  # e.g., 2026
+
+    def test_no_proposed_sessions_message(self) -> None:
+        """
+        GIVEN a campaign with no proposed sessions
+        WHEN a user views the campaign detail page
+        THEN they do not see the proposed sessions section.
+        """
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Proposed Sessions")
+        self.assertContains(response, "No sessions proposed yet")
