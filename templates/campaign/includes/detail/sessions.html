@@ -22,18 +22,49 @@
                                   method="post">
                                 {% csrf_token %}
                                 {% if request.user in session.attendees.all %}
-                                    <button type="submit" class="btn btn-sm btn-success">Available (Click to mark as Busy)</button>
+                                    <button type="submit"
+                                            class="btn btn-sm btn-success"
+                                            title="Click to mark as Busy">
+                                        <i class="fas fa-check"></i> Available
+                                    </button>
+                                {% elif request.user in session.busy_users.all %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            title="Click to mark as Available">
+                                        <i class="fas fa-times"></i> Busy
+                                    </button>
                                 {% else %}
-                                    <button type="submit" class="btn btn-sm btn-danger">Busy (Click to mark as Available)</button>
+                                    <button type="submit"
+                                            class="btn btn-sm btn-secondary"
+                                            title="Click to mark as Available">
+                                        <i class="fas fa-question"></i> Undecided
+                                    </button>
                                 {% endif %}
                             </form>
                         </div>
                         <div class="mt-2">
-                            <strong>Attendees:</strong>
-                            {% for attendee in session.attendees.all %}
-                                <span class="badge bg-primary">{{ attendee.username }}</span>
-                            {% empty %}
-                                <span class="text-muted">No one yet.</span>
+                            <strong>Attendance:</strong>
+                            {# Display DM Status #}
+                            {% with user=campaign.dungeon_master %}
+                                {% if user in session.attendees.all %}
+                                    <span class="badge bg-success" title="Available">{{ user.username }} (DM)</span>
+                                {% elif user in session.busy_users.all %}
+                                    <span class="badge bg-danger" title="Busy">{{ user.username }} (DM)</span>
+                                {% else %}
+                                    <span class="badge bg-secondary" title="Undecided">{{ user.username }} (DM)</span>
+                                {% endif %}
+                            {% endwith %}
+                            {# Display Players Status #}
+                            {% for player in campaign.players.all %}
+                                {% if player != campaign.dungeon_master %}
+                                    {% if player in session.attendees.all %}
+                                        <span class="badge bg-success" title="Available">{{ player.username }}</span>
+                                    {% elif player in session.busy_users.all %}
+                                        <span class="badge bg-danger" title="Busy">{{ player.username }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary" title="Undecided">{{ player.username }}</span>
+                                    {% endif %}
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </li>

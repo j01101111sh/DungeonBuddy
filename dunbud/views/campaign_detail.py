@@ -35,6 +35,7 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
                 "player_characters",
                 "helpful_links",
                 "sessions__attendees",
+                "sessions__busy_users",
             )
         )
 
