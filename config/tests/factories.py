@@ -11,8 +11,6 @@ from dunbud.models import (
     Session,
     TabletopSystem,
 )
-
-from dunbud.models import Campaign, HelpfulLink, PlayerCharacter, TabletopSystem
 from users.models import CustomUser
 
 # Type alias for the user model
@@ -171,25 +169,6 @@ class HelpfulLinkFactory:
             kwargs["url"] = f"https://example.com/{secrets.token_hex(4)}"
 
         return HelpfulLink.objects.create(**kwargs)
-
-
-class CampaignFactory:
-    """Factory for creating Campaign instances for testing."""
-
-    @staticmethod
-    def create(**kwargs: Any) -> Campaign:
-        """Create a Campaign instance."""
-        if "name" not in kwargs:
-            kwargs["name"] = f"Campaign {secrets.token_hex(4)}"
-        if "system" not in kwargs:
-            # Assumes at least one TabletopSystem exists or creates one.
-            # In a real test setup, you might want to ensure this dependency is handled.
-            system, _ = TabletopSystem.objects.get_or_create(
-                name="D&D 5e",
-                defaults={"short_name": "5e"},
-            )
-            kwargs["system"] = system
-        return Campaign.objects.create(**kwargs)
 
 
 class SessionFactory:
