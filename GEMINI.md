@@ -53,13 +53,13 @@ uv run python manage.py runserver
 This project uses `ruff` for linting and formatting. To check for linting errors, run:
 
 ```bash
-ruff check .
+uv run ruff check --force-exclude --fix
 ```
 
 To format the code, run:
 
 ```bash
-ruff format .
+uv run ruff format --force-exclude
 ```
 
 ## Type Checking
@@ -67,7 +67,7 @@ ruff format .
 This project uses `mypy` for static type checking. To run the type checker, use the following command:
 
 ```bash
-mypy .
+uv run mypy --strict
 ```
 
 ## Testing
