@@ -1,6 +1,7 @@
-# dunbud/models/session.py
+from decimal import Decimal
 
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from .campaign import Campaign
@@ -21,7 +22,15 @@ class Session(models.Model):
         null=True,
     )
     proposed_date = models.DateTimeField()
-    duration = models.PositiveIntegerField(help_text="Duration in hours")
+    duration = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Duration in hours",
+        validators=[
+            MinValueValidator(Decimal("0.00")),
+            MaxValueValidator(Decimal("168.00")),
+        ],
+    )
     attendees = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name="attended_sessions",
