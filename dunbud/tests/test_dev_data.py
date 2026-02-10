@@ -10,7 +10,7 @@ from dunbud.management.commands.populate_campaigns import (
     NUM_JOINED_USER_CAMPAIGNS,
 )
 from dunbud.management.commands.populate_users import NUM_TEST_USERS
-from dunbud.models import Campaign, HelpfulLink, PlayerCharacter
+from dunbud.models import Campaign, HelpfulLink, PlayerCharacter, Session
 from dunbud.models.links import MAX_LINKS_PER_CAMPAIGN
 
 User = get_user_model()
@@ -143,3 +143,32 @@ class PopulateDevDataTests(TestCase):
                 MAX_LINKS_PER_CAMPAIGN,
                 f"Campaign {campaign.name} should have at most {MAX_LINKS_PER_CAMPAIGN} helpful links",
             )
+
+    def test_session_generation(self) -> None:
+        """
+        Test that sessions are generated for each campaign.
+        """
+        campaigns = Campaign.objects.all()
+        self.assertTrue(campaigns.exists())
+
+        for campaign in campaigns:
+            sessions = Session.objects.filter(campaign=campaign)
+            self.assertTrue(
+                sessions.exists(),
+                f"Campaign '{campaign.name}' should have a proposed session.",
+            )
+            self.assertEqual(
+                sessions.count(),
+                1,
+                f"Campaign '{campaign.name}' should have exactly one session.",
+            )
+
+            session = sessions.first()
+            if session:
+                # Verify that all attendees are players in the campaign
+                for attendee in session.attendees.all():
+                    self.assertIn(
+                        attendee,
+                        campaign.players.all(),
+                        f"Attendee {attendee.username} must be a player in campaign {campaign.name}",
+                    )
