@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         logger.info("Starting populate_sessions")
 
-        campaigns = Campaign.objects.all()
+        campaigns = Campaign.objects.filter(sessions__isnull=True).select_related("dungeon_master").prefetch_related("players")
         created_count = 0
 
         secure_random = secrets.SystemRandom()
