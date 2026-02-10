@@ -32,5 +32,5 @@ class Session(models.Model):
     class Meta:
         ordering = ["proposed_date"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Session for {self.campaign.name} at {self.proposed_date}"
