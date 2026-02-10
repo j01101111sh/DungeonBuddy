@@ -30,7 +30,13 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             super()
             .get_queryset()
             .select_related("dungeon_master", "system")
-            .prefetch_related("players", "player_characters", "helpful_links")
+            .prefetch_related(
+                "players",
+                "player_characters",
+                "helpful_links",
+                "sessions__attendees",
+                "sessions__busy_users",
+            )
         )
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:

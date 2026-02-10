@@ -2,8 +2,15 @@ import secrets
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
-from dunbud.models import Campaign, HelpfulLink, PlayerCharacter, TabletopSystem
+from dunbud.models import (
+    Campaign,
+    HelpfulLink,
+    PlayerCharacter,
+    Session,
+    TabletopSystem,
+)
 from users.models import CustomUser
 
 # Type alias for the user model
@@ -162,3 +169,16 @@ class HelpfulLinkFactory:
             kwargs["url"] = f"https://example.com/{secrets.token_hex(4)}"
 
         return HelpfulLink.objects.create(**kwargs)
+
+
+class SessionFactory:
+    """Factory for creating Session instances for testing."""
+
+    @staticmethod
+    def create(**kwargs: Any) -> Session:
+        """Create a Session instance."""
+        if "proposed_date" not in kwargs:
+            kwargs["proposed_date"] = timezone.now()
+        if "duration" not in kwargs:
+            kwargs["duration"] = 3
+        return Session.objects.create(**kwargs)

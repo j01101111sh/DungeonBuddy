@@ -1,0 +1,80 @@
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        <h3 class="h5 mb-0">Proposed Sessions</h3>
+        {% if request.user == campaign.dungeon_master %}
+            <a href="{% url 'session_propose' campaign_pk=campaign.pk %}"
+               class="btn btn-sm btn-light">
+                <i class="fas fa-plus"></i> Propose New Session
+            </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if campaign.sessions.all %}
+            <ul class="list-group list-group-flush">
+                {% for session in campaign.sessions.all %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">
+                                    <span class="text-secondary">#{{ session.session_number }}:</span>
+                                    {{ session.proposed_date|date:"F j, Y, g:i a" }}
+                                </h5>
+                                <small class="text-muted">{{ session.duration }} hour(s)</small>
+                            </div>
+                            <form action="{% url 'session_toggle_attendance' pk=session.pk %}"
+                                  method="post">
+                                {% csrf_token %}
+                                {% if request.user in session.attendees.all %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-success"
+                                            title="Click to mark as Busy">
+                                        <i class="fas fa-check"></i> Available
+                                    </button>
+                                {% elif request.user in session.busy_users.all %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            title="Click to mark as Available">
+                                        <i class="fas fa-times"></i> Busy
+                                    </button>
+                                {% else %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-secondary"
+                                            title="Click to mark as Available">
+                                        <i class="fas fa-question"></i> Undecided
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Attendance:</strong>
+                            {# Display DM Status #}
+                            {% with user=campaign.dungeon_master %}
+                                {% if user in session.attendees.all %}
+                                    <span class="badge bg-success" title="Available">{{ user.username }} (DM)</span>
+                                {% elif user in session.busy_users.all %}
+                                    <span class="badge bg-danger" title="Busy">{{ user.username }} (DM)</span>
+                                {% else %}
+                                    <span class="badge bg-secondary" title="Undecided">{{ user.username }} (DM)</span>
+                                {% endif %}
+                            {% endwith %}
+                            {# Display Players Status #}
+                            {% for player in campaign.players.all %}
+                                {% if player != campaign.dungeon_master %}
+                                    {% if player in session.attendees.all %}
+                                        <span class="badge bg-success" title="Available">{{ player.username }}</span>
+                                    {% elif player in session.busy_users.all %}
+                                        <span class="badge bg-danger" title="Busy">{{ player.username }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary" title="Undecided">{{ player.username }}</span>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted mb-0">No sessions proposed yet. The DM can propose a new session.</p>
+        {% endif %}
+    </div>
+</div>
