@@ -87,6 +87,6 @@ uv run pytest
 
 The test configuration is located in the `pyproject.toml` file under the `[tool.pytest.ini_options]` section.
 
-Pytest fixtures and testing through functions should be avoided. Instead create a Django TestCase class with a setUp function that creates the objects necessary for the testing.
+Tests in this project are written as `django.test.TestCase` subclasses, using `setUp` methods for test setup rather than standalone pytest fixtures.
 
 Object factories to be used for testing purposes should be kept in config/tests/factories.py and should follow the style of the factories already there. Factories should be used whenever possible in testing.
