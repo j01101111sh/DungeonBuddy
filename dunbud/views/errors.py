@@ -51,7 +51,7 @@ def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
     Returns:
         HttpResponse: The rendered 404 error page.
     """
-    logger.warning("404 Not Found: %", request.path)
+    logger.warning("404 Not Found: %s", request.path)
     return render(request, "errors/404.html", status=404)
 
 
