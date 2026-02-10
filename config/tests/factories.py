@@ -98,14 +98,12 @@ class CampaignFactory:
         defaults = {
             "name": f"Campaign {secrets.token_hex(4)}",
             "description": "A test campaign.",
+            "dungeon_master": dungeon_master,
+            "system": system,
         }
         defaults.update(kwargs)
 
-        campaign = Campaign.objects.create(
-            dungeon_master=dungeon_master,
-            system=system,
-            **defaults,
-        )
+        campaign = Campaign.objects.create(**defaults)
 
         if players:
             campaign.players.set(players)
