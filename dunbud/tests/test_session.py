@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from config.tests.factories import CampaignFactory, TabletopSystemFactory, UserFactory
+from dunbud.forms import SessionForm
 from dunbud.models import Session
 
 
@@ -76,3 +77,42 @@ class SessionCreateViewTest(TestCase):
         self.assertEqual(Session.objects.count(), 1)
         session = Session.objects.first()
         self.assertIn(self.user, session.attendees.all() if session else [])
+
+    def test_session_form_renders_correctly(self) -> None:
+        """
+        Test that the session form renders with the correct context, status code,
+        and HTML content.
+        """
+        response = self.client.get(self.url)
+
+        # Assertions
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "session/session_form.html")
+
+        # Verify Context
+        self.assertIn("form", response.context)
+        self.assertIsInstance(response.context["form"], SessionForm)
+        self.assertEqual(response.context["campaign"], self.campaign)
+
+        # Verify Content
+        # Check for the dynamic page header
+        self.assertContains(response, f"Propose a New Session for {self.campaign.name}")
+
+        # Check for the presence of the form fields
+        self.assertContains(response, 'name="proposed_date"')
+        self.assertContains(response, 'type="datetime-local"')  # Verifies the widget
+        self.assertContains(response, 'name="duration"')
+
+        # Verify the Cancel button links back to the campaign detail page
+        cancel_url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
+        self.assertContains(response, f'href="{cancel_url}"')
+
+    def test_session_form_requires_login(self) -> None:
+        """
+        Test that accessing the session form requires authentication.
+        """
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertNotEqual(response.status_code, 200)
+        # Should redirect to login
+        self.assertEqual(response.status_code, 302)
