@@ -15,6 +15,8 @@ from .views import (
     PlayerCharacterDetailView,
     PlayerCharacterListView,
     PlayerCharacterUpdateView,
+    SessionCreateView,
+    SessionToggleAttendanceView,
     SplashView,
 )
 
@@ -84,5 +86,16 @@ urlpatterns = [
         "characters/<uuid:pk>/edit/",
         PlayerCharacterUpdateView.as_view(),
         name="character_edit",
+    ),
+    # Session URLs
+    path(
+        "campaigns/<uuid:campaign_pk>/sessions/propose/",
+        SessionCreateView.as_view(),
+        name="session_propose",
+    ),
+    path(
+        "sessions/<int:pk>/attendance/",
+        SessionToggleAttendanceView.as_view(),
+        name="session_toggle_attendance",
     ),
 ]
