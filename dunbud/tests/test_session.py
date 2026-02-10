@@ -163,3 +163,75 @@ class TestProposedSessionsDisplay(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Proposed Sessions")
         self.assertContains(response, "No sessions proposed yet")
+
+
+class SessionToggleAttendanceViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user, self.upass = UserFactory.create()
+        self.other_user, _ = UserFactory.create()
+        self.campaign = CampaignFactory.create(
+            dungeon_master=self.user,
+            system=TabletopSystemFactory.create(),
+            players=[self.user, self.other_user],
+        )
+        self.session = Session.objects.create(
+            campaign=self.campaign,
+            proposer=self.user,
+            proposed_date=timezone.now() + datetime.timedelta(days=7),
+            duration=4,
+        )
+        self.session.attendees.add(self.user)
+        self.url = reverse("session_toggle_attendance", kwargs={"pk": self.session.pk})
+
+    def test_toggle_attendance_requires_login(self) -> None:
+        """
+        Test that toggling attendance requires authentication.
+        """
+        self.client.logout()
+        response = self.client.post(self.url)
+        login_url = reverse("login")
+        expected_url = f"{login_url}?next={self.url}"
+        self.assertRedirects(response, expected_url)
+
+    def test_toggle_attendance_for_non_existent_session(self) -> None:
+        """
+        Test that toggling attendance for a non-existent session returns a 404.
+        """
+        self.client.force_login(self.user)
+        url = reverse("session_toggle_attendance", kwargs={"pk": 9999})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_add_user_to_attendees(self) -> None:
+        """
+        Test that a user can be added to the attendees of a session.
+        """
+        self.client.force_login(self.other_user)
+        self.assertNotIn(self.other_user, self.session.attendees.all())
+
+        response = self.client.post(self.url)
+
+        self.assertEqual(response.status_code, 302)
+        self.session.refresh_from_db()
+        self.assertIn(self.other_user, self.session.attendees.all())
+        self.assertRedirects(
+            response,
+            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
+        )
+
+    def test_remove_user_from_attendees(self) -> None:
+        """
+        Test that a user can be removed from the attendees of a session.
+        """
+        self.client.force_login(self.user)
+        self.assertIn(self.user, self.session.attendees.all())
+
+        response = self.client.post(self.url)
+
+        self.assertEqual(response.status_code, 302)
+        self.session.refresh_from_db()
+        self.assertNotIn(self.user, self.session.attendees.all())
+        self.assertRedirects(
+            response,
+            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
+        )
