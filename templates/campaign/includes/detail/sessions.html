@@ -22,9 +22,9 @@
                                   method="post">
                                 {% csrf_token %}
                                 {% if request.user in session.attendees.all %}
-                                    <button type="submit" class="btn btn-sm btn-danger">Mark as Busy</button>
+                                    <button type="submit" class="btn btn-sm btn-success">Available (Click to mark as Busy)</button>
                                 {% else %}
-                                    <button type="submit" class="btn btn-sm btn-success">Mark as Available</button>
+                                    <button type="submit" class="btn btn-sm btn-danger">Busy (Click to mark as Available)</button>
                                 {% endif %}
                             </form>
                         </div>

@@ -33,7 +33,12 @@ class SessionCreateView(LoginRequiredMixin, CreateView):
         """Set the campaign and proposer on the session."""
         form.instance.campaign = self.campaign
         form.instance.proposer = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if self.object:
+            self.object.attendees.add(self.request.user)
+        else:
+            raise TypeError("Received None object instead of Session")
+        return response
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add the campaign to the context."""
