@@ -16,8 +16,9 @@ class Session(models.Model):
     )
     proposer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="proposed_sessions",
+        null=True,
     )
     proposed_date = models.DateTimeField()
     duration = models.PositiveIntegerField(help_text="Duration in hours")
