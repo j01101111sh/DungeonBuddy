@@ -18,7 +18,7 @@ class SessionToggleAttendanceView(LoginRequiredMixin, View):
         **kwargs: Any,
     ) -> HttpResponse:
         """Toggle the user's attendance for the session."""
-        session = get_object_or_404(Session, pk=self.kwargs["pk"])
+        session = get_object_or_404(Session.objects.select_related("campaign"), pk=self.kwargs["pk"])
         user = request.user
 
         if user.is_authenticated:
