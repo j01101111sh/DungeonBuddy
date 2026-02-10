@@ -36,6 +36,11 @@ class Session(models.Model):
         related_name="attended_sessions",
         blank=True,
     )
+    busy_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="busy_sessions",
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

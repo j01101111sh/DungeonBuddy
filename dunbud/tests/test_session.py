@@ -37,6 +37,7 @@ class SessionModelTest(TestCase):
         self.assertEqual(self.session.proposed_date, self.proposed_date)
         self.assertEqual(self.session.duration, 4)
         self.assertEqual(self.session.attendees.count(), 0)
+        self.assertEqual(self.session.busy_users.count(), 0)
 
     def test_proposer_deletion(self) -> None:
         """Test that if a proposer is deleted, the session's proposer is set to NULL."""
@@ -63,7 +64,8 @@ class SessionCreateViewTest(TestCase):
         self.client.force_login(self.user)
         self.url = reverse("session_propose", kwargs={"campaign_pk": self.campaign.pk})
 
-    def test_proposer_is_added_to_attendees(self) -> None:
+    def test_dm_is_added_to_attendees(self) -> None:
+        """Test that the DM is automatically added to the attendees list."""
         self.assertEqual(Session.objects.count(), 0)
         proposed_date = timezone.now() + datetime.timedelta(days=7)
         response = self.client.post(
@@ -76,7 +78,29 @@ class SessionCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Session.objects.count(), 1)
         session = Session.objects.first()
+        self.assertTrue(session)
+        # In this setup, user is DM.
         self.assertIn(self.user, session.attendees.all() if session else [])
+
+    def test_proposer_and_dm_added(self) -> None:
+        """Test that if a player proposes, both they and the DM are added."""
+        player, _ = UserFactory.create()
+        self.campaign.players.add(player)
+        self.client.force_login(player)
+
+        proposed_date = timezone.now() + datetime.timedelta(days=7)
+        self.client.post(
+            self.url,
+            {
+                "proposed_date": proposed_date.strftime("%Y-%m-%dT%H:%M"),
+                "duration": 4,
+            },
+        )
+
+        session = Session.objects.first()
+        self.assertTrue(session)
+        self.assertIn(self.user, session.attendees.all() if session else [])  # DM
+        self.assertIn(player, session.attendees.all() if session else [])  # Proposer
 
     def test_session_form_renders_correctly(self) -> None:
         """
@@ -95,15 +119,11 @@ class SessionCreateViewTest(TestCase):
         self.assertEqual(response.context["campaign"], self.campaign)
 
         # Verify Content
-        # Check for the dynamic page header
         self.assertContains(response, f"Propose a New Session for {self.campaign.name}")
-
-        # Check for the presence of the form fields
         self.assertContains(response, 'name="proposed_date"')
-        self.assertContains(response, 'type="datetime-local"')  # Verifies the widget
+        self.assertContains(response, 'type="datetime-local"')
         self.assertContains(response, 'name="duration"')
 
-        # Verify the Cancel button links back to the campaign detail page
         cancel_url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
         self.assertContains(response, f'href="{cancel_url}"')
 
@@ -114,7 +134,6 @@ class SessionCreateViewTest(TestCase):
         self.client.logout()
         response = self.client.get(self.url)
         self.assertNotEqual(response.status_code, 200)
-        # Should redirect to login
         self.assertEqual(response.status_code, 302)
 
 
@@ -149,9 +168,9 @@ class TestProposedSessionsDisplay(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Proposed Sessions")
         self.assertNotContains(response, "No sessions proposed yet")
-        self.assertContains(response, now.strftime("%B"))  # e.g., February
-        self.assertContains(response, str(now.day))  # e.g., 10
-        self.assertContains(response, str(now.year))  # e.g., 2026
+        self.assertContains(response, now.strftime("%B"))
+        self.assertContains(response, str(now.day))
+        self.assertContains(response, str(now.year))
 
     def test_no_proposed_sessions_message(self) -> None:
         """
@@ -202,26 +221,24 @@ class SessionToggleAttendanceViewTest(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
-    def test_add_user_to_attendees(self) -> None:
+    def test_add_user_to_attendees_if_new(self) -> None:
         """
-        Test that a user can be added to the attendees of a session.
+        Test that a user is added to attendees if they are in neither list.
         """
         self.client.force_login(self.other_user)
         self.assertNotIn(self.other_user, self.session.attendees.all())
+        self.assertNotIn(self.other_user, self.session.busy_users.all())
 
         response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, 302)
         self.session.refresh_from_db()
         self.assertIn(self.other_user, self.session.attendees.all())
-        self.assertRedirects(
-            response,
-            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
-        )
+        self.assertNotIn(self.other_user, self.session.busy_users.all())
 
-    def test_remove_user_from_attendees(self) -> None:
+    def test_move_attendee_to_busy(self) -> None:
         """
-        Test that a user can be removed from the attendees of a session.
+        Test that an attendee is moved to busy_users when toggled.
         """
         self.client.force_login(self.user)
         self.assertIn(self.user, self.session.attendees.all())
@@ -231,7 +248,19 @@ class SessionToggleAttendanceViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.session.refresh_from_db()
         self.assertNotIn(self.user, self.session.attendees.all())
-        self.assertRedirects(
-            response,
-            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
-        )
+        self.assertIn(self.user, self.session.busy_users.all())
+
+    def test_move_busy_to_attendee(self) -> None:
+        """
+        Test that a busy user is moved to attendees when toggled.
+        """
+        self.session.attendees.remove(self.user)
+        self.session.busy_users.add(self.user)
+        self.client.force_login(self.user)
+
+        response = self.client.post(self.url)
+
+        self.assertEqual(response.status_code, 302)
+        self.session.refresh_from_db()
+        self.assertIn(self.user, self.session.attendees.all())
+        self.assertNotIn(self.user, self.session.busy_users.all())

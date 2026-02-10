@@ -35,7 +35,12 @@ class SessionCreateView(LoginRequiredMixin, CreateView):
         form.instance.proposer = self.request.user
         response = super().form_valid(form)
         if self.object:
-            self.object.attendees.add(self.request.user)
+            # Default: Add DM to attendees
+            self.object.attendees.add(self.campaign.dungeon_master)
+
+            # Also add the proposer if they are not the DM to ensure they are attending
+            if self.request.user != self.campaign.dungeon_master:
+                self.object.attendees.add(self.request.user)
         else:
             raise TypeError("Received None object instead of Session")
         return response

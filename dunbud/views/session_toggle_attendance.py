@@ -17,7 +17,10 @@ class SessionToggleAttendanceView(LoginRequiredMixin, View):
         *args: Any,
         **kwargs: Any,
     ) -> HttpResponse:
-        """Toggle the user's attendance for the session."""
+        """
+        Toggle the user's attendance for the session.
+        Moves user between 'attendees' and 'busy_users'.
+        """
         session = get_object_or_404(
             Session.objects.select_related("campaign"),
             pk=self.kwargs["pk"],
@@ -27,7 +30,12 @@ class SessionToggleAttendanceView(LoginRequiredMixin, View):
         if user.is_authenticated:
             if user in session.attendees.all():
                 session.attendees.remove(user)
+                session.busy_users.add(user)
+            elif user in session.busy_users.all():
+                session.busy_users.remove(user)
+                session.attendees.add(user)
             else:
+                # If in neither list, default to attending
                 session.attendees.add(user)
 
         return redirect("campaign_detail", pk=session.campaign.pk)
