@@ -72,10 +72,14 @@ mypy .
 
 ## Testing
 
-This project uses `pytest` for testing. To run the test suite, use the following command:
+This project uses Django built-in testing features. To run the test suite, use the following command:
 
 ```bash
-pytest
+uv run pytest
 ```
 
 The test configuration is located in the `pyproject.toml` file under the `[tool.pytest.ini_options]` section.
+
+Pytest fixtures and testing through functions should be avoided. Instead create a Django TestCase class with a setUp function that creates the objects necessary for the testing.
+
+Object factories to be used for testing purposes should be kept in config/tests/factories.py and should follow the style of the factories already there. Factories should be used whenever possible in testing.
