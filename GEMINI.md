@@ -79,7 +79,7 @@ uv run mypy --strict
 
 ## Testing
 
-This project uses Django built-in testing features. To run the test suite, use the following command:
+This project uses `pytest` for testing. To run the test suite, use the following command:
 
 ```bash
 uv run pytest
