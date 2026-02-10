@@ -11,6 +11,8 @@ from dunbud.models import (
     Session,
     TabletopSystem,
 )
+
+from dunbud.models import Campaign, HelpfulLink, PlayerCharacter, TabletopSystem
 from users.models import CustomUser
 
 # Type alias for the user model
@@ -76,6 +78,46 @@ class TabletopSystemFactory:
         defaults.update(kwargs)
 
         return TabletopSystem.objects.create(**defaults)
+
+
+class CampaignFactory:
+    """
+    Factory for creating Campaign instances for testing purposes.
+    """
+
+    @staticmethod
+    def create(
+        dungeon_master: CustomUser,
+        system: TabletopSystem,
+        players: list[CustomUser] | None = None,
+        **kwargs: Any,
+    ) -> Campaign:
+        """
+        Creates a new Campaign instance.
+
+        Args:
+            dungeon_master: The user who is the dungeon master.
+            system: The tabletop system for the campaign.
+            players: A list of users to add as players.
+            **kwargs: Additional fields for the Campaign.
+
+        Returns:
+            Campaign instance.
+        """
+        defaults = {
+            "name": f"Campaign {secrets.token_hex(4)}",
+            "description": "A test campaign.",
+            "dungeon_master": dungeon_master,
+            "system": system,
+        }
+        defaults.update(kwargs)
+
+        campaign = Campaign.objects.create(**defaults)
+
+        if players:
+            campaign.players.set(players)
+
+        return campaign
 
 
 class PlayerCharacterFactory:

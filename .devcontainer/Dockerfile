@@ -1,5 +1,5 @@
 # Use the official uv image with Python 3.14
-FROM ghcr.io/astral-sh/uv:python3.14-bookworm
+FROM ghcr.io/astral-sh/uv:python3.14-trixie
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \

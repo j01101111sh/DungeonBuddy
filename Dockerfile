@@ -1,5 +1,4 @@
-ARG PYTHON_VERSION=3.14-slim-bookworm
-FROM python:${PYTHON_VERSION}
+FROM python:3.14-slim-trixie
 
 # Create a virtual environment
 RUN python -m venv /opt/venv
