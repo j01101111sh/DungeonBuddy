@@ -1,6 +1,6 @@
 from typing import Any
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, HttpResponseBase
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -10,7 +10,7 @@ from ..forms import SessionForm
 from ..models import Campaign, Session
 
 
-class SessionCreateView(LoginRequiredMixin, CreateView):
+class SessionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     """View for creating a new session for a campaign."""
 
     model = Session
@@ -50,3 +50,11 @@ class SessionCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["campaign"] = self.campaign
         return context
+
+    def test_func(self) -> bool:
+        user = self.request.user
+        if not user.is_authenticated:
+            return False
+        return (
+            self.campaign.dungeon_master == user or user in self.campaign.players.all()
+        )
