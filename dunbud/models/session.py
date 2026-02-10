@@ -52,6 +52,12 @@ class Session(models.Model):
 
     class Meta:
         ordering = ["proposed_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["campaign", "session_number"],
+                name="unique_session_number_per_campaign",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"Session for {self.campaign.name} at {self.proposed_date}"
