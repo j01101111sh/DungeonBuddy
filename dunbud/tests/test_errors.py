@@ -31,7 +31,10 @@ class ErrorPageTests(TestCase):
         # Test 403
         response_403 = errors.permission_denied(request, Exception("Access Denied"))
         self.assertEqual(response_403.status_code, 403)
-        self.assertIn(b"You do not have the required clearance to enter this area.", response_403.content)
+        self.assertIn(
+            b"You do not have the required clearance to enter this area.",
+            response_403.content,
+        )
 
         # Test 400
         response_400 = errors.bad_request(request, Exception("Bad Request"))
@@ -46,4 +49,7 @@ class ErrorPageTests(TestCase):
         # Test 503
         response_503 = errors.service_unavailable(request)
         self.assertEqual(response_503.status_code, 503)
-        self.assertIn(b"The tavern is currently closed for cleaning.", response_503.content)
+        self.assertIn(
+            b"The tavern is currently closed for cleaning.",
+            response_503.content,
+        )
