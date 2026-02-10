@@ -17,6 +17,13 @@ The project is divided into three main Django apps:
 *   `users`: Handles user authentication and profiles.
 *   `blog`: A blog for project updates or related content.
 
+# Key Architecture Decisions
+
+* **Identifiers:** All primary models (`Campaign`, `PlayerCharacter`, etc.) use `UUID` fields as primary keys instead of incremental integers to prevent enumeration attacks and facilitate easier data migration.
+* **User Model:** The project uses a custom user model (`users.CustomUser`) as recommended by Django best practices.
+* **Configuration:** Environment variables are loaded via `python-dotenv`.
+* **Logging:** The application is configured to log to the `logs/` directory.
+
 # Development Setup
 
 This project includes a `dev_setup.sh` script that automates the setup of a development environment. To use it, run the following command:
