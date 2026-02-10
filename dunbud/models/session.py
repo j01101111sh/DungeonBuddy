@@ -1,8 +1,10 @@
 from decimal import Decimal
+from typing import Any
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Max
 
 from .campaign import Campaign
 
@@ -41,6 +43,10 @@ class Session(models.Model):
         related_name="busy_sessions",
         blank=True,
     )
+    session_number = models.PositiveIntegerField(
+        default=1,
+        help_text="The sequential number of the session within the campaign.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -49,3 +55,16 @@ class Session(models.Model):
 
     def __str__(self) -> str:
         return f"Session for {self.campaign.name} at {self.proposed_date}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Override save to auto-increment session_number if creating a new session.
+        """
+        if self._state.adding:
+            # Calculate the next session number for this campaign
+            max_number = self.campaign.sessions.aggregate(
+                Max("session_number"),
+            )["session_number__max"]
+            self.session_number = (max_number or 0) + 1
+
+        super().save(*args, **kwargs)

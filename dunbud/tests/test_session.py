@@ -38,6 +38,55 @@ class SessionModelTest(TestCase):
         self.assertEqual(self.session.duration, 4)
         self.assertEqual(self.session.attendees.count(), 0)
         self.assertEqual(self.session.busy_users.count(), 0)
+        self.assertEqual(self.session.session_number, 1)
+
+    def test_session_number_sequential(self) -> None:
+        """Test that session numbers increment sequentially."""
+        session2 = Session.objects.create(
+            campaign=self.campaign,
+            proposer=self.user,
+            proposed_date=self.proposed_date + datetime.timedelta(days=7),
+            duration=4,
+        )
+        self.assertEqual(session2.session_number, 2)
+
+        session3 = Session.objects.create(
+            campaign=self.campaign,
+            proposer=self.user,
+            proposed_date=self.proposed_date + datetime.timedelta(days=14),
+            duration=4,
+        )
+        self.assertEqual(session3.session_number, 3)
+
+    def test_session_number_independent_campaigns(self) -> None:
+        """Test that session numbering is independent per campaign."""
+        other_campaign = CampaignFactory.create(
+            dungeon_master=self.user,
+            system=TabletopSystemFactory.create(),
+        )
+
+        # Create session for other campaign
+        other_session = Session.objects.create(
+            campaign=other_campaign,
+            proposer=self.user,
+            proposed_date=self.proposed_date,
+            duration=4,
+        )
+
+        # Should start at 1
+        self.assertEqual(other_session.session_number, 1)
+
+        # Original campaign should still be at 1 (from setUp)
+        self.assertEqual(self.session.session_number, 1)
+
+        # Add another to original
+        session2 = Session.objects.create(
+            campaign=self.campaign,
+            proposer=self.user,
+            proposed_date=self.proposed_date,
+            duration=4,
+        )
+        self.assertEqual(session2.session_number, 2)
 
     def test_proposer_deletion(self) -> None:
         """Test that if a proposer is deleted, the session's proposer is set to NULL."""
