@@ -6,8 +6,8 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView
 
-from ..forms import SessionForm
-from ..models import Campaign, Session
+from dunbud.forms import SessionForm
+from dunbud.models import Campaign, Session
 
 
 class SessionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):

@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 
-from ..models import Session
+from dunbud.models import Session
 
 
 class SessionToggleAttendanceView(LoginRequiredMixin, View):
