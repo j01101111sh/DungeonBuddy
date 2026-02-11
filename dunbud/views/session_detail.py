@@ -40,7 +40,7 @@ class SessionDetailView(LoginRequiredMixin, FormMixin, DetailView):
         session: Session = self.object
 
         # Add campaign members
-        context["campaign_members"] = session.campaign.members.all()
+        context["campaign_members"] = session.campaign.players.all()
 
         # Add chat history
         context["chat_messages"] = session.chat_messages.select_related("user").all()

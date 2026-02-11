@@ -1,8 +1,15 @@
-from campaigns.models import Campaign, ChatMessage, Session
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+
+from config.tests.factories import (
+    CampaignFactory,
+    SessionFactory,
+    TabletopSystemFactory,
+    UserFactory,
+)
+from dunbud.models import Campaign, ChatMessage, Session
 
 User = get_user_model()
 
@@ -16,36 +23,42 @@ class SessionChatTests(TestCase):
         """
         Set up test data: User, Campaign, and Session.
         """
-        self.user = User.objects.create_user(
-            username="testuser",
-            password="password123",
-        )
-        self.other_user = User.objects.create_user(
-            username="otheruser",
-            password="password123",
-        )
+        self.user, self.upass = UserFactory.create()
+        self.uname = self.user.get_username()
+        self.o_user, self.o_upass = UserFactory.create()
+        self.o_uname = self.o_user.get_username()
+        self.dm, self.dmpass = UserFactory.create()
+        self.dmname = self.dm.get_username()
 
-        self.campaign = Campaign.objects.create(
-            title="Test Campaign",
-            description="A test campaign",
+        self.campaign = CampaignFactory.create(
+            dungeon_master=self.dm,
+            system=TabletopSystemFactory.create(),
         )
-        self.campaign.members.add(self.user, self.other_user)
+        self.campaign.players.add(self.user, self.o_user)
 
-        self.session = Session.objects.create(
+        self.session = SessionFactory.create(
             campaign=self.campaign,
-            title="Session 1",
-            scheduled_time=timezone.now(),
         )
 
-        self.url = reverse("campaigns:session_detail", kwargs={"pk": self.session.pk})
+        self.url = reverse("session_detail", kwargs={"pk": self.session.pk})
 
     def test_session_detail_view_status_code(self) -> None:
         """
         Test that the session detail page returns a 200 for logged-in users.
         """
-        self.client.login(username="testuser", password="password123")
+        self.client.login(username=self.uname, password=self.upass)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
+
+    def test_unauthorized_access_for_non_member(self) -> None:
+        """
+        Test that a user not in the campaign gets a 404.
+        """
+        non_member, non_member_pass = UserFactory.create(        )
+        non_member_username = non_member.get_username()
+        self.client.login(username=non_member_username, password=non_member_pass)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 404)
 
     def test_session_detail_context_members(self) -> None:
         """
@@ -102,4 +115,6 @@ class SessionChatTests(TestCase):
         """
         response = self.client.get(self.url)
         self.assertNotEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(response.status_code, 302)
