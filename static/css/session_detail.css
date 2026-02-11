@@ -1,0 +1,39 @@
+/* Container for the chat interface to ensure it fits within the viewport or card */
+.chat-interface-container {
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* The scrollable area where messages appear */
+.chat-history {
+    background-color: #f8f9fa;
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+}
+
+/* Metadata line (Username - Time) inside a message bubble */
+.chat-message-meta {
+    font-size: 0.7em;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.25rem;
+    display: block;
+}
+
+/* Specific overrides for messages sent by the current user (optional, but good for separation) */
+.chat-message-own .chat-message-meta {
+    border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Empty state message styling */
+.chat-empty-state {
+    color: #6c757d; /* text-muted */
+    text-align: center;
+    margin-top: 3rem;
+}

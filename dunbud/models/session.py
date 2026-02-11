@@ -43,6 +43,7 @@ class Session(models.Model):
         related_name="busy_sessions",
         blank=True,
     )
+    notes = models.TextField(blank=True)
     session_number = models.PositiveIntegerField(
         default=1,
         help_text="The sequential number of the session within the campaign.",

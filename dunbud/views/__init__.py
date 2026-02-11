@@ -17,6 +17,7 @@ from .player_character_create import PlayerCharacterCreateView
 from .player_character_list import PlayerCharacterListView
 from .player_character_update import PlayerCharacterUpdateView
 from .session_create import SessionCreateView
+from .session_detail import SessionDetailView
 from .session_toggle_attendance import SessionToggleAttendanceView
 from .splash import SplashView
 
@@ -37,5 +38,6 @@ __all__ = [
     "HelpfulLinkCreateView",
     "HelpfulLinkDeleteView",
     "SessionCreateView",
+    "SessionDetailView",
     "SessionToggleAttendanceView",
 ]

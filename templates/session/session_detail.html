@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/session_detail.css' %}" />
+{% endblock extra_css %}
+{% block content %}
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h3>{{ session_obj.title }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            <strong>Campaign:</strong> {{ session_obj.campaign.name }}
+                        </p>
+                        <p>
+                            <strong>Date:</strong> {{ session_obj.proposed_date|date:"F j, Y, g:i a" }}
+                        </p>
+                        <hr />
+                        <h5>Notes</h5>
+                        <p>{{ session_obj.notes|linebreaks }}</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Party Members</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for member in campaign_members %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ member.username }}
+                                {% if member == request.user %}<span class="badge bg-secondary">You</span>{% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No members found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5>Session Chat</h5>
+                    </div>
+                    <div class="card-body chat-interface-container">
+                        <div class="chat-history">
+                            {% for msg in chat_messages %}
+                                <div class="mb-2 {% if msg.user == request.user %}text-end{% endif %}">
+                                    <div class="d-inline-block p-2 rounded {% if msg.user == request.user %}bg-primary text-white chat-message-own{% else %}bg-light border{% endif %}">
+                                        <small class="chat-message-meta">{{ msg.user.username }} - {{ msg.timestamp|date:"H:i" }}</small>
+                                        {{ msg.message|linebreaksbr }}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <p class="chat-empty-state">No messages yet. Start the conversation!</p>
+                            {% endfor %}
+                        </div>
+                        <div class="chat-input">
+                            <form method="post" action="">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    {{ form.message }}
+                                    <button class="btn btn-primary" type="submit">Send</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

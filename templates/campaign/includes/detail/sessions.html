@@ -16,7 +16,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h5 class="mb-1">
-                                    <span class="text-secondary">#{{ session.session_number }}:</span>
+                                    <a href="{% url 'session_detail' campaign_pk=campaign.pk session_number=session.session_number %}"><span class="text-secondary">Session #{{ session.session_number }}:</span></a>
                                     {{ session.proposed_date|date:"F j, Y, g:i a" }}
                                 </h5>
                                 <small class="text-muted">{{ session.duration }} hour(s)</small>
