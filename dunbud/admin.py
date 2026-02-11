@@ -64,4 +64,6 @@ class HelpfulLinkAdmin(admin.ModelAdmin):
 
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
-    list_display = ["campaign", "session_number", "proposed_date"]
+    list_display = ["campaign", "session_number", "proposed_date", "proposer"]
+    search_fields = ["campaign__name", "proposer__username"]
+    list_filter = ["campaign", "proposed_date"]
