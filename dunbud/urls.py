@@ -1,6 +1,6 @@
 from django.urls import path
 
-from dunbud.views import (
+from .views import (
     CampaignAnnouncementCreateView,
     CampaignCreateView,
     CampaignDetailView,
@@ -18,6 +18,7 @@ from dunbud.views import (
     SessionCreateView,
     SessionDetailView,
     SessionToggleAttendanceView,
+    SessionUpdateView,
     SplashView,
 )
 
@@ -103,5 +104,10 @@ urlpatterns = [
         "campaigns/<uuid:campaign_pk>/sessions/<int:session_number>/",
         SessionDetailView.as_view(),
         name="session_detail",
+    ),
+    path(
+        "campaigns/<uuid:campaign_pk>/sessions/<int:session_number>/edit/",
+        SessionUpdateView.as_view(),
+        name="session_edit",
     ),
 ]

@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView
 
-from dunbud.forms import SessionForm
+from dunbud.forms import SessionCreateForm
 from dunbud.models import Campaign, Session
 
 
@@ -14,7 +14,7 @@ class SessionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     """View for creating a new session for a campaign."""
 
     model = Session
-    form_class = SessionForm
+    form_class = SessionCreateForm
     template_name = "session/session_form.html"
 
     def dispatch(self, request: Any, *args: Any, **kwargs: Any) -> HttpResponseBase:
@@ -29,7 +29,7 @@ class SessionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
             kwargs={"pk": self.kwargs["campaign_pk"]},
         )
 
-    def form_valid(self, form: SessionForm) -> HttpResponse:
+    def form_valid(self, form: SessionCreateForm) -> HttpResponse:
         """Set the campaign and proposer on the session."""
         form.instance.campaign = self.campaign
         form.instance.proposer = self.request.user
