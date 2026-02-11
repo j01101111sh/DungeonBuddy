@@ -104,15 +104,15 @@ class SessionChatTests(TestCase):
         """
         ChatMessage.objects.create(
             session=self.session,
-            user=self.other_user,
+            user=self.o_user,
             message="Previous message",
         )
 
-        self.client.login(username="testuser", password="password123")
+        self.client.login(username=self.uname, password=self.upass)
         response = self.client.get(self.url)
 
         self.assertContains(response, "Previous message")
-        self.assertContains(response, "otheruser")
+        self.assertContains(response, self.o_uname)
 
     def test_unauthenticated_access(self) -> None:
         """
