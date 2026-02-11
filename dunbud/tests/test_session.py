@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from config.tests.factories import CampaignFactory, TabletopSystemFactory, UserFactory
-from dunbud.forms import SessionForm
+from dunbud.forms import SessionCreateForm
 from dunbud.models import Session
 
 
@@ -164,7 +164,7 @@ class SessionCreateViewTest(TestCase):
 
         # Verify Context
         self.assertIn("form", response.context)
-        self.assertIsInstance(response.context["form"], SessionForm)
+        self.assertIsInstance(response.context["form"], SessionCreateForm)
         self.assertEqual(response.context["campaign"], self.campaign)
 
         # Verify Content

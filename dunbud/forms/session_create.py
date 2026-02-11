@@ -3,7 +3,7 @@ from django import forms
 from dunbud.models import Session
 
 
-class SessionForm(forms.ModelForm):
+class SessionCreateForm(forms.ModelForm):
     """Form for creating a new session."""
 
     class Meta:
