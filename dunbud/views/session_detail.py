@@ -46,10 +46,10 @@ class SessionDetailView(LoginRequiredMixin, FormMixin, DetailView):
         Redirects back to the same page using the new URL parameters.
         """
         return reverse(
-            "campaigns:session_detail",
+            "session_detail",
             kwargs={
-                "campaign_id": self.object.campaign.id,
-                "session_number": self.object.number,
+                "campaign_pk": self.object.campaign.id,
+                "session_number": self.object.session_number,
             },
         )
 
