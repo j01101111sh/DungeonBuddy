@@ -53,7 +53,7 @@ jobs:
         run: uv run python manage.py collectstatic --noinput
 
       - name: Run Django Tests
-        run: uv run pytest
+        run: uv run pytest -n auto
 
       - name: Enforce Diff Coverage
         run: uv run diff-cover coverage.xml --compare-branch=origin/main --fail-under=80
