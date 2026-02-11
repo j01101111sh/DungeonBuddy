@@ -1,6 +1,6 @@
 from django import forms
 
-from ..models import Session
+from dunbud.models import Session
 
 
 class SessionForm(forms.ModelForm):

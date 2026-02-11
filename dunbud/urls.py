@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import (
+from dunbud.views import (
     CampaignAnnouncementCreateView,
     CampaignCreateView,
     CampaignDetailView,
