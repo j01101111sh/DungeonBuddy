@@ -2,6 +2,9 @@
 
 {% load static %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/session_detail.css' %}" />
+{% endblock extra_css %}
 {% block content %}
     <div class="container mt-4">
         <div class="row">
@@ -43,21 +46,17 @@
                     <div class="card-header">
                         <h5>Session Chat</h5>
                     </div>
-                    <div class="card-body d-flex flex-column" style="height: 600px;">
-                        <div class="chat-history flex-grow-1 overflow-auto mb-3 border rounded p-3"
-                             style="background-color: #f8f9fa">
+                    <div class="card-body chat-interface-container">
+                        <div class="chat-history">
                             {% for msg in chat_messages %}
                                 <div class="mb-2 {% if msg.user == request.user %}text-end{% endif %}">
-                                    <div class="d-inline-block p-2 rounded {% if msg.user == request.user %}bg-primary text-white{% else %}bg-light border{% endif %}">
-                                        <small class="d-block fw-bold border-bottom mb-1 pb-1"
-                                               style="font-size: 0.7em">
-                                            {{ msg.user.username }} - {{ msg.timestamp|date:"H:i" }}
-                                        </small>
+                                    <div class="d-inline-block p-2 rounded {% if msg.user == request.user %}bg-primary text-white chat-message-own{% else %}bg-light border{% endif %}">
+                                        <small class="chat-message-meta">{{ msg.user.username }} - {{ msg.timestamp|date:"H:i" }}</small>
                                         {{ msg.message|linebreaksbr }}
                                     </div>
                                 </div>
                             {% empty %}
-                                <p class="text-muted text-center mt-5">No messages yet. Start the conversation!</p>
+                                <p class="chat-empty-state">No messages yet. Start the conversation!</p>
                             {% endfor %}
                         </div>
                         <div class="chat-input">
@@ -74,4 +73,4 @@
             </div>
         </div>
     </div>
-{% endblock %}
+{% endblock content %}
