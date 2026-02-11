@@ -17,10 +17,12 @@ class SessionChatTests(TestCase):
         Set up test data: User, Campaign, and Session.
         """
         self.user = User.objects.create_user(
-            username="testuser", password="password123"
+            username="testuser",
+            password="password123",
         )
         self.other_user = User.objects.create_user(
-            username="otheruser", password="password123"
+            username="otheruser",
+            password="password123",
         )
 
         self.campaign = Campaign.objects.create(
