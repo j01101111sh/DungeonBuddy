@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
 
 from config.tests.factories import (
     CampaignFactory,
@@ -9,7 +8,7 @@ from config.tests.factories import (
     TabletopSystemFactory,
     UserFactory,
 )
-from dunbud.models import Campaign, ChatMessage, Session
+from dunbud.models import ChatMessage
 
 User = get_user_model()
 
@@ -40,7 +39,13 @@ class SessionChatTests(TestCase):
             campaign=self.campaign,
         )
 
-        self.url = reverse("session_detail", kwargs={"pk": self.session.pk})
+        self.url = reverse(
+            "session_detail",
+            kwargs={
+                "session_number": self.session.session_number,
+                "campaign_pk": self.session.campaign.pk,
+            },
+        )
 
     def test_session_detail_view_status_code(self) -> None:
         """
@@ -54,7 +59,7 @@ class SessionChatTests(TestCase):
         """
         Test that a user not in the campaign gets a 404.
         """
-        non_member, non_member_pass = UserFactory.create(        )
+        non_member, non_member_pass = UserFactory.create()
         non_member_username = non_member.get_username()
         self.client.login(username=non_member_username, password=non_member_pass)
         response = self.client.get(self.url)
@@ -64,7 +69,7 @@ class SessionChatTests(TestCase):
         """
         Test that the campaign members are correctly passed to the context.
         """
-        self.client.login(username="testuser", password="password123")
+        self.client.login(username=self.uname, password=self.upass)
         response = self.client.get(self.url)
 
         self.assertIn("campaign_members", response.context)
@@ -76,7 +81,7 @@ class SessionChatTests(TestCase):
         """
         Test posting a new chat message via the view.
         """
-        self.client.login(username="testuser", password="password123")
+        self.client.login(username=self.uname, password=self.upass)
         data = {"message": "Hello Party!"}
 
         # Post the message
