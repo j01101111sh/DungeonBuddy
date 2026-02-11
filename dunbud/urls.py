@@ -16,6 +16,7 @@ from .views import (
     PlayerCharacterListView,
     PlayerCharacterUpdateView,
     SessionCreateView,
+    SessionDetailView,
     SessionToggleAttendanceView,
     SplashView,
 )
@@ -98,4 +99,5 @@ urlpatterns = [
         SessionToggleAttendanceView.as_view(),
         name="session_toggle_attendance",
     ),
+    path("session/<int:pk>/", SessionDetailView.as_view(), name="session_detail"),
 ]
