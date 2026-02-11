@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import UpdateView
 
-from dunbud.forms.session import SessionUpdateForm
+from dunbud.forms import SessionUpdateForm
 from dunbud.models import Session
 
 logger = logging.getLogger(__name__)
