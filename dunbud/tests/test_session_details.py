@@ -47,7 +47,15 @@ class SessionChatTests(TestCase):
             },
         )
 
-    def test_session_detail_view_status_code(self) -> None:
+    def test_session_detail_view_status_code_user(self) -> None:
+        """
+        Test that the session detail page returns a 200 for logged-in users.
+        """
+        self.client.login(username=self.dmname, password=self.dmpass)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_session_detail_view_status_code_dm(self) -> None:
         """
         Test that the session detail page returns a 200 for logged-in users.
         """
