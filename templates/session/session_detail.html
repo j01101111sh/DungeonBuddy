@@ -15,10 +15,10 @@
                     </div>
                     <div class="card-body">
                         <p>
-                            <strong>Date:</strong> {{ session_obj.scheduled_time|date:"F j, Y, g:i a" }}
+                            <strong>Campaign:</strong> {{ session_obj.campaign.name }}
                         </p>
                         <p>
-                            <strong>Campaign:</strong> {{ session_obj.campaign.title }}
+                            <strong>Date:</strong> {{ session_obj.proposed_date|date:"F j, Y, g:i a" }}
                         </p>
                         <hr />
                         <h5>Notes</h5>
