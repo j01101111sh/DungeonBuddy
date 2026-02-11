@@ -57,13 +57,13 @@ class SessionChatTests(TestCase):
 
     def test_unauthorized_access_for_non_member(self) -> None:
         """
-        Test that a user not in the campaign gets a 404.
+        Test that a user not in the campaign gets a 403.
         """
         non_member, non_member_pass = UserFactory.create()
         non_member_username = non_member.get_username()
         self.client.login(username=non_member_username, password=non_member_pass)
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_session_detail_context_members(self) -> None:
         """

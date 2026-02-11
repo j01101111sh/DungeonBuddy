@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -14,7 +14,7 @@ from dunbud.models import Session
 logger = logging.getLogger(__name__)
 
 
-class SessionDetailView(LoginRequiredMixin, FormMixin, DetailView):
+class SessionDetailView(LoginRequiredMixin, UserPassesTestMixin, FormMixin, DetailView):
     """
     View to display session details using Campaign ID and Session Number lookup.
     """
@@ -23,6 +23,18 @@ class SessionDetailView(LoginRequiredMixin, FormMixin, DetailView):
     template_name = "session/session_detail.html"
     context_object_name = "session_obj"
     form_class = ChatMessageForm
+
+    def test_func(self) -> bool:
+        """
+        Ensure only the DM or campaign players can view the session.
+        """
+        session = self.get_object()
+        user = self.request.user
+        if session.campaign.dungeon_master == user:
+            return True
+        if user.pk is None:
+            return False
+        return session.campaign.players.filter(pk=user.pk).exists()
 
     def get_object(self, queryset: Any = None) -> Session | Any:
         """
