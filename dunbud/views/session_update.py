@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import UpdateView
@@ -59,7 +60,7 @@ class SessionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             },
         )
 
-    def form_valid(self, form: SessionUpdateForm) -> Any:
+    def form_valid(self, form: SessionUpdateForm) -> HttpResponse:
         logger.info(
             "User %s updated session %s (Campaign: %s)",
             self.request.user.id,
