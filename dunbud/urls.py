@@ -99,5 +99,9 @@ urlpatterns = [
         SessionToggleAttendanceView.as_view(),
         name="session_toggle_attendance",
     ),
-    path("session/<int:pk>/", SessionDetailView.as_view(), name="session_detail"),
+    path(
+        "campaigns/<uuid:campaign_pk>/session/<int:session_number>/",
+        SessionDetailView.as_view(),
+        name="session_detail",
+    ),
 ]

@@ -3,6 +3,7 @@ from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import DetailView
 from django.views.generic.edit import FormMixin
@@ -15,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 class SessionDetailView(LoginRequiredMixin, FormMixin, DetailView):
     """
-    View to display session details, a list of campaign members,
-    and a chat interface.
+    View to display session details using Campaign ID and Session Number lookup.
     """
 
     model = Session
@@ -24,11 +24,34 @@ class SessionDetailView(LoginRequiredMixin, FormMixin, DetailView):
     context_object_name = "session_obj"
     form_class = ChatMessageForm
 
+    def get_object(self, queryset: Any = None) -> Session | Any:
+        """
+        Retrieve the Session object based on campaign_pk and session_number
+        from the URL.
+        """
+        if queryset is None:
+            queryset = self.get_queryset()
+
+        campaign_pk = self.kwargs.get("campaign_pk")
+        session_number = self.kwargs.get("session_number")
+
+        return get_object_or_404(
+            queryset,
+            campaign__id=campaign_pk,
+            session_number=session_number,
+        )
+
     def get_success_url(self) -> str:
         """
-        Returns the URL to redirect to after a successful form submission.
+        Redirects back to the same page using the new URL parameters.
         """
-        return reverse("session:session_detail", kwargs={"pk": self.object.pk})
+        return reverse(
+            "campaigns:session_detail",
+            kwargs={
+                "campaign_id": self.object.campaign.id,
+                "session_number": self.object.number,
+            },
+        )
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """
