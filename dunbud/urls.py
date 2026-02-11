@@ -100,7 +100,7 @@ urlpatterns = [
         name="session_toggle_attendance",
     ),
     path(
-        "campaigns/<uuid:campaign_pk>/session/<int:session_number>/",
+        "campaigns/<uuid:campaign_pk>/sessions/<int:session_number>/",
         SessionDetailView.as_view(),
         name="session_detail",
     ),
