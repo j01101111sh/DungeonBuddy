@@ -7,6 +7,7 @@ from dunbud.models import (
     PlayerCharacter,
     TabletopSystem,
 )
+from dunbud.models.session import Session
 
 
 class CampaignInvitationInline(admin.TabularInline):
@@ -59,3 +60,8 @@ class CampaignInvitationAdmin(admin.ModelAdmin):
 class HelpfulLinkAdmin(admin.ModelAdmin):
     list_display = ["name", "url", "campaign"]
     search_fields = ["name", "url", "campaign__name"]
+
+
+@admin.register(Session)
+class SessionAdmin(admin.ModelAdmin):
+    list_display = ["campaign", "session_number", "proposed_date"]
