@@ -47,10 +47,6 @@ repos:
       # python checks
       - id: python-no-eval # check for the eval() built-in function
       - id: python-no-log-warn # check for the deprecated .warn() method of python loggers
-      # rst checks
-      - id: rst-backticks # detect use of single backticks when writing rst
-      - id: rst-directive-colons # detect rst directive formatting
-      - id: rst-inline-touching-normal # detect inline code touching normal text in rst
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.47.0
