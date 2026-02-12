@@ -53,6 +53,9 @@ INSTALLED_APPS = [
     "blog",
 ]
 
+if os.getenv("RESEND_API_KEY"):
+    INSTALLED_APPS.append("anymail")
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -247,6 +250,19 @@ ADMIN_URL = os.getenv("ADMIN_URL")
 # Crispy Forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Email Configuration
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend",
+)
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    "noreply@dunbud-staging.up.railway.app",
+)
+ANYMAIL = {
+    "RESEND_API_KEY": os.getenv("RESEND_API_KEY"),
+}
 
 # Caching
 CACHES = {

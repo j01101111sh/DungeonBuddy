@@ -1,6 +1,7 @@
 import secrets
 
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
@@ -101,6 +102,27 @@ class SignUpViewTests(TestCase):
         # Verify user was created
         User = get_user_model()
         self.assertTrue(User.objects.filter(username="new_signup_user").exists())
+
+    def test_signup_sends_email(self) -> None:
+        """Test that a confirmation email is sent upon successful signup."""
+        url = reverse("signup")
+        data = {
+            "username": "email_user",
+            "email": "email_user@example.com",
+            "password1": "Pass123!",
+            "password2": "Pass123!",
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertRedirects(response, reverse("login"))
+
+        # Verify email
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.subject, "Welcome to Dungeon Buddy!")
+        self.assertEqual(email.to, ["email_user@example.com"])
+        self.assertIn("email_user", email.body)
 
 
 class LoginViewTests(TestCase):

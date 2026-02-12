@@ -31,6 +31,7 @@ dev = [
     "types-markdown>=3.10.0.20251106",
 ]
 prod = [
+    "django-anymail[resend]>=14.0",
     "gunicorn>=23.0.0",
     "psycopg[binary]>=3.3.2",
 ]
