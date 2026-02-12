@@ -29,6 +29,7 @@ class Command(BaseCommand):
             call_command("populate_helpful_links")
             call_command("populate_blog")
             call_command("populate_sessions")
+            call_command("populate_journals")
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error generating data: {e}"))
             raise e
