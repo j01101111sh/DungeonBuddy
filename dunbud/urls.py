@@ -10,6 +10,10 @@ from .views import (
     HelpfulLinkCreateView,
     HelpfulLinkDeleteView,
     JoinedCampaignListView,
+    JournalCreateView,
+    JournalDeleteView,
+    JournalListView,
+    JournalUpdateView,
     ManagedCampaignListView,
     PlayerCharacterCreateView,
     PlayerCharacterDetailView,
@@ -109,5 +113,26 @@ urlpatterns = [
         "campaigns/<slug:campaign_slug>/sessions/<int:session_number>/edit/",
         SessionUpdateView.as_view(),
         name="session_edit",
+    ),
+    # Journal URLs
+    path(
+        "character/<uuid:character_id>/journal/",
+        JournalListView.as_view(),
+        name="journal_list",
+    ),
+    path(
+        "character/<uuid:character_id>/journal/new/",
+        JournalCreateView.as_view(),
+        name="journal_create",
+    ),
+    path(
+        "journal/<uuid:entry_id>/edit/",
+        JournalUpdateView.as_view(),
+        name="journal_update",
+    ),
+    path(
+        "journal/<uuid:entry_id>/delete/",
+        JournalDeleteView.as_view(),
+        name="journal_delete",
     ),
 ]
