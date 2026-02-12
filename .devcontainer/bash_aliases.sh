@@ -1,4 +1,5 @@
-# Devcontainer Aliases
+#! /bin/bash
+
 alias dj='uv run python manage.py'
 alias pcr='uv run pre-commit run'
 alias ll='ls -al'
