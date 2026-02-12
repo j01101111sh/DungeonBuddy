@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     "blog",
 ]
 
-if not DEBUG:
+if os.getenv("RESEND_API_KEY"):
     INSTALLED_APPS.append("anymail")
 
 MIDDLEWARE = [
