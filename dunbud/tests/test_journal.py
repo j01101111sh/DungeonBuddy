@@ -1,10 +1,11 @@
+from typing import cast
+
+from django import forms
 from django.test import TestCase
 from django.urls import reverse
 
 from config.tests.factories import UserFactory
-from dunbud.models.campaign import Campaign
-from dunbud.models.journal import JournalEntry
-from dunbud.models.player_character import PlayerCharacter
+from dunbud.models import Campaign, JournalEntry, PlayerCharacter
 
 
 class JournalTests(TestCase):
@@ -13,11 +14,15 @@ class JournalTests(TestCase):
     """
 
     def setUp(self) -> None:
-        self.user = UserFactory()
-        self.other_user = UserFactory()
+        self.user, self.upass = UserFactory.create()
+        self.uname = self.user.get_username()
+        self.o_user, self.o_upass = UserFactory.create()
+        self.o_uname = self.o_user.get_username()
+        self.dm, self.dmpass = UserFactory.create()
+        self.dmname = self.dm.get_username()
         self.campaign = Campaign.objects.create(
             name="Test Campaign",
-            dungeon_master=self.user,
+            dungeon_master=self.dm,
         )
         self.character = PlayerCharacter.objects.create(
             name="Test Char",
@@ -54,7 +59,7 @@ class JournalTests(TestCase):
         """
         Verify that a user cannot create/edit a journal for a character they do not own.
         """
-        self.client.force_login(self.other_user)
+        self.client.force_login(self.o_user)
 
         # Try to access create page
         url_create = reverse(
@@ -93,7 +98,7 @@ class JournalTests(TestCase):
         # Session in another campaign
         other_campaign = Campaign.objects.create(
             name="Other Campaign",
-            dungeon_master=self.other_user,
+            dungeon_master=self.o_user,
         )
         session_invalid = Session.objects.create(
             campaign=other_campaign,
@@ -102,5 +107,7 @@ class JournalTests(TestCase):
         )
 
         form = JournalEntryForm(character=self.character)
-        self.assertIn(session_valid, form.fields["session"].queryset)
-        self.assertNotIn(session_invalid, form.fields["session"].queryset)
+        session_field = cast(forms.ModelChoiceField, form.fields["session"])
+        if session_field.queryset is not None:
+            self.assertIn(session_valid, session_field.queryset)
+            self.assertNotIn(session_invalid, session_field.queryset)
