@@ -51,8 +51,10 @@ INSTALLED_APPS = [
     "dunbud",
     "users",
     "blog",
-    "anymail",
 ]
+
+if not DEBUG:
+    INSTALLED_APPS.append("anymail")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
