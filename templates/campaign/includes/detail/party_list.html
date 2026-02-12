@@ -34,6 +34,10 @@
                                    class="btn btn-sm btn-icon btn-light text-secondary"
                                    title="Character Sheet">📜</a>
                             {% endif %}
+                            <a href="{% url 'journal_list' player.campaign_character.pk %}"
+                               class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-book"></i> View Journal
+                            </a>
                         </div>
                     {% endif %}
                 </div>

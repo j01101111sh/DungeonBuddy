@@ -9,6 +9,10 @@ from .campaign_update import CampaignUpdateView
 from .character_detail import PlayerCharacterDetailView
 from .helpful_link_create import HelpfulLinkCreateView
 from .helpful_link_delete import HelpfulLinkDeleteView
+from .journal_create import JournalCreateView
+from .journal_delete import JournalDeleteView
+from .journal_list import JournalListView
+from .journal_update import JournalUpdateView
 from .player_character_create import PlayerCharacterCreateView
 from .player_character_list import PlayerCharacterListView
 from .player_character_update import PlayerCharacterUpdateView
@@ -34,6 +38,10 @@ __all__ = [
     "SplashView",
     "HelpfulLinkCreateView",
     "HelpfulLinkDeleteView",
+    "JournalCreateView",
+    "JournalDeleteView",
+    "JournalListView",
+    "JournalUpdateView",
     "SessionCreateView",
     "SessionDetailView",
     "SessionToggleAttendanceView",
