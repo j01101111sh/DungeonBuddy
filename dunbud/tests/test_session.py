@@ -316,4 +316,3 @@ class SessionToggleAttendanceViewTest(TestCase):
         self.session.refresh_from_db()
         self.assertIn(self.user, self.session.attendees.all())
         self.assertNotIn(self.user, self.session.busy_users.all())
-        self.assertNotIn(self.user, self.session.busy_users.all())
