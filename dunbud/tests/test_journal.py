@@ -1,8 +1,10 @@
+import datetime
 from typing import cast
 
 from django import forms
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from config.tests.factories import UserFactory
 from dunbud.models import Campaign, JournalEntry, PlayerCharacter
@@ -86,10 +88,12 @@ class JournalTests(TestCase):
         from dunbud.forms.journal import JournalEntryForm
         from dunbud.models.session import Session
 
+        proposed_date = timezone.make_aware(datetime.datetime(2026, 1, 1, 12, 0, 0))
+
         # Session in this campaign
         session_valid = Session.objects.create(
             campaign=self.campaign,
-            proposed_date="2026-01-01 12:00:00",
+            proposed_date=proposed_date,
             duration=2,
         )
         # Session in another campaign
@@ -99,7 +103,7 @@ class JournalTests(TestCase):
         )
         session_invalid = Session.objects.create(
             campaign=other_campaign,
-            proposed_date="2026-01-01 12:00:00",
+            proposed_date=proposed_date,
             duration=2,
         )
 
