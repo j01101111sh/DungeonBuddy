@@ -22,10 +22,11 @@
         "batisteo.vscode-django",
         "charliermarsh.ruff",
         "esbenp.prettier-vscode",
-        "google.geminicodeassist",
         "ms-python.isort",
         "ms-python.debugpy",
-        "ms-python.vscode-python-envs"
+        "ms-python.vscode-python-envs",
+        "tamasfe.even-better-toml",
+        "ms-python.mypy-type-checker"
       ]
     }
   },
