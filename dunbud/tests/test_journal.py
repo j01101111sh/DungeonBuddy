@@ -14,12 +14,9 @@ class JournalTests(TestCase):
     """
 
     def setUp(self) -> None:
-        self.user, self.upass = UserFactory.create()
-        self.uname = self.user.get_username()
-        self.o_user, self.o_upass = UserFactory.create()
-        self.o_uname = self.o_user.get_username()
-        self.dm, self.dmpass = UserFactory.create()
-        self.dmname = self.dm.get_username()
+        self.user, _ = UserFactory.create()
+        self.o_user, _ = UserFactory.create()
+        self.dm, _ = UserFactory.create()
         self.campaign = Campaign.objects.create(
             name="Test Campaign",
             dungeon_master=self.dm,
