@@ -1,14 +1,14 @@
 <div class="row mb-4 align-items-end">
     <div class="col-md-8">
         <nav aria-label="breadcrumb" class="mb-2">
-            <ol class="breadcrumb mb-0">
+            <ol class="breadcrumb mb-0 small">
                 <li class="breadcrumb-item">
                     <a href="{% if campaign.dungeon_master == request.user %}{% url 'campaign_managed' %}{% else %}{% url 'campaign_joined' %}{% endif %}"
-                       class="text-decoration-none text-muted small">
+                       class="text-decoration-none text-muted">
                         <span class="fw-semibold text-small-caps">My Campaigns</span>
                     </a>
                 </li>
-                <li class="breadcrumb-item active text-muted small" aria-current="page">{{ campaign.name }}</li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">{{ campaign.name }}</li>
             </ol>
         </nav>
         <h1 class="display-5 fw-bold mb-2 lh-1">{{ campaign.name }}</h1>
