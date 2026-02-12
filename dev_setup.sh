@@ -20,7 +20,7 @@ DEV_PASSWORD="dev"
 
 # 0. Delete existing dev files
 echo -e "${YELLOW}Deleting existing dev files...${NC}"
-rm db.sqlite3 .coverage .devpass coverage.xml db.sqlite-journal
+rm -f db.sqlite3 .coverage .devpass coverage.xml db.sqlite-journal
 rm -Rf logs/ htmlcov/ staticfiles/
 
 # 1. Sync Dependencies (uv)
