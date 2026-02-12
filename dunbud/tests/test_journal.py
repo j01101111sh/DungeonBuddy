@@ -1,10 +1,17 @@
 import datetime
+from typing import cast
 
+from django import forms
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from config.tests.factories import CampaignFactory, PlayerCharacterFactory, UserFactory
+from config.tests.factories import (
+    CampaignFactory,
+    PlayerCharacterFactory,
+    TabletopSystemFactory,
+    UserFactory,
+)
 from dunbud.forms.journal import JournalEntryForm
 from dunbud.models.journal import JournalEntry
 from dunbud.models.session import Session
@@ -66,7 +73,7 @@ class JournalFormTests(TestCase):
         self.dm, _ = UserFactory.create()
         self.system = CampaignFactory.create(
             dungeon_master=self.dm,
-            system=None,
+            system=TabletopSystemFactory.create(),
         ).system  # Helper to get system if needed, or just ignore
 
         self.proposed_date = timezone.make_aware(
@@ -74,7 +81,10 @@ class JournalFormTests(TestCase):
         )
 
         # Create a campaign and character
-        self.campaign = CampaignFactory.create(dungeon_master=self.dm, system=None)
+        self.campaign = CampaignFactory.create(
+            dungeon_master=self.dm,
+            system=TabletopSystemFactory.create(),
+        )
         self.character = PlayerCharacterFactory.create(
             user=self.user,
             campaign=self.campaign,
@@ -90,7 +100,7 @@ class JournalFormTests(TestCase):
         # Session in a different campaign
         self.other_campaign = CampaignFactory.create(
             dungeon_master=self.dm,
-            system=None,
+            system=TabletopSystemFactory.create(),
         )
         self.session_invalid = Session.objects.create(
             campaign=self.other_campaign,
@@ -103,10 +113,10 @@ class JournalFormTests(TestCase):
         Verify the form only allows selecting sessions from the character's campaign.
         """
         form = JournalEntryForm(character=self.character)
-        queryset = form.fields["session"].queryset
+        queryset = cast(forms.ModelChoiceField, form.fields["session"]).queryset
 
-        self.assertIn(self.session_valid, queryset)
-        self.assertNotIn(self.session_invalid, queryset)
+        self.assertIn(self.session_valid, queryset)  # type: ignore[arg-type]
+        self.assertNotIn(self.session_invalid, queryset)  # type: ignore[arg-type]
 
     def test_form_valid_data(self) -> None:
         """
@@ -161,19 +171,19 @@ class JournalViewTests(TestCase):
 
         # URLs
         self.list_url = reverse(
-            "dunbud:journal_list",
+            "journal_list",
             kwargs={"character_id": self.character.pk},
         )
         self.create_url = reverse(
-            "dunbud:journal_create",
+            "journal_create",
             kwargs={"character_id": self.character.pk},
         )
         self.update_url = reverse(
-            "dunbud:journal_update",
+            "journal_update",
             kwargs={"entry_id": self.entry.pk},
         )
         self.delete_url = reverse(
-            "dunbud:journal_delete",
+            "journal_delete",
             kwargs={"entry_id": self.entry.pk},
         )
 
@@ -285,4 +295,6 @@ class JournalViewTests(TestCase):
         self.client.force_login(self.owner)
         response = self.client.post(self.delete_url)
         self.assertRedirects(response, self.list_url)
+        self.assertFalse(JournalEntry.objects.filter(pk=self.entry.pk).exists())
+        self.assertFalse(JournalEntry.objects.filter(pk=self.entry.pk).exists())
         self.assertFalse(JournalEntry.objects.filter(pk=self.entry.pk).exists())

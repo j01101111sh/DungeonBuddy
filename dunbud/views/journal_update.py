@@ -23,6 +23,11 @@ class JournalUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         kwargs["character"] = self.object.character
         return kwargs
 
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["character"] = self.object.character
+        return context
+
     def test_func(self) -> bool:
         entry = self.get_object()
         return bool(entry.character.user == self.request.user)
