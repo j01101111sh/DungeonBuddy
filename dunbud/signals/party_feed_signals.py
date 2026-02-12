@@ -27,7 +27,7 @@ def track_campaign_changes(
         return
 
     try:
-        old_instance = Campaign.objects.get(pk=instance.pk)
+        old_instance = Campaign.objects.get(slug=instance.slug)
     except Campaign.DoesNotExist:
         # Should not happen in pre_save for an existing object, but safety first
         return

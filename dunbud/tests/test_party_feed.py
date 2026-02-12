@@ -106,7 +106,10 @@ class PartyFeedTests(TestCase):
         Test that the Dungeon Master can post an announcement.
         """
         self.client.force_login(self.dm)
-        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+        url = reverse(
+            "campaign_announcement_create",
+            kwargs={"slug": self.campaign.slug},
+        )
         message = "Session next Tuesday!"
 
         response = self.client.post(url, {"message": message})
@@ -121,7 +124,10 @@ class PartyFeedTests(TestCase):
         Test that the Dungeon Master cannot post an empty announcement.
         """
         self.client.force_login(self.dm)
-        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+        url = reverse(
+            "campaign_announcement_create",
+            kwargs={"slug": self.campaign.slug},
+        )
 
         # Snapshot count before attempt
         initial_count = PartyFeedItem.objects.count()
@@ -140,7 +146,10 @@ class PartyFeedTests(TestCase):
         Test that a player in the campaign cannot post an announcement.
         """
         self.client.force_login(self.player)
-        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+        url = reverse(
+            "campaign_announcement_create",
+            kwargs={"slug": self.campaign.slug},
+        )
         message = "I try to post."
 
         response = self.client.post(url, {"message": message})
@@ -156,7 +165,10 @@ class PartyFeedTests(TestCase):
         Test that a user not in the campaign cannot post an announcement.
         """
         self.client.force_login(self.outsider)
-        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+        url = reverse(
+            "campaign_announcement_create",
+            kwargs={"slug": self.campaign.slug},
+        )
         message = "Hacker post."
 
         response = self.client.post(url, {"message": message})
@@ -172,7 +184,10 @@ class PartyFeedTests(TestCase):
         Test that the Dungeon Master can post an announcement containing Markdown.
         """
         self.client.force_login(self.dm)
-        url = reverse("campaign_announcement_create", kwargs={"pk": self.campaign.pk})
+        url = reverse(
+            "campaign_announcement_create",
+            kwargs={"slug": self.campaign.slug},
+        )
 
         markdown_message = "**Bold Announcement**\nWith a [link](https://example.com)"
 
@@ -196,7 +211,7 @@ class PartyFeedTests(TestCase):
             category=PartyFeedItem.Category.ANNOUNCEMENT,
         )
 
-        url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
+        url = reverse("campaign_detail", kwargs={"slug": self.campaign.slug})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)

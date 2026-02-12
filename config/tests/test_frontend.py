@@ -66,7 +66,7 @@ class CampaignFrontendTests(TestCase):
         """
         self.client.login(username=self.uname, password=self.upass)
         response = self.client.get(
-            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
+            reverse("campaign_detail", kwargs={"slug": self.campaign.slug}),
         )
         self.assertEqual(response.status_code, 200)
 

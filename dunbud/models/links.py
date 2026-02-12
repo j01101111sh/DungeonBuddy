@@ -28,7 +28,7 @@ class HelpfulLink(models.Model):
             with transaction.atomic():
                 campaign = (
                     Campaign.objects.select_for_update()
-                    .filter(pk=self.campaign.pk)
+                    .filter(slug=self.campaign.slug)
                     .get()
                 )
                 if campaign.helpful_links.count() >= MAX_LINKS_PER_CAMPAIGN:

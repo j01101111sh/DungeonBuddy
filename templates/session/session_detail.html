@@ -17,7 +17,7 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="{% url 'campaign_detail' pk=session_obj.campaign.id %}"
+                    <a href="{% url 'campaign_detail' slug=session_obj.campaign.slug %}"
                        class="text-decoration-none text-muted">
                         <span class="fw-semibold text-small-caps">{{ session_obj.campaign.name }}</span>
                     </a>
@@ -42,7 +42,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 class="mb-0">Notes</h5>
                             {% if request.user == session_obj.campaign.dungeon_master %}
-                                <a href="{% url 'session_edit' campaign_pk=session_obj.campaign.id session_number=session_obj.session_number %}"
+                                <a href="{% url 'session_edit' campaign_slug=session_obj.campaign.slug session_number=session_obj.session_number %}"
                                    class="btn btn-sm btn-outline-primary">Edit Session</a>
                             {% endif %}
                         </div>

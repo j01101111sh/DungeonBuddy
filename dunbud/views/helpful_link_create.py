@@ -22,7 +22,7 @@ class HelpfulLinkCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
     form_class = HelpfulLinkForm
 
     def test_func(self) -> bool:
-        self.campaign = get_object_or_404(Campaign, pk=self.kwargs["pk"])
+        self.campaign = get_object_or_404(Campaign, slug=self.kwargs["slug"])
         return bool(self.campaign.dungeon_master == self.request.user)
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:

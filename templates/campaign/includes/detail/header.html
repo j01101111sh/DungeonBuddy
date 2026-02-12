@@ -26,7 +26,7 @@
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
         {% if campaign.dungeon_master == request.user %}
-            <a href="{% url 'campaign_edit' campaign.pk %}"
+            <a href="{% url 'campaign_edit' campaign.slug %}"
                class="btn btn-outline-secondary rounded-pill px-4">Edit Campaign</a>
         {% endif %}
     </div>

@@ -27,7 +27,7 @@ class SessionUpdateViewTest(TestCase):
         self.url = reverse(
             "session_edit",
             kwargs={
-                "campaign_pk": self.campaign.id,
+                "campaign_slug": self.campaign.slug,
                 "session_number": self.session.session_number,
             },
         )
@@ -75,7 +75,7 @@ class SessionUpdateViewTest(TestCase):
             reverse(
                 "session_detail",
                 kwargs={
-                    "campaign_pk": self.campaign.id,
+                    "campaign_slug": self.campaign.slug,
                     "session_number": self.session.session_number,
                 },
             ),

@@ -35,4 +35,4 @@ class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return bool(campaign.dungeon_master == self.request.user)
 
     def get_success_url(self) -> str:
-        return reverse("campaign_detail", kwargs={"pk": self.object.pk})
+        return reverse("campaign_detail", kwargs={"slug": self.object.slug})

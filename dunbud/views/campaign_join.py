@@ -30,19 +30,19 @@ class CampaignJoinView(LoginRequiredMixin, View):
         # 1. Prevent DM from joining as a player
         if request.user == campaign.dungeon_master:
             messages.warning(request, "You are the Dungeon Master of this campaign.")
-            return redirect("campaign_detail", pk=campaign.pk)
+            return redirect("campaign_detail", slug=campaign.slug)
 
         # 2. Check if already a player
         if request.user.pk and campaign.players.filter(pk=request.user.pk).exists():
             messages.info(request, "You are already a player in this campaign.")
-            return redirect("campaign_detail", pk=campaign.pk)
+            return redirect("campaign_detail", slug=campaign.slug)
 
         # 3. Check for player limit
         if campaign.players.count() >= campaign.max_players:
             logger.warning(
                 "User %s attempted to join full campaign %s (Limit: %s)",
                 request.user.id,
-                campaign.id,
+                campaign.slug,
                 campaign.max_players,
             )
             messages.error(request, "This campaign has reached its player limit.")
@@ -55,7 +55,7 @@ class CampaignJoinView(LoginRequiredMixin, View):
             logger.info(
                 "User %s joined campaign %s via invite %s",
                 request.user.id,
-                campaign.id,
+                campaign.slug,
                 invite.id,
             )
             messages.success(request, f"You have successfully joined {campaign.name}!")
@@ -63,10 +63,10 @@ class CampaignJoinView(LoginRequiredMixin, View):
             logger.error(
                 "Error adding user %s to campaign %s: %s",
                 request.user.id,
-                campaign.id,
+                campaign.slug,
                 e,
             )
             messages.error(request, "An error occurred while joining the campaign.")
 
-        return redirect("campaign_detail", pk=campaign.pk)
-        return redirect("campaign_detail", pk=campaign.pk)
+        return redirect("campaign_detail", slug=campaign.slug)
+        return redirect("campaign_detail", slug=campaign.slug)

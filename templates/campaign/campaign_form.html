@@ -37,7 +37,7 @@
                                     {% endif %}
                                 </button>
                                 {% if object %}
-                                    <a href="{% url 'campaign_detail' pk=object.pk %}"
+                                    <a href="{% url 'campaign_detail' slug=object.slug %}"
                                        class="btn btn-outline-secondary">Cancel</a>
                                 {% else %}
                                     <a href="{% url 'splash' %}" class="btn btn-outline-secondary">Cancel</a>

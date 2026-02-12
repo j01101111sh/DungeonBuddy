@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 if TYPE_CHECKING:
@@ -25,10 +26,18 @@ class Campaign(models.Model):
         editable=False,
         help_text=_("The unique identifier for the campaign."),
     )
+    # Added SlugField with unique=True for DB-level guarantee
+    slug = models.SlugField(
+        unique=True,
+        max_length=255,
+        blank=True,
+        help_text=_("The URL-friendly identifier for the campaign."),
+    )
     name = models.CharField(
         max_length=255,
         help_text=_("The name of the campaign."),
     )
+    # ... [Rest of the fields: description, system, max_players, etc. remain unchanged] ...
     description = models.TextField(
         blank=True,
         help_text=_("A description of the campaign and its adventures."),
@@ -75,12 +84,8 @@ class Campaign(models.Model):
     )
 
     if TYPE_CHECKING:
-        # Reverse relation for PlayerCharacter.campaign
         player_characters: models.Manager[PlayerCharacter]
-        # Reverse relation for PartyFeedItem.campaign
-        feed_items: models.Manager[
-            Any
-        ]  # Typed as Any to avoid circular dependency with Feed
+        feed_items: models.Manager[Any]
 
     class Meta:
         verbose_name = _("Campaign")
@@ -88,17 +93,50 @@ class Campaign(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        """
-        Returns the string representation of the campaign (its name).
-        """
         return self.name
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         """
         Saves the campaign instance.
-        Logs the creation of a new campaign.
+        Generates a unique slug if one does not exist.
         """
         is_new = self._state.adding
+
+        # Ensure we have an ID for the slug generation
+        if not self.id:
+            self.id = uuid.uuid4()
+
+        if not self.slug:
+            self._generate_unique_slug()
+
         super().save(*args, **kwargs)
+
         if is_new:
-            logger.info("New campaign created: %s (ID: %s)", self.name, self.pk)
+            logger.info("New campaign created: %s (Slug: %s)", self.name, self.slug)
+
+    def _generate_unique_slug(self) -> None:
+        """
+        Generates a unique slug by appending a slice of the UUID to the name.
+        If a collision occurs (astronomically rare), it extends the slice.
+        """
+        base_slug = slugify(self.name, allow_unicode=True) or "campaign"
+        uuid_str = str(self.id).replace("-", "")
+
+        # Start with 8 characters (approx 4 billion combinations)
+        # Loop to handle the tiny probability of collision
+        for length in range(8, len(uuid_str) + 1, 4):
+            candidate_slug = f"{base_slug}-{uuid_str[:length]}"
+
+            # Check if this slug is taken by ANOTHER campaign
+            # We exclude self.pk to allow saving updates to the same object
+            if (
+                not Campaign.objects.filter(slug=candidate_slug)
+                .exclude(pk=self.pk)
+                .exists()
+            ):
+                self.slug = candidate_slug
+                return
+
+        # Fallback: If for some reason the full UUID is taken (impossible),
+        # append a random string or timestamp. (Should never reach here).
+        self.slug = f"{base_slug}-{uuid.uuid4().hex[:12]}"

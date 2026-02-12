@@ -38,4 +38,4 @@ class SessionToggleAttendanceView(LoginRequiredMixin, View):
                 # If in neither list, default to attending
                 session.attendees.add(user)
 
-        return redirect("campaign_detail", pk=session.campaign.pk)
+        return redirect("campaign_detail", slug=session.campaign.slug)

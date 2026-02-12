@@ -328,7 +328,7 @@ class CharacterCreateFormTests(TestCase):
             "character_class": "Rogue",
             "level": 5,
             "bio": "Dagger, dagger, dagger.",
-            "campaign": self.campaign.pk,
+            "campaign": self.campaign.id,
             "character_sheet_link": "https://pathbuilder2e.com/",
         }
 

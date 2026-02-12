@@ -35,7 +35,7 @@ class CampaignInvitationTests(TestCase):
         Verify that the DM can generate an invitation link.
         """
         self.client.login(username=self.dm.username, password=self.dm_pass)
-        url = reverse("campaign_invite_create", kwargs={"pk": self.campaign.pk})
+        url = reverse("campaign_invite_create", kwargs={"slug": self.campaign.slug})
 
         response = self.client.post(url, follow=True)
 
@@ -53,7 +53,7 @@ class CampaignInvitationTests(TestCase):
         self.campaign.players.add(self.player)
 
         self.client.login(username=self.player.username, password=self.player_pass)
-        url = reverse("campaign_invite_create", kwargs={"pk": self.campaign.pk})
+        url = reverse("campaign_invite_create", kwargs={"slug": self.campaign.slug})
 
         response = self.client.post(url, follow=True)
 

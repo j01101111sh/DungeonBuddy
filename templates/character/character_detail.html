@@ -40,7 +40,7 @@
                         <p>
                             <strong>Campaign:</strong>
                             {% if character.campaign %}
-                                <a href="{% url 'campaign_detail' character.campaign.pk %}">{{ character.campaign.name }}</a>
+                                <a href="{% url 'campaign_detail' character.campaign.slug %}">{{ character.campaign.name }}</a>
                             {% else %}
                                 <span class="text-muted">None</span>
                             {% endif %}

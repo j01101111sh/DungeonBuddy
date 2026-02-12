@@ -111,7 +111,10 @@ class SessionCreateViewTest(TestCase):
             system=TabletopSystemFactory.create(),
         )
         self.client.force_login(self.user)
-        self.url = reverse("session_propose", kwargs={"campaign_pk": self.campaign.pk})
+        self.url = reverse(
+            "session_propose",
+            kwargs={"campaign_slug": self.campaign.slug},
+        )
 
     def test_dm_is_added_to_attendees(self) -> None:
         """Test that the DM is automatically added to the attendees list."""
@@ -173,7 +176,7 @@ class SessionCreateViewTest(TestCase):
         self.assertContains(response, 'type="datetime-local"')
         self.assertContains(response, 'name="duration"')
 
-        cancel_url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
+        cancel_url = reverse("campaign_detail", kwargs={"slug": self.campaign.slug})
         self.assertContains(response, f'href="{cancel_url}"')
 
     def test_session_form_requires_login(self) -> None:
@@ -196,7 +199,7 @@ class TestProposedSessionsDisplay(TestCase):
             players=[self.user],
         )
         self.client.force_login(self.user)
-        self.url = reverse("campaign_detail", kwargs={"pk": self.campaign.id})
+        self.url = reverse("campaign_detail", kwargs={"slug": self.campaign.slug})
 
     def test_proposed_sessions_are_shown(self) -> None:
         """

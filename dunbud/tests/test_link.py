@@ -2,10 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from config.tests.factories import (
-    HelpfulLinkFactory,
-    UserFactory,
-)
+from config.tests.factories import HelpfulLinkFactory, UserFactory
 from dunbud.models import Campaign, HelpfulLink
 from dunbud.models.links import MAX_LINKS_PER_CAMPAIGN
 
@@ -22,8 +19,11 @@ class HelpfulLinkTests(TestCase):
             dungeon_master=self.dm,
         )
         self.campaign.players.add(self.player)
-        self.add_url = reverse("helpful_link_add", kwargs={"pk": self.campaign.pk})
-        self.campaign_url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
+        self.add_url = reverse("helpful_link_add", kwargs={"slug": self.campaign.slug})
+        self.campaign_url = reverse(
+            "campaign_detail",
+            kwargs={"slug": self.campaign.slug},
+        )
 
     def test_dm_can_add_link(self) -> None:
         """
