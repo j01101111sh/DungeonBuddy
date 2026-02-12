@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from django import forms
 
@@ -24,18 +24,20 @@ class JournalEntryForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.character = character
 
+        session_field = cast(forms.ModelChoiceField, self.fields["session"])
+
         # Filter sessions to the character's campaign
         if self.character.campaign:
-            self.fields["session"].queryset = Session.objects.filter(
+            session_field.queryset = Session.objects.filter(
                 campaign=self.character.campaign,
             ).order_by("-session_number")
         else:
             # If character has no campaign, they cannot link to a session
-            self.fields["session"].queryset = Session.objects.none()
-            self.fields["session"].widget = forms.HiddenInput()
+            session_field.queryset = Session.objects.none()
+            session_field.widget = forms.HiddenInput()
 
     def save(self, commit: bool = True) -> JournalEntry:
-        entry = super().save(commit=False)
+        entry: JournalEntry = super().save(commit=False)
         entry.character = self.character
         if commit:
             entry.save()
