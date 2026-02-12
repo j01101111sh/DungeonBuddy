@@ -3,6 +3,7 @@ from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils.functional import cached_property
 from django.views.generic import CreateView
 
 from dunbud.forms.journal import JournalEntryForm
@@ -19,12 +20,12 @@ class JournalCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     form_class = JournalEntryForm
     template_name = "journal/journal_form.html"
 
+    @cached_property
+    def character(self) -> PlayerCharacter:
+        return get_object_or_404(PlayerCharacter, pk=self.kwargs["character_id"])
+
     def get_form_kwargs(self) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
-        self.character = get_object_or_404(
-            PlayerCharacter,
-            pk=self.kwargs["character_id"],
-        )
         kwargs["character"] = self.character
         return kwargs
 
@@ -35,8 +36,7 @@ class JournalCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def test_func(self) -> bool:
         # Only the character's owner can write a journal
-        character = get_object_or_404(PlayerCharacter, pk=self.kwargs["character_id"])
-        return character.user == self.request.user
+        return self.character.user == self.request.user
 
     def get_success_url(self) -> str:
         return reverse(
