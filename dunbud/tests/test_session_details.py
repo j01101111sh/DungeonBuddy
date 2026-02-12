@@ -80,9 +80,9 @@ class SessionChatTests(TestCase):
         self.client.login(username=self.uname, password=self.upass)
         response = self.client.get(self.url)
 
-        self.assertIn("campaign_members", response.context)
-        members = response.context["campaign_members"]
-        self.assertEqual(members.count(), 2)
+        self.assertIn("players_with_data", response.context)
+        members = response.context["players_with_data"]
+        self.assertEqual(len(members), 2)
         self.assertIn(self.user, members)
 
     def test_post_chat_message(self) -> None:

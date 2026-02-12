@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -74,8 +75,21 @@ class SessionDetailView(LoginRequiredMixin, UserPassesTestMixin, FormMixin, Deta
         # Explicitly typing the session object for stricter checking if needed
         session: Session = self.object
 
-        # Add campaign members
-        context["campaign_members"] = session.campaign.players.all()
+        # Add campaign to context for shared templates
+        context["campaign"] = session.campaign
+
+        # Map user_id to their character in this campaign
+        character_map = {
+            char.user_id: char for char in session.campaign.player_characters.all()
+        }
+
+        # Annotate players with their character for this campaign
+        players_with_data = []
+        for player in session.campaign.players.all():
+            player.campaign_character = character_map.get(player.pk)  # type: ignore[attr-defined]
+            players_with_data.append(player)
+
+        context["players_with_data"] = players_with_data
 
         # Add chat history
         context["chat_messages"] = session.chat_messages.select_related("user").all()
@@ -116,3 +130,17 @@ class SessionDetailView(LoginRequiredMixin, UserPassesTestMixin, FormMixin, Deta
             self.object.id,
         )
         return super().form_valid(form)
+
+    def get_queryset(self) -> QuerySet[Session]:
+        """
+        Optimize database queries by pre-fetching related objects.
+        """
+        return (
+            super()
+            .get_queryset()
+            .select_related("campaign")
+            .prefetch_related(
+                "campaign__players",
+                "campaign__player_characters",
+            )
+        )
