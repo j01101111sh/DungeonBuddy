@@ -113,9 +113,6 @@ class SignUpViewTests(TestCase):
             "password2": "Pass123!",
         }
 
-        # Clear existing emails
-        mail.outbox = []
-
         response = self.client.post(url, data)
 
         self.assertRedirects(response, reverse("login"))
