@@ -8,6 +8,18 @@
 {% endblock extra_css %}
 {% block content %}
     <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item text-decoration-none text-muted small">
+                    <a href="{% if session_obj.campaign.dungeon_master == request.user %}{% url 'campaign_managed' %}{% else %}{% url 'campaign_joined' %}{% endif %}">My Campaigns</a>
+                </li>
+                <li class="breadcrumb-item text-decoration-none text-muted small">
+                    <a href="{% url 'campaign_detail' pk=session_obj.campaign.id %}">{{ session_obj.campaign.name }}</a>
+                </li>
+                <li class="breadcrumb-item text-decoration-none text-muted small active"
+                    aria-current="page">Session #{{ session_obj.session_number }}</li>
+            </ol>
+        </nav>
         <div class="row">
             <div class="col-md-4">
                 <div class="card mb-3">
