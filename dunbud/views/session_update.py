@@ -25,18 +25,18 @@ class SessionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_object(self, queryset: Any = None) -> Session | Any:
         """
-        Retrieve the Session object based on campaign_pk and session_number
+        Retrieve the Session object based on campaign_slug and session_number
         from the URL.
         """
         if queryset is None:
             queryset = self.get_queryset()
 
-        campaign_pk = self.kwargs.get("campaign_pk")
+        campaign_slug = self.kwargs.get("campaign_slug")
         session_number = self.kwargs.get("session_number")
 
         return get_object_or_404(
             queryset,
-            campaign__id=campaign_pk,
+            campaign__slug=campaign_slug,
             session_number=session_number,
         )
 
@@ -55,7 +55,7 @@ class SessionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return reverse(
             "session_detail",
             kwargs={
-                "campaign_pk": self.object.campaign.id,
+                "campaign_slug": self.object.campaign.slug,
                 "session_number": self.object.session_number,
             },
         )

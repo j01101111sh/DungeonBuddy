@@ -19,14 +19,14 @@ class SessionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def dispatch(self, request: Any, *args: Any, **kwargs: Any) -> HttpResponseBase:
         """Fetch the campaign and store it as an instance attribute."""
-        self.campaign = get_object_or_404(Campaign, pk=self.kwargs["campaign_pk"])
+        self.campaign = get_object_or_404(Campaign, slug=self.kwargs["campaign_slug"])
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         """Redirect to the campaign detail page on success."""
         return reverse(
             "campaign_detail",
-            kwargs={"pk": self.kwargs["campaign_pk"]},
+            kwargs={"slug": self.kwargs["campaign_slug"]},
         )
 
     def form_valid(self, form: SessionCreateForm) -> HttpResponse:

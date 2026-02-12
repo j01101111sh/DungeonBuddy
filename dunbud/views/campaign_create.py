@@ -35,7 +35,7 @@ class CampaignCreateView(LoginRequiredMixin, CreateView):
         Redirects to the detail page of the created campaign.
         """
         if self.object:
-            return reverse("campaign_detail", kwargs={"pk": self.object.pk})
+            return reverse("campaign_detail", kwargs={"slug": self.object.slug})
         return reverse("splash")
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
@@ -54,7 +54,7 @@ class CampaignCreateView(LoginRequiredMixin, CreateView):
             logger.info(
                 "Campaign created via view: %s (ID: %s) by user %s",
                 self.object.name,
-                self.object.pk,
+                self.object.slug,
                 self.request.user,
             )
         return response

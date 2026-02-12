@@ -20,7 +20,7 @@
                             <small class="text-muted">Markdown formatting is supported in the notes.</small>
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" class="btn btn-primary">Save Changes</button>
-                                <a href="{% url 'session_detail' campaign_pk=session_obj.campaign.id session_number=session_obj.session_number %}"
+                                <a href="{% url 'session_detail' campaign_slug=session_obj.campaign.slug session_number=session_obj.session_number %}"
                                    class="btn btn-outline-secondary">Cancel</a>
                             </div>
                         </form>

@@ -22,10 +22,10 @@ class CampaignAnnouncementCreateView(LoginRequiredMixin, UserPassesTestMixin, Vi
         """
         Only the Dungeon Master can post announcements.
         """
-        self.campaign = get_object_or_404(Campaign, pk=self.kwargs["pk"])
+        self.campaign = get_object_or_404(Campaign, slug=self.kwargs["slug"])
         return bool(self.campaign.dungeon_master == self.request.user)
 
-    def post(self, request: HttpRequest, pk: str) -> HttpResponse:
+    def post(self, request: HttpRequest, slug: str) -> HttpResponse:
         """
         Handle POST request to create a new announcement.
         """
@@ -39,11 +39,11 @@ class CampaignAnnouncementCreateView(LoginRequiredMixin, UserPassesTestMixin, Vi
 
             logger.info(
                 "Announcement posted to campaign %s by user %s",
-                self.campaign.id,
+                self.campaign.slug,
                 request.user,
             )
             messages.success(request, "Announcement posted successfully.")
         else:
             messages.error(request, "Failed to post announcement.")
 
-        return redirect("campaign_detail", pk=pk)
+        return redirect("campaign_detail", slug=slug)

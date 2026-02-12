@@ -18,24 +18,24 @@ class CampaignInvitationCreateView(LoginRequiredMixin, View):
     Only accessible by the Dungeon Master of the campaign.
     """
 
-    def post(self, request: HttpRequest, pk: str) -> HttpResponse:
+    def post(self, request: HttpRequest, slug: str) -> HttpResponse:
         """
         Handle POST request to create a new invitation.
         """
-        campaign = get_object_or_404(Campaign, pk=pk)
+        campaign = get_object_or_404(Campaign, slug=slug)
 
         # Permission check: Only DM can create invites
         if campaign.dungeon_master != request.user:
             logger.warning(
                 "Unauthorized invite creation attempt by user %s for campaign %s",
                 request.user.id,
-                campaign.id,
+                campaign.slug,
             )
             messages.error(
                 request,
                 "Only the Dungeon Master can generate invitation links.",
             )
-            return redirect("campaign_detail", pk=pk)
+            return redirect("campaign_detail", slug=slug)
 
         # Invalidate old invites (optional logic, keeping it clean for now by just creating a new one)
         # or get existing active one to ensure idempotency if desired.
@@ -54,7 +54,7 @@ class CampaignInvitationCreateView(LoginRequiredMixin, View):
                 logger.info(
                     "Created new invitation %s for campaign %s by %s",
                     invite.id,
-                    campaign.id,
+                    campaign.slug,
                     request.user,
                 )
                 messages.success(request, "Invitation link generated.")
@@ -62,9 +62,8 @@ class CampaignInvitationCreateView(LoginRequiredMixin, View):
                 logger.info(
                     "Retrieved existing invitation %s for campaign %s",
                     invite.id,
-                    campaign.id,
+                    campaign.slug,
                 )
                 messages.info(request, "Existing active invitation retrieved.")
 
-        return redirect("campaign_detail", pk=pk)
-        return redirect("campaign_detail", pk=pk)
+        return redirect("campaign_detail", slug=slug)

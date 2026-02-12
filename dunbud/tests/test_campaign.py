@@ -35,6 +35,8 @@ class CampaignModelTests(TestCase):
             video_link="https://zoom.us/j/123456",
         )
         self.assertEqual(campaign.name, "The Heroes")
+        self.assertTrue(campaign.slug.startswith("the-heroes-"))
+        self.assertGreaterEqual(len(campaign.slug), len("the-heroes-") + 8)
         self.assertEqual(campaign.dungeon_master, self.dm)
         self.assertEqual(campaign.description, "A legendary group.")
         self.assertEqual(campaign.system, self.system)
@@ -42,6 +44,18 @@ class CampaignModelTests(TestCase):
         self.assertEqual(campaign.video_link, "https://zoom.us/j/123456")
         # Verify the ID is a UUID
         self.assertIsInstance(campaign.pk, uuid.UUID)
+
+    def test_slug_collision_handling(self) -> None:
+        """Test that a collision results in a different slug."""
+        c1 = Campaign.objects.create(name="Collision Test", dungeon_master=self.dm)
+
+        # Force a potential collision by creating a new campaign with same name
+        # (The UUID part will naturally be different, so this just tests the name slugify part)
+        c2 = Campaign.objects.create(name="Collision Test", dungeon_master=self.dm)
+
+        self.assertNotEqual(c1.slug, c2.slug)
+        self.assertTrue(c1.slug.startswith("collision-test-"))
+        self.assertTrue(c2.slug.startswith("collision-test-"))
 
     def test_max_players_default(self) -> None:
         """
@@ -145,7 +159,7 @@ class CampaignCreateViewTests(TestCase):
         # Check redirection to campaign detail page
         self.assertRedirects(
             response,
-            reverse("campaign_detail", kwargs={"pk": campaign.pk}),
+            reverse("campaign_detail", kwargs={"slug": campaign.slug}),
         )
 
         # Check database
@@ -196,7 +210,7 @@ class CampaignCreateViewTests(TestCase):
         campaign.refresh_from_db()
 
         # Campaign should still exist
-        self.assertTrue(Campaign.objects.filter(pk=campaign.pk).exists())
+        self.assertTrue(Campaign.objects.filter(slug=campaign.slug).exists())
         # Player should be removed
         self.assertEqual(campaign.players.count(), 0)
 
@@ -211,7 +225,7 @@ class CampaignCreateViewTests(TestCase):
         )
 
         # Confirm setup
-        self.assertTrue(Campaign.objects.filter(pk=campaign.pk).exists())
+        self.assertTrue(Campaign.objects.filter(slug=campaign.slug).exists())
 
         # Deleting the DM user should raise an error
         with self.assertRaises(ProtectedError):
@@ -328,7 +342,7 @@ class CampaignDetailViewTests(TestCase):
             video_link="https://zoom.us/j/123456",
         )
         self.campaign.players.add(self.player)
-        self.url = reverse("campaign_detail", kwargs={"pk": self.campaign.pk})
+        self.url = reverse("campaign_detail", kwargs={"slug": self.campaign.slug})
 
     def test_access_anonymous(self) -> None:
         """
@@ -459,7 +473,7 @@ class CampaignDetailViewTests(TestCase):
             self.client.get(self.url)
             self.assertTrue(
                 any(
-                    f"Unauthorized access attempt to campaign {self.campaign.pk} by user outsider_user"
+                    f"Unauthorized access attempt to campaign {self.campaign.slug} by user outsider_user"
                     in m
                     for m in cm.output
                 ),
@@ -518,7 +532,7 @@ class CampaignUpdateViewTests(TestCase):
             max_players=5,
         )
         self.campaign.players.add(self.player)
-        self.url = reverse("campaign_edit", kwargs={"pk": self.campaign.pk})
+        self.url = reverse("campaign_edit", kwargs={"slug": self.campaign.slug})
 
     def test_access_anonymous(self) -> None:
         """
@@ -580,7 +594,7 @@ class CampaignUpdateViewTests(TestCase):
         # Should redirect to the detail view
         self.assertRedirects(
             response,
-            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
+            reverse("campaign_detail", kwargs={"slug": self.campaign.slug}),
         )
 
         # Verify database update
@@ -614,7 +628,7 @@ class CampaignJoinViewTests(TestCase):
         # Should redirect to detail page
         self.assertRedirects(
             response,
-            reverse("campaign_detail", kwargs={"pk": self.campaign.pk}),
+            reverse("campaign_detail", kwargs={"slug": self.campaign.slug}),
         )
         self.assertIn(self.player, self.campaign.players.all())
 
@@ -656,7 +670,7 @@ class CampaignJoinViewTests(TestCase):
             self.client.get(self.url)
             self.assertTrue(
                 any(
-                    f"User {self.player.id} attempted to join full campaign {self.campaign.id}"
+                    f"User {self.player.id} attempted to join full campaign {self.campaign.slug}"
                     in m
                     for m in cm.output
                 ),

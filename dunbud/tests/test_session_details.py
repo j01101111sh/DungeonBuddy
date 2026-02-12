@@ -43,7 +43,7 @@ class SessionChatTests(TestCase):
             "session_detail",
             kwargs={
                 "session_number": self.session.session_number,
-                "campaign_pk": self.session.campaign.pk,
+                "campaign_slug": self.session.campaign.slug,
             },
         )
 

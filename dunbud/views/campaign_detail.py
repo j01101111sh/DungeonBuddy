@@ -88,7 +88,7 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         # Log unauthorized access attempts to existing campaigns.
         logger.warning(
             "Unauthorized access attempt to campaign %s by user %s",
-            campaign.pk,
+            campaign.slug,
             user,
         )
         return False

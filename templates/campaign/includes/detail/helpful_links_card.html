@@ -27,7 +27,7 @@
             <h6>Add a New Link</h6>
             <form id="add-link-form"
                   method="post"
-                  action="{% url 'helpful_link_add' pk=campaign.pk %}">
+                  action="{% url 'helpful_link_add' slug=campaign.slug %}">
                 {% csrf_token %}
                 <div id="add-link-errors" class="alert alert-danger hidden"></div>
                 <div class="mb-3">

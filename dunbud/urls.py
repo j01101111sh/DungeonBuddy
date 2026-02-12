@@ -26,16 +26,6 @@ urlpatterns = [
     path("", SplashView.as_view(), name="splash"),
     path("campaigns/new/", CampaignCreateView.as_view(), name="campaign_create"),
     path(
-        "campaigns/<uuid:pk>/",
-        CampaignDetailView.as_view(),
-        name="campaign_detail",
-    ),
-    path(
-        "campaigns/<uuid:pk>/edit/",
-        CampaignUpdateView.as_view(),
-        name="campaign_edit",
-    ),
-    path(
         "campaigns/managed/",
         ManagedCampaignListView.as_view(),
         name="campaign_managed",
@@ -46,7 +36,17 @@ urlpatterns = [
         name="campaign_joined",
     ),
     path(
-        "campaigns/<uuid:pk>/invite/create/",
+        "campaigns/<slug:slug>/",
+        CampaignDetailView.as_view(),
+        name="campaign_detail",
+    ),
+    path(
+        "campaigns/<slug:slug>/edit/",
+        CampaignUpdateView.as_view(),
+        name="campaign_edit",
+    ),
+    path(
+        "campaigns/<slug:slug>/invite/create/",
         CampaignInvitationCreateView.as_view(),
         name="campaign_invite_create",
     ),
@@ -57,13 +57,13 @@ urlpatterns = [
     ),
     # Feed URLs
     path(
-        "campaigns/<uuid:pk>/announcement/create/",
+        "campaigns/<slug:slug>/announcement/create/",
         CampaignAnnouncementCreateView.as_view(),
         name="campaign_announcement_create",
     ),
     # Link URLs
     path(
-        "campaigns/<uuid:pk>/links/add/",
+        "campaigns/<slug:slug>/links/add/",
         HelpfulLinkCreateView.as_view(),
         name="helpful_link_add",
     ),
@@ -91,7 +91,7 @@ urlpatterns = [
     ),
     # Session URLs
     path(
-        "campaigns/<uuid:campaign_pk>/sessions/propose/",
+        "campaigns/<slug:campaign_slug>/sessions/propose/",
         SessionCreateView.as_view(),
         name="session_propose",
     ),
@@ -101,12 +101,12 @@ urlpatterns = [
         name="session_toggle_attendance",
     ),
     path(
-        "campaigns/<uuid:campaign_pk>/sessions/<int:session_number>/",
+        "campaigns/<slug:campaign_slug>/sessions/<int:session_number>/",
         SessionDetailView.as_view(),
         name="session_detail",
     ),
     path(
-        "campaigns/<uuid:campaign_pk>/sessions/<int:session_number>/edit/",
+        "campaigns/<slug:campaign_slug>/sessions/<int:session_number>/edit/",
         SessionUpdateView.as_view(),
         name="session_edit",
     ),
