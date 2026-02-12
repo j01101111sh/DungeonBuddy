@@ -49,21 +49,9 @@
                         <div class="markdown-body">{{ session_obj.notes|markdown_format }}</div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Party Members</h5>
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        {% for member in campaign_members %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ member.username }}
-                                {% if member == request.user %}<span class="badge bg-secondary">You</span>{% endif %}
-                            </li>
-                        {% empty %}
-                            <li class="list-group-item text-muted">No members found.</li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                {# Party Members List #}
+                {% include "campaign/includes/detail/party_list.html" %}
+
             </div>
             <div class="col-md-8">
                 <div class="card h-100">
