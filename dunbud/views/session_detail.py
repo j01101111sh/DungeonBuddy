@@ -75,6 +75,9 @@ class SessionDetailView(LoginRequiredMixin, UserPassesTestMixin, FormMixin, Deta
         # Explicitly typing the session object for stricter checking if needed
         session: Session = self.object
 
+        # Add campaign to context for shared templates
+        context["campaign"] = session.campaign
+
         # Map user_id to their character in this campaign
         character_map = {
             char.user_id: char for char in session.campaign.player_characters.all()
