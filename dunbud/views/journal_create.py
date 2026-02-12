@@ -2,7 +2,7 @@ from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.views.generic import CreateView
 
 from dunbud.forms.journal import JournalEntryForm
@@ -39,7 +39,7 @@ class JournalCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return character.user == self.request.user
 
     def get_success_url(self) -> str:
-        return reverse_lazy(
+        return reverse(
             "journal_list",
             kwargs={"character_id": self.character.pk},
         )
