@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "dunbud",
     "users",
     "blog",
+    "anymail",
 ]
 
 MIDDLEWARE = [
@@ -257,6 +258,9 @@ DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
     "noreply@dunbud-staging.up.railway.app",
 )
+ANYMAIL = {
+    "RESEND_API_KEY": os.getenv("RESEND_API_KEY"),
+}
 
 # Caching
 CACHES = {
