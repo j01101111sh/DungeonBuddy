@@ -296,5 +296,3 @@ class JournalViewTests(TestCase):
         response = self.client.post(self.delete_url)
         self.assertRedirects(response, self.list_url)
         self.assertFalse(JournalEntry.objects.filter(pk=self.entry.pk).exists())
-        self.assertFalse(JournalEntry.objects.filter(pk=self.entry.pk).exists())
-        self.assertFalse(JournalEntry.objects.filter(pk=self.entry.pk).exists())
