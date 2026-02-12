@@ -19,11 +19,9 @@ DEV_EMAIL="dev@dev.com"
 DEV_PASSWORD="dev"
 
 # 0. Delete existing dev files
-if [ -f "db.sqlite3" ]; then
-    echo -e "${YELLOW}Deleting existing dev files...${NC}"
-    rm "db.sqlite3"
-    rm -Rf logs/
-fi
+echo -e "${YELLOW}Deleting existing dev files...${NC}"
+rm db.sqlite3 .coverage .devpass coverage.xml db.sqlite-journal
+rm -Rf logs/ htmlcov/ staticfiles/
 
 # 1. Sync Dependencies (uv)
 echo -e "${CYAN}Syncing dependencies with uv...${NC}"
