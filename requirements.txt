@@ -37,7 +37,7 @@ django-crispy-forms==2.5
     # via
     #   crispy-bootstrap5
     #   dungeonbuddy
-gunicorn==25.0.3
+gunicorn==25.1.0
 h11==0.16.0
     # via httpcore
 httpcore==1.0.9
@@ -54,7 +54,7 @@ idna==3.11
     #   requests
 markdown==3.10.2
     # via dungeonbuddy
-nh3==0.3.2
+nh3==0.3.3
     # via dungeonbuddy
 packaging==26.0
     # via gunicorn
