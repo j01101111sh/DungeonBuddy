@@ -131,6 +131,11 @@ class SessionModelTest(TestCase):
         self.session.save()
         self.assertEqual(PartyFeedItem.objects.count(), 2)
 
+        # Remove recap (should NOT create new item)
+        self.session.recap = ""
+        self.session.save()
+        self.assertEqual(PartyFeedItem.objects.count(), 2)
+
 
 class SessionCreateViewTest(TestCase):
     def setUp(self) -> None:
@@ -344,5 +349,6 @@ class SessionToggleAttendanceViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.session.refresh_from_db()
         self.assertIn(self.user, self.session.attendees.all())
+        self.assertNotIn(self.user, self.session.busy_users.all())
         self.assertNotIn(self.user, self.session.busy_users.all())
         self.assertNotIn(self.user, self.session.busy_users.all())
