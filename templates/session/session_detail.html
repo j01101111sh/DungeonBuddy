@@ -47,6 +47,11 @@
                             {% endif %}
                         </div>
                         <div class="markdown-body">{{ session_obj.notes|markdown_format }}</div>
+                        {% if session_obj.recap %}
+                            <hr />
+                            <h5 class="mb-2">Recap</h5>
+                            <div class="markdown-body">{{ session_obj.recap|markdown_format }}</div>
+                        {% endif %}
                     </div>
                 </div>
                 {# Party Members List #}
