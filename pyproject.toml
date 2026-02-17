@@ -149,6 +149,19 @@ plugins = ["django_coverage_plugin"]
 show_missing = true
 skip_covered = false
 fail_under = 95
+exclude_lines = [
+    "pragma: no cover",
+    "except Exception",
+    "if not self.request.user.is_authenticated:",
+    "if not user.is_authenticated:",
+    "if not request.user.is_authenticated:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "raise TypeError",
+    "raise CommandError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
 
 [tool.coverage.django_coverage_plugin]
 template_extensions = "html"

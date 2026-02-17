@@ -26,7 +26,10 @@ class PlayerCharacterCreateView(LoginRequiredMixin, CreateView):
         """
         # Ensure user is authenticated for type safety
         if not self.request.user.is_authenticated:
-            return HttpResponse("Unauthorized", status=401)
+            return HttpResponse(
+                "Unauthorized",
+                status=401,
+            )
 
         form.instance.user = self.request.user
         return super().form_valid(form)
