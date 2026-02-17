@@ -35,10 +35,13 @@ class SignUpView(CreateView):
                     recipient_list=[user.email],
                     fail_silently=False,
                 )
+
+                masked_email = self._mask_email(user.email)
+
                 logger.info(
                     "Signup confirmation email sent to user: %s (%s)",
                     user.username,
-                    user.email,
+                    masked_email,
                 )
             except Exception:
                 logger.exception(
@@ -47,3 +50,16 @@ class SignUpView(CreateView):
                 )
 
         return response
+
+    @staticmethod
+    def _mask_email(email: str) -> str:
+        masked_email = email
+        if "@" in email:
+            local, domain = email.rsplit("@", 1)
+            if len(local) > 2:
+                masked_email = f"{local[0]}{'*' * (len(local) - 2)}{local[-1]}@{domain}"
+            elif len(local) == 2:
+                masked_email = f"{local[0]}*@{domain}"
+            elif len(local) == 1:
+                masked_email = f"*@{domain}"
+        return masked_email
