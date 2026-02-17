@@ -124,6 +124,35 @@ class SignUpViewTests(TestCase):
         self.assertEqual(email.to, ["email_user@example.com"])
         self.assertIn("email_user", email.body)
 
+    def test_signup_logs_masked_email(self) -> None:
+        """Test that the signup log contains a masked email address."""
+        url = reverse("signup")
+        data = {
+            "username": "logging_user",
+            "email": "logging@example.com",
+            "password1": "Pass123!",
+            "password2": "Pass123!",
+        }
+
+        with self.assertLogs("users.views.signup", level="INFO") as cm:
+            self.client.post(url, data)
+            # logging -> l*****g
+            self.assertTrue(
+                any("l*****g@example.com" in o for o in cm.output),
+                f"Logs found: {cm.output}",
+            )
+
+        # Test short email masking
+        data["username"] = "short_email_user"
+        data["email"] = "ab@example.com"
+        with self.assertLogs("users.views.signup", level="INFO") as cm:
+            self.client.post(url, data)
+            # ab -> a*
+            self.assertTrue(
+                any("a*@example.com" in o for o in cm.output),
+                f"Logs found: {cm.output}",
+            )
+
 
 class LoginViewTests(TestCase):
     def test_login_page_renders(self) -> None:
