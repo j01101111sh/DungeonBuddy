@@ -43,6 +43,10 @@ class SignUpView(CreateView):
                         masked_email = (
                             f"{local[0]}{'*' * (len(local) - 2)}{local[-1]}@{domain}"
                         )
+                    elif len(local) == 2:
+                        masked_email = f"{local[0]}*@{domain}"
+                    elif len(local) == 1:
+                        masked_email = f"*@{domain}"
 
                 logger.info(
                     "Signup confirmation email sent to user: %s (%s)",
