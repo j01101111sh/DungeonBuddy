@@ -58,6 +58,9 @@ jobs:
       - name: Enforce Diff Coverage
         run: uv run diff-cover coverage.xml --compare-branch=origin/main --fail-under=80
 
+      - name: Check for updated dependencies
+        run: uv export --format requirements.txt --no-dev --group prod --output-file requirements.txt --no-hashes --frozen
+
       - name: Upload Coverage Report
         if: always()
         uses: actions/upload-artifact@v6 # Updated to v4
