@@ -116,7 +116,7 @@ class SessionModelTest(TestCase):
         # Check feed item
         self.assertEqual(PartyFeedItem.objects.count(), 1)
         item = PartyFeedItem.objects.first()
-        self.assertTrue(item)
+        self.assertIsNotNone(item)
         if item:
             self.assertEqual(item.category, PartyFeedItem.Category.RECAP)
             self.assertIn("recap has been posted", item.message)
@@ -344,4 +344,5 @@ class SessionToggleAttendanceViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.session.refresh_from_db()
         self.assertIn(self.user, self.session.attendees.all())
+        self.assertNotIn(self.user, self.session.busy_users.all())
         self.assertNotIn(self.user, self.session.busy_users.all())
