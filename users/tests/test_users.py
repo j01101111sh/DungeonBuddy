@@ -153,6 +153,17 @@ class SignUpViewTests(TestCase):
                 f"Logs found: {cm.output}",
             )
 
+        # Test single character email masking
+        data["username"] = "one_char_email_user"
+        data["email"] = "a@example.com"
+        with self.assertLogs("users.views.signup", level="INFO") as cm:
+            self.client.post(url, data)
+            # a -> *
+            self.assertTrue(
+                any("*@example.com" in o for o in cm.output),
+                f"Logs found: {cm.output}",
+            )
+
 
 class LoginViewTests(TestCase):
     def test_login_page_renders(self) -> None:
