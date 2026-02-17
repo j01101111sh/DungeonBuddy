@@ -92,6 +92,7 @@ def track_session_recap_changes(
         action = "posted" if not old_instance.recap else "updated"
         PartyFeedItem.objects.create(
             campaign=instance.campaign,
+            session=instance,
             message=f"Session {instance.session_number} recap has been {action}.",
             category=PartyFeedItem.Category.RECAP,
         )

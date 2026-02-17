@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from config.tests.factories import UserFactory
-from dunbud.models import Campaign, PartyFeedItem
+from dunbud.models import Campaign, PartyFeedItem, Session
 
 User = get_user_model()
 
@@ -217,3 +218,40 @@ class PartyFeedTests(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check for the rendered HTML
         self.assertContains(response, "<strong>dawn</strong>")
+
+    def test_recap_feed_item_link(self) -> None:
+        """
+        Test that a recap feed item links to the session.
+        """
+        # Create a session
+        session = Session.objects.create(
+            campaign=self.campaign,
+            proposer=self.dm,
+            proposed_date=timezone.now(),
+            duration=4,
+        )
+
+        # Update recap to trigger feed item creation
+        session.recap = "We fought a dragon."
+        session.save()
+
+        # Verify feed item creation and association
+        feed_item = PartyFeedItem.objects.latest("created_at")
+        self.assertEqual(feed_item.category, PartyFeedItem.Category.RECAP)
+        self.assertEqual(feed_item.session, session)
+
+        # Verify link in response
+        self.client.force_login(self.player)
+        url = reverse("campaign_detail", kwargs={"slug": self.campaign.slug})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        session_url = reverse(
+            "session_detail",
+            kwargs={
+                "campaign_slug": self.campaign.slug,
+                "session_number": session.session_number,
+            },
+        )
+        self.assertContains(response, f'href="{session_url}"')
+        self.assertContains(response, "View Session")
