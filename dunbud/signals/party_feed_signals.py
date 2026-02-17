@@ -89,13 +89,13 @@ def track_session_recap_changes(
     # Check for Recap Change
     # We only notify if the recap has content and is different from before.
     if instance.recap != old_instance.recap and instance.recap:
+        action = "posted" if not old_instance.recap else "updated"
         PartyFeedItem.objects.create(
             campaign=instance.campaign,
-            session=instance,
-            message=f"Session {instance.session_number} recap has been posted.",
+            message=f"Session {instance.session_number} recap has been {action}.",
             category=PartyFeedItem.Category.RECAP,
         )
-        logger.info("Feed item created: Recap updated for Session %s", instance.pk)
+        logger.info("Feed item created: Recap %s for Session %s", action, instance.pk)
 
 
 @receiver(m2m_changed, sender=Campaign.players.through)
