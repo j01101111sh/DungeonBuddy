@@ -33,7 +33,7 @@ class SessionDetailView(LoginRequiredMixin, UserPassesTestMixin, FormMixin, Deta
         user = self.request.user
         if session.campaign.dungeon_master == user:
             return True
-        if user.pk is None:
+        if user.pk is None:  # pragma: no cover - redundant for type checking
             return False
         return session.campaign.players.filter(pk=user.pk).exists()
 
