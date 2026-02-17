@@ -400,4 +400,3 @@ class SessionDetailViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, '<h5 class="mb-2">Recap</h5>')
-        self.assertNotContains(response, '<h5 class="mb-2">Recap</h5>')
