@@ -120,6 +120,7 @@ class SessionModelTest(TestCase):
         if item:
             self.assertEqual(item.category, PartyFeedItem.Category.RECAP)
             self.assertIn("recap has been posted", item.message)
+            self.assertEqual(item.session, self.session)
 
         # Update without changing recap (should NOT create new item)
         self.session.duration = 5
