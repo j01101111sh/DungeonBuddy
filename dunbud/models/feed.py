@@ -29,6 +29,14 @@ class PartyFeedItem(models.Model):
         related_name="feed_items",
         help_text=_("The campaign this feed item belongs to."),
     )
+    session = models.ForeignKey(
+        "dunbud.Session",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="feed_items",
+        help_text=_("The session associated with this feed item."),
+    )
     message = models.TextField(
         help_text=_("The text content of the feed item. Supports Markdown."),
     )

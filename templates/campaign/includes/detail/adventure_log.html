@@ -28,7 +28,15 @@
                     </div>
                     <small class="text-muted">{{ item.created_at|date:"H:i" }}</small>
                 </div>
-                <div class="mb-0">{{ item.message|markdown_format }}</div>
+                <div class="mb-0">
+                    {{ item.message|markdown_format }}
+                    {% if item.session %}
+                        <a href="{% url 'session_detail' campaign_slug=campaign.slug session_number=item.session.session_number %}"
+                           class="small text-decoration-none">
+                            View Session <i class="bi bi-arrow-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     {% empty %}
