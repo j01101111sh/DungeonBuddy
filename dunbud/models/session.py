@@ -44,6 +44,10 @@ class Session(models.Model):
         blank=True,
     )
     notes = models.TextField(blank=True)
+    recap = models.TextField(
+        blank=True,
+        help_text="Post-session recap and summary.",
+    )
     session_number = models.PositiveIntegerField(
         default=1,
         help_text="The sequential number of the session within the campaign.",

@@ -6,7 +6,7 @@ from django.db.models import Model
 from django.db.models.signals import m2m_changed, pre_save
 from django.dispatch import receiver
 
-from dunbud.models import Campaign, PartyFeedItem
+from dunbud.models import Campaign, PartyFeedItem, Session
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -66,6 +66,35 @@ def track_campaign_changes(
             category=PartyFeedItem.Category.DATA_UPDATE,
         )
         logger.info("Feed item created: Video link %s for %s", action, instance.pk)
+
+
+@receiver(pre_save, sender=Session)
+def track_session_recap_changes(
+    sender: type[Session],
+    instance: Session,
+    **kwargs: Any,
+) -> None:
+    """
+    Signal to track changes to Session recap and create PartyFeedItems.
+    """
+    # If the instance is new, we generally don't post a recap immediately
+    if instance._state.adding:
+        return
+
+    try:
+        old_instance = Session.objects.get(pk=instance.pk)
+    except Session.DoesNotExist:
+        return
+
+    # Check for Recap Change
+    # We only notify if the recap has content and is different from before.
+    if instance.recap != old_instance.recap and instance.recap:
+        PartyFeedItem.objects.create(
+            campaign=instance.campaign,
+            message=f"Session {instance.session_number} recap has been posted.",
+            category=PartyFeedItem.Category.RECAP,
+        )
+        logger.info("Feed item created: Recap updated for Session %s", instance.pk)
 
 
 @receiver(m2m_changed, sender=Campaign.players.through)

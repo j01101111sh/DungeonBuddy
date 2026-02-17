@@ -16,6 +16,7 @@ class PartyFeedItem(models.Model):
         ANNOUNCEMENT = "announcements", _("Announcements")
         DATA_UPDATE = "data_updates", _("Data Updates")
         JOURNAL = "journal", _("Journal")
+        RECAP = "recap", _("Session Recap")
 
     id = models.UUIDField(
         primary_key=True,
