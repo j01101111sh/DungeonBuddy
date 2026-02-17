@@ -350,3 +350,53 @@ class SessionToggleAttendanceViewTest(TestCase):
         self.session.refresh_from_db()
         self.assertIn(self.user, self.session.attendees.all())
         self.assertNotIn(self.user, self.session.busy_users.all())
+
+
+class SessionDetailViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user, _ = UserFactory.create()
+        self.campaign = CampaignFactory.create(
+            dungeon_master=self.user,
+            system=TabletopSystemFactory.create(),
+            players=[self.user],
+        )
+        self.session = Session.objects.create(
+            campaign=self.campaign,
+            proposer=self.user,
+            proposed_date=timezone.now() + datetime.timedelta(days=7),
+            duration=4,
+        )
+        self.client.force_login(self.user)
+        self.url = reverse(
+            "session_detail",
+            kwargs={
+                "campaign_slug": self.campaign.slug,
+                "session_number": self.session.session_number,
+            },
+        )
+
+    def test_recap_section_displayed_when_present(self) -> None:
+        """
+        Test that the recap section is displayed when a recap exists.
+        """
+        self.session.recap = "We fought a dragon."
+        self.session.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Recap")
+        self.assertContains(response, "We fought a dragon.")
+
+    def test_recap_section_hidden_when_empty(self) -> None:
+        """
+        Test that the recap section is hidden when no recap exists.
+        """
+        self.session.recap = ""
+        self.session.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, '<h5 class="mb-2">Recap</h5>')
+        self.assertNotContains(response, '<h5 class="mb-2">Recap</h5>')
