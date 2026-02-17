@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from config.tests.factories import CampaignFactory, TabletopSystemFactory, UserFactory
 from dunbud.forms import SessionCreateForm
-from dunbud.models import Session
+from dunbud.models import PartyFeedItem, Session
 
 
 class SessionModelTest(TestCase):
@@ -101,6 +101,41 @@ class SessionModelTest(TestCase):
         proposer_user.delete()
         session.refresh_from_db()
         self.assertIsNone(session.proposer)
+
+    def test_recap_update_creates_feed_item(self) -> None:
+        """
+        Test that updating the session recap creates a PartyFeedItem.
+        """
+        # Initial state: no recap, no feed items
+        self.assertEqual(PartyFeedItem.objects.count(), 0)
+
+        # Update with recap
+        self.session.recap = "We fought a dragon."
+        self.session.save()
+
+        # Check feed item
+        self.assertEqual(PartyFeedItem.objects.count(), 1)
+        item = PartyFeedItem.objects.first()
+        self.assertIsNotNone(item)
+        if item:
+            self.assertEqual(item.category, PartyFeedItem.Category.RECAP)
+            self.assertIn("recap has been posted", item.message)
+            self.assertEqual(item.session, self.session)
+
+        # Update without changing recap (should NOT create new item)
+        self.session.duration = 5
+        self.session.save()
+        self.assertEqual(PartyFeedItem.objects.count(), 1)
+
+        # Change recap again (should create new item)
+        self.session.recap = "Actually, it was a wyvern."
+        self.session.save()
+        self.assertEqual(PartyFeedItem.objects.count(), 2)
+
+        # Remove recap (should NOT create new item)
+        self.session.recap = ""
+        self.session.save()
+        self.assertEqual(PartyFeedItem.objects.count(), 2)
 
 
 class SessionCreateViewTest(TestCase):
@@ -316,3 +351,52 @@ class SessionToggleAttendanceViewTest(TestCase):
         self.session.refresh_from_db()
         self.assertIn(self.user, self.session.attendees.all())
         self.assertNotIn(self.user, self.session.busy_users.all())
+
+
+class SessionDetailViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user, _ = UserFactory.create()
+        self.campaign = CampaignFactory.create(
+            dungeon_master=self.user,
+            system=TabletopSystemFactory.create(),
+            players=[self.user],
+        )
+        self.session = Session.objects.create(
+            campaign=self.campaign,
+            proposer=self.user,
+            proposed_date=timezone.now() + datetime.timedelta(days=7),
+            duration=4,
+        )
+        self.client.force_login(self.user)
+        self.url = reverse(
+            "session_detail",
+            kwargs={
+                "campaign_slug": self.campaign.slug,
+                "session_number": self.session.session_number,
+            },
+        )
+
+    def test_recap_section_displayed_when_present(self) -> None:
+        """
+        Test that the recap section is displayed when a recap exists.
+        """
+        self.session.recap = "We fought a dragon."
+        self.session.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Recap")
+        self.assertContains(response, "We fought a dragon.")
+
+    def test_recap_section_hidden_when_empty(self) -> None:
+        """
+        Test that the recap section is hidden when no recap exists.
+        """
+        self.session.recap = ""
+        self.session.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, '<h5 class="mb-2">Recap</h5>')
