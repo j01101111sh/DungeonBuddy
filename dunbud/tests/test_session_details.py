@@ -134,7 +134,7 @@ class SessionChatTests(TestCase):
 
 class SessionAttendanceTests(TestCase):
     """
-    Test suite for attendance controls on the Session Detail page.
+    Test suite for attendance controls on the Campaign Detail page.
     """
 
     def setUp(self) -> None:
