@@ -130,4 +130,67 @@ class SessionChatTests(TestCase):
         self.assertNotEqual(response.status_code, 200)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.status_code, 302)
+
+
+class SessionAttendanceTests(TestCase):
+    """
+    Test suite for attendance controls on the Campaign Detail page.
+    """
+
+    def setUp(self) -> None:
+        self.user, self.upass = UserFactory.create()
+        self.dm, _ = UserFactory.create()
+        self.campaign = CampaignFactory.create(
+            dungeon_master=self.dm,
+            system=TabletopSystemFactory.create(),
+        )
+        self.campaign.players.add(self.user)
+        self.session = SessionFactory.create(campaign=self.campaign)
+        self.url = reverse(
+            "campaign_detail",
+            kwargs={
+                "slug": self.campaign.slug,
+            },
+        )
+        self.toggle_url = reverse(
+            "session_toggle_attendance",
+            kwargs={"pk": self.session.pk},
+        )
+
+    def test_mark_as_busy_button_present(self) -> None:
+        """
+        Test that an attending user sees the 'Mark as Busy' button.
+        """
+        self.session.attendees.add(self.user)
+        self.client.login(username=self.user.username, password=self.upass)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.toggle_url)
+        self.assertContains(response, "Busy")
+
+    def test_mark_as_available_button_present(self) -> None:
+        """
+        Test that a busy user sees the 'Mark as Available' button.
+        """
+        self.session.busy_users.add(self.user)
+        self.client.login(username=self.user.username, password=self.upass)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.toggle_url)
+        self.assertContains(response, "Available")
+
+    def test_default_button_present(self) -> None:
+        """
+        Test that a user with no status sees the 'Mark as Available' button.
+        """
+        self.client.login(username=self.user.username, password=self.upass)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.toggle_url)
+        self.assertContains(response, "Undecided")
