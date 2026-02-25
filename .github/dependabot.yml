@@ -18,6 +18,12 @@ updates:
           - "pytest*"
           - "ruff"
           - "mypy"
+          - "bandit"
+          - "django-coverage-plugin"
+          - "django-stubs"
+          - "pre-commit"
+          - "diff-cover"
+          - "types-markdown"
 
     ignore:
       - dependency-name: "django"
