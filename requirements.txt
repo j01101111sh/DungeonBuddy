@@ -10,7 +10,7 @@ attrs==25.4.0
     # via
     #   standardwebhooks
     #   svix
-certifi==2026.1.4
+certifi==2026.2.25
     # via
     #   httpcore
     #   httpx
