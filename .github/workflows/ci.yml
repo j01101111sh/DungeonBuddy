@@ -12,6 +12,7 @@ env:
   SECRET_KEY: "django-insecure-test-key-for-ci-environment"
   LOG_LEVEL: "DEBUG"
   TEMPLATE_DEBUG: "True"
+  PYTHON_VERSION: "3.14"
 
 jobs:
   test:
@@ -28,10 +29,10 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          cache-suffix: "python-3.14"
+          cache-suffix: "python-${{ env.PYTHON_VERSION }}"
 
-      - name: Install Python 3.14
-        run: uv python install 3.14
+      - name: Install Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
         run: uv sync --frozen
@@ -78,10 +79,10 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          cache-suffix: "python-3.14"
+          cache-suffix: "python-${{ env.PYTHON_VERSION }}"
 
-      - name: Install Python 3.14
-        run: uv python install 3.14
+      - name: Install Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
         run: uv sync --frozen
@@ -111,10 +112,10 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          cache-suffix: "python-3.14"
+          cache-suffix: "python-${{ env.PYTHON_VERSION }}"
 
-      - name: Install Python 3.14
-        run: uv python install 3.14
+      - name: Install Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Check for missing migrations
         run: uv run python manage.py makemigrations --check --dry-run
