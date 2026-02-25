@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   pull_request:
@@ -8,14 +8,16 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  SECRET_KEY: "django-insecure-test-key-for-ci-environment"
+  LOG_LEVEL: "DEBUG"
+  TEMPLATE_DEBUG: "True"
+  PYTHON_VERSION: "3.14"
+
 jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    env:
-      SECRET_KEY: "django-insecure-test-key-for-ci-environment"
-      LOG_LEVEL: "DEBUG"
-      TEMPLATE_DEBUG: "True"
 
     steps:
       - name: Checkout code
@@ -27,27 +29,13 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          cache-suffix: "python-3.14"
+          cache-suffix: "python-${{ env.PYTHON_VERSION }}"
 
-      - name: Install Python 3.14
-        run: uv python install 3.14
+      - name: Install Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
         run: uv sync --frozen
-
-      - name: Cache pre-commit hooks
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
-          restore-keys: |
-            pre-commit-${{ runner.os }}-
-
-      - name: Run pre-commit hooks
-        run: uv run pre-commit run --all-files --show-diff-on-failure
-
-      - name: Check for missing migrations
-        run: uv run python manage.py makemigrations --check --dry-run
 
       - name: Generate staticfiles to mimic production
         run: uv run python manage.py collectstatic --noinput
@@ -77,8 +65,8 @@ jobs:
           name: django-log
           path: logs/django.log
 
-  mock:
-    name: Build Docker Image
+  format:
+    name: Check Code
     runs-on: ubuntu-latest
 
     steps:
@@ -86,6 +74,56 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-suffix: "python-${{ env.PYTHON_VERSION }}"
+
+      - name: Install Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Cache pre-commit hooks
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-${{ runner.os }}-
+
+      - name: Run pre-commit hooks
+        run: uv run pre-commit run --all-files --show-diff-on-failure
+
+  prod:
+    name: Check Prod Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-suffix: "python-${{ env.PYTHON_VERSION }}"
+
+      - name: Install Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Check for missing migrations
+        run: uv run python manage.py makemigrations --check --dry-run
+
+      - name: Check for updated dependencies
+        run: |
+          uv export --format requirements.txt --no-dev --group prod --output-file requirements.txt --no-hashes --frozen
+          git diff --exit-code requirements.txt
 
       - name: Build Docker image
         run: docker build .
