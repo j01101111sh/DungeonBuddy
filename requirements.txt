@@ -58,12 +58,12 @@ nh3==0.3.3
     # via dungeonbuddy
 packaging==26.0
     # via gunicorn
-psycopg==3.3.3
-psycopg-binary==3.3.3 ; implementation_name != 'pypy'
+psycopg==3.3.2
+psycopg-binary==3.3.2 ; implementation_name != 'pypy'
     # via psycopg
 pydantic==2.12.5
     # via svix
-pydantic-core==2.42.0
+pydantic-core==2.41.5
     # via pydantic
 python-dateutil==2.9.0.post0
     # via
@@ -77,9 +77,9 @@ six==1.17.0
     # via python-dateutil
 sqlparse==0.5.5
     # via django
-standardwebhooks==1.0.1
+standardwebhooks==1.0.0
     # via svix
-svix==1.86.0
+svix==1.85.0
     # via django-anymail
 types-deprecated==1.3.1.20260130
     # via
