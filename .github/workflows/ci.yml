@@ -103,6 +103,8 @@ jobs:
     name: Check Prod Files
     runs-on: ubuntu-latest
     needs: [test]
+    env:
+      SECRET_KEY: "django-insecure-test-key-for-ci-environment"
 
     steps:
       - name: Checkout code
