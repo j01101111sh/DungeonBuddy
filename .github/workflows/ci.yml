@@ -59,7 +59,9 @@ jobs:
         run: uv run diff-cover coverage.xml --compare-branch=origin/main --fail-under=80
 
       - name: Check for updated dependencies
-        run: uv export --format requirements.txt --no-dev --group prod --output-file requirements.txt --no-hashes --frozen
+        run: |
+          uv export --format requirements.txt --no-dev --group prod --output-file requirements.txt --no-hashes --frozen
+          git diff --exit-code requirements.txt
 
       - name: Upload Coverage Report
         if: always()
@@ -74,3 +76,16 @@ jobs:
         with:
           name: django-log
           path: logs/django.log
+
+  mock:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Build Docker image
+        run: docker build .
