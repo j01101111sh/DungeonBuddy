@@ -15,14 +15,14 @@ updates:
           - "mypy"
       development-dependencies:
         patterns:
-          - "pytest*"
-          - "ruff"
-          - "mypy"
           - "bandit"
+          - "diff-cover"
           - "django-coverage-plugin"
           - "django-stubs"
+          - "mypy"
           - "pre-commit"
-          - "diff-cover"
+          - "pytest*"
+          - "ruff"
           - "types-markdown"
 
     ignore:
