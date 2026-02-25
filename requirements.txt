@@ -63,7 +63,7 @@ psycopg-binary==3.3.3 ; implementation_name != 'pypy'
     # via psycopg
 pydantic==2.12.5
     # via svix
-pydantic-core==2.41.5
+pydantic-core==2.42.0
     # via pydantic
 python-dateutil==2.9.0.post0
     # via
