@@ -1,0 +1,51 @@
+name: Dependabot uv Sync
+
+on:
+  pull_request:
+    paths:
+      - 'uv.lock'
+      - 'pyproject.toml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-requirements:
+    # Only run this job if the PR author is Dependabot
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-suffix: "python-3.14"
+
+      - name: Install Python 3.14
+        run: uv python install 3.14
+
+      - name: Generate updated requirements.txt
+        # Re-export the requirements.txt to match the newly updated uv.lock
+        run: uv export --format requirements.txt --no-dev --group prod --output-file requirements.txt --no-hashes --frozen
+
+      - name: Commit and push changes
+        run: |
+          # Configure Git as the GitHub Actions bot
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if requirements.txt has actually changed
+          if [[ -n "$(git status --porcelain requirements.txt)" ]]; then
+            git add requirements.txt
+            git commit -m "chore: auto-sync requirements.txt with uv.lock"
+            git push
+            echo "Successfully updated requirements.txt"
+          else
+            echo "No changes needed for requirements.txt"
+          fi
