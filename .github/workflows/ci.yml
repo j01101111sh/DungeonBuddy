@@ -8,14 +8,15 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  SECRET_KEY: "django-insecure-test-key-for-ci-environment"
+  LOG_LEVEL: "DEBUG"
+  TEMPLATE_DEBUG: "True"
+
 jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    env:
-      SECRET_KEY: "django-insecure-test-key-for-ci-environment"
-      LOG_LEVEL: "DEBUG"
-      TEMPLATE_DEBUG: "True"
 
     steps:
       - name: Checkout code
@@ -66,8 +67,6 @@ jobs:
   format:
     name: Check Code
     runs-on: ubuntu-latest
-    env:
-      SECRET_KEY: "django-insecure-test-key-for-ci-environment"
 
     steps:
       - name: Checkout code
@@ -101,8 +100,6 @@ jobs:
   prod:
     name: Check Prod Files
     runs-on: ubuntu-latest
-    env:
-      SECRET_KEY: "django-insecure-test-key-for-ci-environment"
 
     steps:
       - name: Checkout code
