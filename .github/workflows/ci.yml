@@ -53,14 +53,14 @@ jobs:
 
       - name: Upload Coverage Report
         if: always()
-        uses: actions/upload-artifact@v6 # Updated to v4
+        uses: actions/upload-artifact@v7 # Updated to v4
         with:
           name: coverage-report
           path: htmlcov/
 
       - name: Upload Django Log
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: django-log
           path: logs/django.log
