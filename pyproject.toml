@@ -11,7 +11,7 @@ dependencies = [
     "django-crispy-forms>=2.5",
     "markdown>=3.10.1",
     "nh3>=0.3.2",
-    "python-dotenv>=1.2.1",
+    "python-dotenv>=1.2.2",
     "whitenoise>=6.11.0",
 ]
 
