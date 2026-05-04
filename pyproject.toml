@@ -5,14 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "crispy-bootstrap5>=2025.6",
+    "crispy-bootstrap5>=2026.3",
     "dj-database-url>=3.1.0",
-    "django>=6.0.1",
-    "django-crispy-forms>=2.5",
+    "django>=6.0.4",
+    "django-crispy-forms>=2.6",
     "markdown>=3.10.1",
-    "nh3>=0.3.2",
-    "python-dotenv>=1.2.1",
-    "whitenoise>=6.11.0",
+    "nh3>=0.3.5",
+    "python-dotenv>=1.2.2",
+    "whitenoise>=6.12.0",
 ]
 
 [dependency-groups]
@@ -20,7 +20,7 @@ dev = [
     "bandit>=1.9.3",
     "diff-cover>=10.2.0",
     "django-coverage-plugin>=3.2.0",
-    "django-stubs[compatible-mypy]>=5.2.9",
+    "django-stubs[compatible-mypy]>=6.0.3",
     "mypy>=1.19.1",
     "pre-commit>=4.5.1",
     "pytest>=9.0.2",
@@ -31,9 +31,9 @@ dev = [
     "types-markdown>=3.10.0.20251106",
 ]
 prod = [
-    "django-anymail[resend]>=14.0",
-    "gunicorn>=23.0.0",
-    "psycopg[binary]>=3.3.2",
+    "django-anymail[resend]>=15.0",
+    "gunicorn>=25.3.0",
+    "psycopg[binary]>=3.3.4",
 ]
 
 [tool.ruff]
