@@ -100,7 +100,7 @@ tzdata==2025.3 ; sys_platform == 'win32'
     # via
     #   django
     #   psycopg
-urllib3==2.6.3
+urllib3==2.7.0
     # via
     #   django-anymail
     #   requests
