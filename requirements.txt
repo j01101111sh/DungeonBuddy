@@ -17,7 +17,7 @@ certifi==2026.2.25
     #   requests
 charset-normalizer==3.4.4
     # via requests
-crispy-bootstrap5==2025.6
+crispy-bootstrap5==2026.3
     # via dungeonbuddy
 deprecated==1.3.1
     # via
@@ -25,19 +25,19 @@ deprecated==1.3.1
     #   svix
 dj-database-url==3.1.2
     # via dungeonbuddy
-django==6.0.2
+django==6.0.5
     # via
     #   crispy-bootstrap5
     #   dj-database-url
     #   django-anymail
     #   django-crispy-forms
     #   dungeonbuddy
-django-anymail==14.0
-django-crispy-forms==2.5
+django-anymail==15.0
+django-crispy-forms==2.6
     # via
     #   crispy-bootstrap5
     #   dungeonbuddy
-gunicorn==25.1.0
+gunicorn==26.0.0
 h11==0.16.0
     # via httpcore
 httpcore==1.0.9
@@ -54,12 +54,12 @@ idna==3.11
     #   requests
 markdown==3.10.2
     # via dungeonbuddy
-nh3==0.3.3
+nh3==0.3.5
     # via dungeonbuddy
 packaging==26.0
     # via gunicorn
-psycopg==3.3.3
-psycopg-binary==3.3.3 ; implementation_name != 'pypy'
+psycopg==3.3.4
+psycopg-binary==3.3.4 ; implementation_name != 'pypy'
     # via psycopg
 pydantic==2.12.5
     # via svix
@@ -69,7 +69,7 @@ python-dateutil==2.9.0.post0
     # via
     #   standardwebhooks
     #   svix
-python-dotenv==1.2.1
+python-dotenv==1.2.2
     # via dungeonbuddy
 requests==2.32.5
     # via django-anymail
@@ -104,7 +104,7 @@ urllib3==2.6.3
     # via
     #   django-anymail
     #   requests
-whitenoise==6.11.0
+whitenoise==6.12.0
     # via dungeonbuddy
 wrapt==2.1.1
     # via deprecated
